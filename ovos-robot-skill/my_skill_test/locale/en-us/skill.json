@@ -1,0 +1,14 @@
+{
+  "skill_id": "my-skill-test.openvoiceos",
+  "source": "https://github.com/OpenVoiceOS/my-skill-test",
+  "name": "Skill Test",
+  "description": "Introductory Skill so that Skill Authors can see how an OVOS Skill is put together",
+  "examples": [
+    "Hello world",
+    "Thank you",
+    "How are you?"
+  ],
+  "tags": [
+    "tutorial"
+  ]
+}

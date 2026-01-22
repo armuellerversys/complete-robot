@@ -130,6 +130,7 @@ class Move_app:
       return type
     
     def sayText(self, text):
+        # #curl -X POST http://192.168.4.6:6000/say -H "Content-Type: application/json" -d '{"utterance": "Security alert. Intruder detected."}'
         try:
             # Create the data payload as a dictionary
             payload = {"utterance": text}

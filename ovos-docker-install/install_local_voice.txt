@@ -86,4 +86,13 @@ docker exec -it ovos_listener /home/ovos/.venv/bin/ovos-listen
 ## check what container is actually "hearing" audio
 docker exec -it ovos_listener /home/ovos/.venv/bin/ovos-stdout-test
 
+ovos-cli monitor
+
+apt install npm
+npm install -g wscat
+wscat -c ws://localhost:8181/core
+
+wscat -c ws://127.0.0.1:8181/core | jq 'select(.context.skill_id=="ovos-skill-date-time.openvoiceos")'
+
 docker exec ovos_audio which espeak-ng
+

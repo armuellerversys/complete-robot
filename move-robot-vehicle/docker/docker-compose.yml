@@ -1,0 +1,21 @@
+services:
+  vehicle-move:
+    image: robot-vehicle-move
+    container_name: robot_vehicle_move
+    build:
+      context: .
+      dockerfile: Dockerfile.vehicle
+   
+    devices:
+      - /dev/i2c-1:/dev/i2c-1
+
+    volumes:
+      # Camera (Pi 5 requirements)
+      - /sys:/sys:ro
+    
+    environment:
+      - OVOS_BUS_HOST=127.0.0.1
+      - OVOS_BUS_PORT=8181
+
+    tty: true
+    stdin_open: true

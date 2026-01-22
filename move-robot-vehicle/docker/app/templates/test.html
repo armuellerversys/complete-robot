@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+  .slider_track {
+    border: 1px solid #ccc;
+    background: #f9f9f9;
+    cursor: pointer;
+  }
+  .slider_tick {
+    fill: steelblue;
+    stroke: black;
+    stroke-width: 1px;
+  }
+</style>
+</head>
+<body>
+
+<h3>Value: <span id="slider_value">50</span></h3>
+
+<svg id="left_slider" class="slider_track" viewBox="-10 -100 20 200" width="100" height="400">
+  <!-- Track line -->
+  <line x1="0" y1="-80" x2="0" y2="80" stroke="gray" stroke-width="4"/>
+  <!-- Knob -->
+  <circle id="slider_knob" r="18" class="slider_tick" cy="0" cx="0"/>
+</svg>
+
+<script>
+const svg = document.getElementById('left_slider');
+const knob = document.getElementById('slider_knob');
+const valueDisplay = document.getElementById('slider_value');
+
+let dragging = false;
+const minY = -80; // top
+const maxY = 80;  // bottom
+const step = 5;   // snap step in slider value (0–100 scale)
+
+// Map slider value (0–100) to Y coordinate
+function valueToY(value) {
+  return maxY - (value / 100) * (maxY - minY);
+}
+
+// Map Y coordinate to slider value (0–100)
+function yToValue(y) {
+  return ((maxY - y) / (maxY - minY)) * 100;
+}
+
+// Round to nearest step
+function snapValue(value) {
+  return Math.round(value / step) * step;
+}
+
+// Initialize knob position
+let currentValue = 50;
+knob.setAttribute('cy', valueToY(currentValue));
+valueDisplay.textContent = currentValue;
+
+// Start drag
+knob.addEventListener('mousedown', (e) => {
+  dragging = true;
+  e.preventDefault();
+});
+
+// Drag move
+svg.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+
+  // Convert to SVG coords
+  const pt = svg.createSVGPoint();
+  pt.x = e.clientX;
+  pt.y = e.clientY;
+  const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+
+  // Clamp to track
+  let newY = Math.max(minY, Math.min(maxY, svgP.y));
+
+  // Convert to snapped value
+  let rawValue = yToValue(newY);
+  let snappedValue = snapValue(rawValue);
+
+  // Update knob position and display
+  knob.setAttribute('cy', valueToY(snappedValue));
+  currentValue = snappedValue;
+  valueDisplay.textContent = currentValue;
+});
+
+// End drag
+window.addEventListener('mouseup', () => {
+  dragging = false;
+});
+</script>
+
+</body>
+</html>
+

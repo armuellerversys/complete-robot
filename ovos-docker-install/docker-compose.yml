@@ -62,7 +62,7 @@ services:
     build: 
       context: .
       dockerfile: Dockerfile.listener
-    image: ovos-listener:testing
+    image: ovos-listener
     container_name: ovos_listener
     restart: unless-stopped
     network_mode: host                # ADD THIS LINE
@@ -81,6 +81,25 @@ services:
       - ~/models/wakewords:/home/ovos/.local/share/mycroft
       - ~/ovos/persistence/listener:/home/ovos/.local
       - /run/user/1000/pulse:/run/user/1000/pulse
+
+  ovos_cli:
+      image: smartgic/ovos-cli:testing
+      container_name: ovos_cli
+      restart: unless-stopped
+      network_mode: host                # ADD THIS LINE
+      depends_on:
+        ovos_messagebus:
+          condition: service_healthy
+      environment:
+        - TZ=Europe/Berlin              # Changed to match your other services
+        - OVOS_BUS_HOST=127.0.0.1
+        - PULSE_SERVER=unix:/run/user/1000/pulse/native
+      devices:
+        - /dev/snd:/dev/snd
+      volumes:
+        - ~/ovos/config:/home/ovos/.config/mycroft
+        - ~/ovos/persistence/listener:/home/ovos/.local
+        - /run/user/1000/pulse:/run/user/1000/pulse
 
   ovos_voice_server:
     build:
