@@ -1,0 +1,276 @@
+[
+    {
+        "Id": "8d85664a20efcafe790c31d2d1bd2bfa5f42a953f4d23b2f6a85120cdbb94d96",
+        "Created": "2026-01-13T18:38:08.062234347Z",
+        "Path": "ovos-messagebus",
+        "Args": [],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1480,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-01-14T15:33:37.051210719Z",
+            "FinishedAt": "2026-01-14T15:33:30.331711464Z"
+        },
+        "Image": "sha256:5354e2702d11cc47e706e6b7aeaf8afd82a0197fdb24e933ae70484588c08ed5",
+        "ResolvConfPath": "/var/lib/docker/containers/8d85664a20efcafe790c31d2d1bd2bfa5f42a953f4d23b2f6a85120cdbb94d96/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/8d85664a20efcafe790c31d2d1bd2bfa5f42a953f4d23b2f6a85120cdbb94d96/hostname",
+        "HostsPath": "/var/lib/docker/containers/8d85664a20efcafe790c31d2d1bd2bfa5f42a953f4d23b2f6a85120cdbb94d96/hosts",
+        "LogPath": "/var/lib/docker/containers/8d85664a20efcafe790c31d2d1bd2bfa5f42a953f4d23b2f6a85120cdbb94d96/8d85664a20efcafe790c31d2d1bd2bfa5f42a953f4d23b2f6a85120cdbb94d96-json.log",
+        "Name": "/ovos_messagebus",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": [
+            "851192e6ff1ea4c8d9af66eee722de11b39116a54de00a7ff016577282f85fc9",
+            "3b8c624d349462bbfe113557c0a7c0d09be60b6a18be9c8e54432b51425b430b"
+        ],
+        "HostConfig": {
+            "Binds": [
+                "/home/ovos/ovos/config:/home/ovos/.config/mycroft:ro",
+                "ovos_local_state:/home/ovos/.local/state/mycroft:rw",
+                "/home/ovos/ovos/tmp:/tmp/mycroft:rw"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {
+                    "max-buffer-size": "4m",
+                    "max-file": "1",
+                    "max-size": "200m",
+                    "mode": "non-blocking"
+                }
+            },
+            "NetworkMode": "host",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": [],
+            "GroupAdd": null,
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": [
+                "label=disable"
+            ],
+            "UTSMode": "",
+            "UsernsMode": "keep-id",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 0,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": null,
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": -1,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/ovos/tmp",
+                "Destination": "/tmp/mycroft",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/ovos/config",
+                "Destination": "/home/ovos/.config/mycroft",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "ovos_local_state",
+                "Source": "/var/lib/docker/volumes/ovos_local_state/_data",
+                "Destination": "/home/ovos/.local/state/mycroft",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            }
+        ],
+        "Config": {
+            "Hostname": "ovos_messagebus",
+            "Domainname": "",
+            "User": "ovos",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "TZ=Europe/Berlin",
+                "PATH=/home/ovos/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.13.11",
+                "PYTHON_SHA256=16ede7bb7cdbfa895d11b0642fa0e523f291e6487194d53cf6d3b338c3a17ea2",
+                "DEBIAN_FRONTEND=noninteractive",
+                "PYTHONUNBUFFERED=1",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PIP_NO_CACHE_DIR=1",
+                "PIP_DISABLE_PIP_VERSION_CHECK=1",
+                "OVOS_CHANNEL=testing",
+                "IS_OVOS_CONTAINER=true",
+                "VIRTUAL_ENV=/home/ovos/.venv"
+            ],
+            "Cmd": null,
+            "Healthcheck": {
+                "Test": [
+                    "NONE"
+                ],
+                "Interval": 60000000000,
+                "Timeout": 10000000000,
+                "StartPeriod": 60000000000,
+                "Retries": 3
+            },
+            "Image": "docker.io/smartgic/ovos-messagebus:testing",
+            "Volumes": null,
+            "WorkingDir": "/home/ovos",
+            "Entrypoint": [
+                "ovos-messagebus"
+            ],
+            "Labels": {
+                "com.docker.compose.config-hash": "6fe7fb479c924e8f84bf6e414996aaec8fc089db49d45db0cfb1a4006e5f9a7b",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "",
+                "com.docker.compose.image": "sha256:5354e2702d11cc47e706e6b7aeaf8afd82a0197fdb24e933ae70484588c08ed5",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "ovos",
+                "com.docker.compose.project.config_files": "/tmp/ovos-docker/compose/docker-compose.yml,/tmp/ovos-docker/compose/docker-compose.raspberrypi.yml,/tmp/ovos-docker/compose/docker-compose.skills.yml",
+                "com.docker.compose.project.working_dir": "/tmp/ovos-docker/compose",
+                "com.docker.compose.service": "ovos_messagebus",
+                "com.docker.compose.version": "5.0.1",
+                "org.opencontainers.image.authors": "Open Voice OS Community",
+                "org.opencontainers.image.base.name": "docker.io/smartgic/ovos-base:testing",
+                "org.opencontainers.image.created": "2026-01-05T16:34:28Z",
+                "org.opencontainers.image.description": "Message bus service, the nervous system of OpenVoiceOS (Python implementation)",
+                "org.opencontainers.image.documentation": "https://openvoiceos.github.io/community-docs",
+                "org.opencontainers.image.licenses": "Apache-2.0",
+                "org.opencontainers.image.ref.name": "docker.io/smartgic/ovos-messagebus:testing",
+                "org.opencontainers.image.revision": "55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c",
+                "org.opencontainers.image.source": "https://github.com/OpenVoiceOS/ovos-docker",
+                "org.opencontainers.image.title": "Open Voice OS OCI message bus image",
+                "org.opencontainers.image.url": "https://openvoiceos.github.io/ovos-docker",
+                "org.opencontainers.image.vendor": "Open Voice OS",
+                "org.opencontainers.image.version": "testing"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "5a3fb20e2f46b168a43396202091dbd357f9679b0252670f12137de95d0d2740",
+            "SandboxKey": "/var/run/docker/netns/default",
+            "Ports": {},
+            "Networks": {
+                "host": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "648a50703af6bcf5bcdf0a584e34ac6b4e818e04f7e7ed1d9e8fdd060ae9575e",
+                    "EndpointID": "f857f61830c79ac9a8bce40a619f67c4e8b0693c583df34152f20e9c0b141870",
+                    "Gateway": "",
+                    "IPAddress": "",
+                    "MacAddress": "",
+                    "IPPrefixLen": 0,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:daf7a7cad54dd96a0122b88ce50cfb7595c8d5120c6d4e3a38c7e0f208fe2b5b",
+            "size": 2009,
+            "platform": {
+                "architecture": "arm64",
+                "os": "linux"
+            }
+        }
+    }
+]

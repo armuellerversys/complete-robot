@@ -1,0 +1,16 @@
+FROM smartgic/ovos-base:testing
+
+USER ovos
+RUN . ~/.venv/bin/activate && pip install flask ovos_bus_client
+
+
+# Only need the one server script now
+COPY voice_server.py /home/ovos/voice_server.py
+# COPY test.py /home/ovos/test.py
+# COPY test.py ~/test.py
+
+WORKDIR /home/ovos
+
+USER ovos
+# Using the persistent bus connection logic
+CMD ["/home/ovos/.venv/bin/python3", "/home/ovos/voice_server.py"]

@@ -1,0 +1,16 @@
+
+## stop the Python process
+ps -ef | grep python
+kill <pid>
+
+
+### Clear Python cache
+cd ~
+sudo find . -type d -name "__pycache__" -exec rm -rf {} +
+
+sudo find . -size 0 -delete
+
+rm -rf hailo_model_zoo
+
+import os
+print("CWD:", os.getcwd())

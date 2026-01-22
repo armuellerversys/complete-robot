@@ -1,0 +1,5 @@
+/etc/dnsmasq.conf
+/etc/hostapd/hostapd.conf
+/etc/dhcpcd.conf
+/etc/sysctl.conf
+/etc/resolv.conf

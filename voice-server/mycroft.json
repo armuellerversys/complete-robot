@@ -1,0 +1,83 @@
+{
+  "log_level": "INFO",
+  "logs": {
+    "path": "stdout"
+  },
+  "play_wav_cmdline": "play %1",
+  "play_mp3_cmdline": "play %1",
+  "lang": "en-US",
+  "hotwords":{
+    "hey_k9":{
+        "active": true,
+        "listen": true,
+        "module": "ovos-ww-plugin-precise-lite",
+        "sound": "/home/ovos/.config/mycroft/audio/beep-1082.wav",
+        "model": "/home/ovos/.config/mycroft/audio/tflite/hey_k9.tflite",
+        "expected_duration": 3,
+        "trigger_level": 1,
+        "sensitivity": 0.7,
+        "fallback_ww": "hey_mycroft_precise"
+    },
+    "hey mycroft": {
+      "module": "ovos-ww-plugin-vosk",
+      "active": false
+    }
+  },
+  "listener": {
+    "wake_word": "hey_k9",
+    "VAD": {
+      "module": "ovos-vad-plugin-silero"
+    }
+  },
+  "skills": {
+    "installer": {
+      "allow_pip": true,
+      "allow_alphas": true
+    }
+  },
+  "gui": {
+    "disable_gui": false
+  },
+  "websocket": {
+    "max_msg_size": 25
+  },
+  "PHAL": {
+    "admin": {
+      "ovos-PHAL-plugin-system": {
+        "enabled": true
+      }
+    }
+  },
+  "open_data": {
+    "intent_urls": [
+      "https://metrics.tigregotico.pt/intents"
+    ]
+  },
+  "tts": {
+    "module": "ovos-tts-plugin-piper",
+    "ovos-tts-plugin-piper": {
+      "voice": "en_US-amy-low",
+      "model_dir": "/home/ovos/.local/share/piper/voices/en_US"
+    }
+  },
+  "stt": {
+    "ovos-stt-plugin-server": {},
+    "module": "ovos-stt-plugin-server",
+    "fallback_module": ""
+  },
+  "metrics": {
+    "enabled": false
+  },
+  "system_unit": "imperial",
+  "temperature_unit": "fahrenheit",
+  "precipitation_unit": "inch",
+  "windspeed_unit": "mph",
+  "time_format": "half",
+  "spoken_time_format": "half",
+  "date_format": "MDY",
+  "intents": {
+    "ovos-m2v-pipeline": {
+      "model": "Jarbas/ovos-model2vec-intents-potion-32M"
+    }
+  }
+}

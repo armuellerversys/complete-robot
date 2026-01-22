@@ -1,0 +1,12 @@
+FROM smartgic/ovos-audio:testing
+
+USER root
+# Install espeak-ng so Piper can process text
+RUN apt-get update && \
+    apt-get install -y  python3-espeak espeak-ng && \
+    rm -rf /var/lib/apt/lists/*
+
+USER ovos
+# Ensure the Piper plugin is installed in the venv
+RUN . ~/.venv/bin/activate && \
+    pip install --no-cache-dir ovos-tts-plugin-piper

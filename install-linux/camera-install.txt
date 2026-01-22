@@ -1,0 +1,66 @@
+## https://techeonics.com/raspberry-pi-camera-module-3-guide/
+## https://python-adv-web-apps.readthedocs.io/en/latest/flask.html
+## https://github.com/raspberrypi/picamera2/tree/main/examples
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+sudo apt install -y libavcodec61
+
+sudo pip3 install --break-system-packages "opencv_python_headless" "opencv_contrib_python_headless"
+
+sudo apt update
+sudo apt-get install libcamera-apps
+sudo apt install python3-picamera2
+
+sudo nano /boot/firmware/config.txt
+    dtoverlay=vc4-kms-v3d,cma-512
+
+libcamera-jpeg -o test.jpg
+
+sudo apt-get install python3-libcamera
+pip3 install --break-system-packages opencv-python
+
+python3 -m pip install werkzeug
+sudo pip3 install --break-system-packages  Click
+
+ModuleNotFoundError: No module named 'werkzeug'
+
+pip3 install vpython
+
+capture_image.py:
+from picamera2 import Picamera2
+picam2 = Picamera2()
+picam2.start()
+picam2.capture_file("image.jpg")
+
+##### install opencv
+## sudo apt install -y libavcodec58
+sudo apt install -y libavcodec61
+
+sudo pip3 install "opencv_python_headless" "opencv_contrib_python_headless"
+
+echo export LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 >> source .bashrc
+pip3 install --break-system-packages  flask
+sudo apt install -y libgfortran5 libatlas3-base
+sudo pip3 install numpy
+
+sudo apt install -y python3-libcamera python3-kms++ libcap-dev
+sudo pip install --break-system-packages --upgrade picamera2
+sudo apt install -y --break-system-packages  python3-picamera2
+sudo apt update && sudo apt install rpicam-apps
+
+sudo ln -s /lib/libhailort.so.4.20.0 /lib/aarch64-linux-gnu/libhailort.so.4.20.0
+
+####sudo pip3 install --break-system-packages  picamera[array]
+
+sudo apt install -y python3-pyqt5 python3-opengl. # Not absolutely sure these are necessary
+
+
+sudo apt-get install python3-matplotlib
+
+realpath file.py
+
+#################################
+Error: Unable to locate package python3-picamera2
+Error: Unable to locate package libcamera-apps

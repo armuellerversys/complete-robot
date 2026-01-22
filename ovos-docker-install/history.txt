@@ -1,0 +1,52 @@
+# debian.sh --arch 'arm64' out/ 'trixie' '@1766966400'
+ENV PATH=/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+RUN /bin/sh -c set -eux;  apt-get update;  apt-get install -y --no-install-recommends   ca-certificates   netbase   tzdata  ;  apt-get dist-clean # buildkit
+ENV GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305
+ENV PYTHON_VERSION=3.13.11
+ENV PYTHON_SHA256=16ede7bb7cdbfa895d11b0642fa0e523f291e6487194d53cf6d3b338c3a17ea2
+RUN /bin/sh -c set -eux;   savedAptMark="$(apt-mark showmanual)";  apt-get update;  apt-get install -y --no-install-recommends   dpkg-dev   gcc   gnupg   libbluetooth-dev   libbz2-dev   libc6-dev   libdb-dev   libffi-dev   libgdbm-dev   liblzma-dev   libncursesw5-dev   libreadline-dev   libsqlite3-dev   libssl-dev   make   tk-dev   uuid-dev   wget   xz-utils   zlib1g-dev  ;   wget -O python.tar.xz "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz";  echo "$PYTHON_SHA256 *python.tar.xz" | sha256sum -c -;  wget -O python.tar.xz.asc "https://www.python.org/ftp/python/${PYTHON_VERSION%%[a-z]*}/Python-$PYTHON_VERSION.tar.xz.asc";  GNUPGHOME="$(mktemp -d)"; export GNUPGHOME;  gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$GPG_KEY";  gpg --batch --verify python.tar.xz.asc python.tar.xz;  gpgconf --kill all;  rm -rf "$GNUPGHOME" python.tar.xz.asc;  mkdir -p /usr/src/python;  tar --extract --directory /usr/src/python --strip-components=1 --file python.tar.xz;  rm python.tar.xz;   cd /usr/src/python;  gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)";  ./configure   --build="$gnuArch"   --enable-loadable-sqlite-extensions   --enable-optimizations   --enable-option-checking=fatal   --enable-shared   $(test "${gnuArch%%-*}" != 'riscv64' && echo '--with-lto')   --with-ensurepip  ;  nproc="$(nproc)";  EXTRA_CFLAGS="$(dpkg-buildflags --get CFLAGS)";  LDFLAGS="$(dpkg-buildflags --get LDFLAGS)";  LDFLAGS="${LDFLAGS:--Wl},--strip-all";   arch="$(dpkg --print-architecture)"; arch="${arch##*-}";   case "$arch" in    amd64|arm64)     EXTRA_CFLAGS="${EXTRA_CFLAGS:-} -fno-omit-frame-pointer -mno-omit-leaf-frame-pointer";     ;;    i386)     ;;    *)     EXTRA_CFLAGS="${EXTRA_CFLAGS:-} -fno-omit-frame-pointer";     ;;   esac;  make -j "$nproc"   "EXTRA_CFLAGS=${EXTRA_CFLAGS:-}"   "LDFLAGS=${LDFLAGS:-}"  ;  rm python;  make -j "$nproc"   "EXTRA_CFLAGS=${EXTRA_CFLAGS:-}"   "LDFLAGS=${LDFLAGS:--Wl},-rpath='\$\$ORIGIN/../lib'"   python  ;  make install;   cd /;  rm -rf /usr/src/python;   find /usr/local -depth   \(    \( -type d -a \( -name test -o -name tests -o -name idle_test \) \)    -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name 'libpython*.a' \) \)   \) -exec rm -rf '{}' +  ;   ldconfig;   apt-mark auto '.*' > /dev/null;  apt-mark manual $savedAptMark;  find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';'   | awk '/=>/ { so = $(NF-1); if (index(so, "/usr/local/") == 1) { next }; gsub("^/(usr/)?", "", so); printf "*%s\n", so }'   | sort -u   | xargs -rt dpkg-query --search   | awk 'sub(":$", "", $1) { print $1 }'   | sort -u   | xargs -r apt-mark manual  ;  apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false;  apt-get dist-clean;   export PYTHONDONTWRITEBYTECODE=1;  python3 --version;  pip3 --version # buildkit
+RUN /bin/sh -c set -eux;  for src in idle3 pip3 pydoc3 python3 python3-config; do   dst="$(echo "$src" | tr -d 3)";   [ -s "/usr/local/bin/$src" ];   [ ! -e "/usr/local/bin/$dst" ];   ln -svT "$src" "/usr/local/bin/$dst";  done # buildkit
+CMD ["python3"]
+ARG BUILD_DATE=unknown
+ARG CHANNEL=alpha
+ARG VERSION=unknown
+ARG IMAGE_REF=ovos-base:alpha
+ARG GIT_SHA=unknown
+LABEL org.opencontainers.image.title=Open Voice OS OCI base image org.opencontainers.image.description=Used as base layer for other OCI images org.opencontainers.image.version=testing org.opencontainers.image.created=2026-01-05T16:34:28Z org.opencontainers.image.documentation=https://openvoiceos.github.io/community-docs org.opencontainers.image.source=https://github.com/OpenVoiceOS/ovos-docker org.opencontainers.image.vendor=Open Voice OS org.opencontainers.image.licenses=Apache-2.0 org.opencontainers.image.authors=Open Voice OS Community org.opencontainers.image.base.name=python:3.13.11-slim-trixie@sha256:56ab277ddf459858f94052252565945c34617c841818faf8f34f6896de06cffe org.opencontainers.image.url=https://openvoiceos.github.io/ovos-docker org.opencontainers.image.ref.name=ovos-base:testing org.opencontainers.image.revision=55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c
+ARG USER=ovos
+ARG USER_UID=1000
+ARG USER_GID=1000
+COPY --chmod=0755 files/ovos-hc.py /usr/local/bin/ovos-hc # buildkit
+ENV DEBIAN_FRONTEND=noninteractive PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1 PIP_NO_CACHE_DIR=1 PIP_DISABLE_PIP_VERSION_CHECK=1
+SHELL [/bin/bash -c]
+RUN |8 BUILD_DATE=2026-01-05T16:34:28Z CHANNEL=testing VERSION=testing IMAGE_REF=ovos-base:testing GIT_SHA=55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c USER=ovos USER_UID=1000 USER_GID=1000 /bin/bash -c printf '%s\n'       'path-exclude=/usr/share/doc/*'       'path-exclude=/usr/share/man/*'       'path-exclude=/usr/share/locale/*'       'path-include=/usr/share/locale/locale.alias'       > /etc/dpkg/dpkg.cfg.d/99no-docs  && apt-get update  && apt-get install -y --no-install-recommends --no-install-suggests       ca-certificates git curl  && apt-get --purge autoremove -y  && rm -rf /usr/share/doc/* /usr/share/man/*  && if [ -d /usr/share/locale ]; then       find /usr/share/locale -mindepth 1 -maxdepth 1 ! -name locale.alias -exec rm -rf {} +;     fi  && rm -rf /var/log/{apt,dpkg.log} /tmp/* /var/tmp/* # buildkit
+RUN |8 BUILD_DATE=2026-01-05T16:34:28Z CHANNEL=testing VERSION=testing IMAGE_REF=ovos-base:testing GIT_SHA=55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c USER=ovos USER_UID=1000 USER_GID=1000 /bin/bash -c groupadd --gid "$USER_GID" "$USER"  && useradd --no-log-init --uid "$USER_UID" --gid "$USER_GID" -m -c "Open Voice OS user" "$USER"  && python -m venv "/home/${USER}/.venv"  && source "/home/${USER}/.venv/bin/activate"  && PIP_NO_CACHE_DIR=0 pip install --upgrade pip setuptools wheel uv  && mkdir -p "/home/${USER}"/.{config,cache,local/{state,share}}/{mycroft,OpenVoiceOS}  && chown "${USER}:${USER}" -R "/home/${USER}" # buildkit
+USER ovos
+ENV OVOS_CHANNEL=testing IS_OVOS_CONTAINER=true PATH=/home/ovos/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin VIRTUAL_ENV=/home/ovos/.venv
+ARG TAG
+ARG REGISTRY
+ARG GIT_SHA=unknown
+HEALTHCHECK &{["CMD-SHELL" "curl --header \"Connection: Upgrade\" --header \"Upgrade: Websocket\" http://127.0.0.1:8181/core || kill 1"] "1m0s" "10s" "1m0s" "0s" '\x03'}
+ARG BUILD_DATE=unknown
+ARG VERSION=unknown
+ARG BASE_IMAGE
+LABEL org.opencontainers.image.title=Open Voice OS OCI message bus image
+LABEL org.opencontainers.image.description=Message bus service, the nervous system of OpenVoiceOS (Python implementation)
+LABEL org.opencontainers.image.version=testing
+LABEL org.opencontainers.image.created=2026-01-05T16:34:28Z
+LABEL org.opencontainers.image.documentation=https://openvoiceos.github.io/community-docs
+LABEL org.opencontainers.image.source=https://github.com/OpenVoiceOS/ovos-docker
+LABEL org.opencontainers.image.vendor=Open Voice OS
+LABEL org.opencontainers.image.licenses=Apache-2.0
+LABEL org.opencontainers.image.authors=Open Voice OS Community
+LABEL org.opencontainers.image.base.name=docker.io/smartgic/ovos-base:testing
+LABEL org.opencontainers.image.url=https://openvoiceos.github.io/ovos-docker
+LABEL org.opencontainers.image.ref.name=docker.io/smartgic/ovos-messagebus:testing
+LABEL org.opencontainers.image.revision=55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c
+ARG USER=ovos
+ARG USER_UID=1000
+ARG USER_GID=1000
+SHELL [/bin/bash -c]
+RUN |9 TAG=testing REGISTRY=docker.io/smartgic GIT_SHA=55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c BUILD_DATE=2026-01-05T16:34:28Z VERSION=testing BASE_IMAGE=ovos-base USER=ovos USER_UID=1000 USER_GID=1000 /bin/bash -c uv pip install ovos-messagebus -c https://raw.githubusercontent.com/OpenVoiceOS/ovos-releases/refs/heads/main/constraints-${OVOS_CHANNEL}.txt # buildkit
+ENTRYPOINT ["ovos-messagebus"]
+WORKDIR /home/ovos

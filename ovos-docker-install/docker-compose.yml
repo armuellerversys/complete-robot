@@ -1,0 +1,137 @@
+services:
+  ovos_messagebus:
+    image: smartgic/ovos-messagebus:testing
+    container_name: ovos_messagebus
+    restart: unless-stopped
+    network_mode: host                # Required for your current setup
+    environment:
+      - TZ=Europe/Berlin
+      - OVOS_BUS_HOST=127.0.0.1       # Listen on local loopback
+    volumes:
+      - ~/ovos/config:/home/ovos/.config/mycroft
+
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.connect(('127.0.0.1', 8181))"]
+      interval: 5s
+      timeout: 2s
+      retries: 5
+
+  ovos_core:
+    image: smartgic/ovos-core:testing
+    container_name: ovos_core
+    restart: unless-stopped
+    network_mode: host                # Must match the bus
+    environment:
+      - TZ=Europe/Berlin
+      - OVOS_BUS_HOST=127.0.0.1       # Look for bus on the host's localhost
+    volumes:
+      - ~/ovos/config:/home/ovos/.config/mycroft
+      - ~/ovos/persistence/core:/home/ovos/.local/share/mycroft
+
+  ## TTS section
+  ovos_audio:
+    image: smartgic/ovos-audio:testing
+    container_name: ovos_audio
+    build:
+      context: .
+      dockerfile: Dockerfile.audio
+    restart: unless-stopped
+    network_mode: host
+    # 1. Add group permissions
+    group_add:
+      - audio
+    depends_on:
+      ovos_messagebus:
+        condition: service_healthy
+    environment:
+      - TZ=Europe/Berlin
+      - OVOS_BUS_HOST=127.0.0.1
+      # 2. Tell the container to use the host's PulseAudio/PipeWire server
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ~/ovos/config:/home/ovos/.config/mycroft
+      - ~/models/phoonnx:/home/ovos/models/phoonnx:ro
+      - ~/ovos/persistence/audio:/home/ovos/.local
+      # 3. Map the PulseAudio socket into the container
+      - /run/user/1000/pulse:/run/user/1000/pulse
+      
+  ## stt section
+  ovos_listener:
+    build: 
+      context: .
+      dockerfile: Dockerfile.listener
+    image: ovos-listener:testing
+    container_name: ovos_listener
+    restart: unless-stopped
+    network_mode: host                # ADD THIS LINE
+    depends_on:
+      ovos_messagebus:
+        condition: service_healthy
+    environment:
+      - TZ=Europe/Berlin              # Changed to match your other services
+      - OVOS_BUS_HOST=127.0.0.1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native
+  
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ~/ovos/config:/home/ovos/.config/mycroft
+      - ~/models/wakewords:/home/ovos/.local/share/mycroft
+      - ~/ovos/persistence/listener:/home/ovos/.local
+      - /run/user/1000/pulse:/run/user/1000/pulse
+
+  ovos_voice_server:
+    build:
+      context: ./voice-server
+      dockerfile: Dockerfile.voice_server
+    container_name: ovos_voice_server
+    restart: "no"
+    network_mode: host
+    environment:
+      - TZ=Europe/Berlin
+      - VOICE_SERVER_PORT=7000
+    volumes:
+      - ~/ovos/sounds:/home/ovos/sounds:ro
+    depends_on:
+      - ovos_messagebus
+
+  ovos_skill_date_time:
+      image: smartgic/ovos-skill-date-time:testing
+      container_name: ovos_skills_date_time
+      restart: unless-stopped
+      volumes:
+        - ~/ovos/config:/home/ovos/.config/mycroft
+        - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft
+      network_mode: host                # ADD THIS LINE
+      depends_on:
+        ovos_messagebus:
+          condition: service_healthy
+      environment:
+        - TZ=Europe/Berlin              # Changed to match your other services
+        - OVOS_BUS_HOST=127.0.0.1
+        - PULSE_SERVER=unix:/run/user/1000/pulse/native
+        - PIP_INSTALL=ovos-skill-date-time
+      devices:
+        - /dev/snd:/dev/snd
+
+  ovos-skill-fallback-unknown:
+      image: smartgic/ovos-skill-fallback-unknown:testing
+      container_name: ovos-skill-fallback-unknown
+      restart: unless-stopped
+      volumes:
+        - ~/ovos/config:/home/ovos/.config/mycroft
+        - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft
+      network_mode: host                # ADD THIS LINE
+      depends_on:
+        ovos_messagebus:
+          condition: service_healthy
+      environment:
+        - TZ=Europe/Berlin              # Changed to match your other services
+        - OVOS_BUS_HOST=127.0.0.1
+        - PULSE_SERVER=unix:/run/user/1000/pulse/native
+        - PIP_INSTALL=ovos-skill-fallback-unknown
+      devices:
+        - /dev/snd:/dev/snd
+    

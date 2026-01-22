@@ -1,0 +1,89 @@
+https://hub.docker.com/u/smartgic
+https://github.com/TigreGotico/phoonnx/blob/dev/VOICES.md
+https://github.com/TigreGotico/phoonnx
+
+https://github.com/OpenVoiceOS/ovos-docker/blob/dev/README.md
+
+https://github.com/OpenVoiceOS/ovos-docker/tree/dev
+
+https://alphacephei.com/vosk/models?utm_source=chatgpt.com
+
+pip install phoonnx
+phoonnx-voices update-cache
+
+# List all supported languages
+phoonnx-voices list-langs
+
+# List all available voices (simple list)
+phoonnx-voices list-voices
+
+# List all voices with detailed info
+phoonnx-voices list-voices --verbose
+
+# List voices for a specific language (e.g., Portuguese)
+phoonnx-voices list-voices --lang en-US
+
+
+phoonnx-voices download piper_en_US-ryan-low
+
+
+docker stop $(docker ps -a -q)
+docker restart $(docker ps -a -q)
+
+docker update --restart=no ovos_core
+docker stop ovos_core
+docker start -ai ovos_core
+
+docker system prune --force --all
+
+docker compose down --remove-orphans
+
+python3 -m venv pvenv/phoonnx
+source pvenv/phoonnx/bin/activate
+
+phoonnx-voices download piper_en_US-sam-medium
+
+docker exec -it ovos_messagebus cat /home/ovos/.config/mycroft/mycroft.conf
+
+docker exec -it ovos_messagebus ss -lnt
+
+docker inspect ovos_messagebus --format '{{json .NetworkSettings.Networks}}'
+docker inspect ovos_core --format '{{json .NetworkSettings.Networks}}'
+
+docker compose up -d --build --force-recreate
+
+python - <<'EOF'
+import socket
+s = socket.socket()
+s.connect(("172.18.0.2", 8181))
+print("Container IP reachable")
+EOF
+
+docker compose down
+rm -rf ~/ovos/persistence/listener
+rm -rf ~/ovos/persistence/audio
+docker compose up -d
+sudo chown -R 1000:1000 ~/ovos
+sudo chown -R 1000:1000 /home/ovos/ovos/config
+sudo chown -R 1000:1000 /home/ovos/ovos/persistence/core
+
+docker exec ovos_messagebus ovos-config get -k /websocket/host
+
+docker exec ovos_core ovos-config get -k /websocket/host
+# ovos_audio
+pip install --break-system-packages  ovos-vad-plugin-silero>=0.1.0
+pip install --break-system-packages  ovos-stt-plugin-fasterwhisper
+
+# ovos_listener
+pip install --break-system-packages ovos-stt-plugin-fasterwhisper
+
+ovos-speak "hello, this is a test"
+ovos-speak "what time is it?"
+ovos-say-to "what time is it?"
+
+## watch the message bus
+docker exec -it ovos_listener /home/ovos/.venv/bin/ovos-listen
+## check what container is actually "hearing" audio
+docker exec -it ovos_listener /home/ovos/.venv/bin/ovos-stdout-test
+
+docker exec ovos_audio which espeak-ng

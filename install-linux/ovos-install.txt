@@ -1,0 +1,277 @@
+
+sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/OpenVoiceOS/ovos-installer/main/installer.sh)"
+
+
+https://openvoiceos.github.io/ovos-technical-manual/
+
+https://openvoiceos.github.io/ovos-docker/about/glossary/components/
+
+https://store.openvoiceos.org/
+
+https://openvoiceos.github.io/ovos-docker/getting-started/docker/
+
+https://openvoiceos.github.io/ovos-docker/getting-started/docker/installation/skills/
+
+https://openvoiceos.github.io/message_spec/   
+   
+https://github.com/OpenVoiceOS/raspOVOS?tab=readme-ov-file
+
+https://openvoiceos.github.io/ovos-technical-manual/51-install_raspovos/
+
+#### ovos imager   ##############################################################
+https://openvoiceos.github.io/ovos-technical-manual/50-ovos_installer/
+
+sh -c "curl -s https://raw.githubusercontent.com/OpenVoiceOS/ovos-installer/main/installer.sh -o installer.sh && chmod +x installer.sh && sudo ./installer.sh && rm installer.sh"
+
+  
+  pip install --break-system-packages ovos_utils  
+ 
+  python3 -m pip install --break-system-packages --upgrade wheel setuptools cython
+  
+  export GGWAVE_USE_CYTHON=True
+  
+  python3 -m pip install  --break-system-packages  -v ggwave
+  
+  pip install --break-system-packages ovos-audio-transformer-plugin-ggwave
+  
+  apt-get install python3-dev
+  pip install pyaudio
+  apt-get install -y build-essential portaudio19-dev 
+  rm -rf /var/lib/apt/lists/*
+  pip install ovos-ww-plugin-precise-lite[tflite]
+  
+################################################################################
+#### activate the virtual environment where OVOS is installed ##################
+
+source ~/.venvs/ovos/bin/activate  
+
+pip install -e .
+ 
+https://github.com/OpenVoiceOS/ovos-skill-word-of-the-day 
+pip3 install --break-system-packages ovos-skill-word-of-the-day
+
+
+sudo nano ~/.config/mycroft/mycroft.conf
+  
+  ######################################################
+  
+   pip3 install --break-system-packages  ovos-utils
+   pip3 install --break-system-packages  ovos-plugin-manager
+   
+  pip3 install --break-system-packages ovos-tts-plugin-piper
+  
+  python -m pip cache purge
+  pip3 install --break-system-package --no-cache-dir ovos-tts-server
+  ovos-tts-server --engine ovos-tts-plugin-piper --port 9666 --host 0.0.0.0
+
+  {
+
+  "tts": {
+    "module": "ovos-tts-plugin-server",
+    "ovos-tts-plugin-server": {
+      "host": "http://127.0.0.1:9666",
+      "v2": true,
+      "verify_ssl": false,
+      "tts_timeout": 5
+    }
+  }
+
+  http://raspovos:9666/synthesize/what%20is%20your%20name
+  
+	ovos-config show          # show joined config (user + system)
+	ovos-config show -u       # show user config only (~/.config/mycroft/mycroft.conf)
+	ovos-config get -k tts    # get the 'tts' section
+	ovos-config get -k /tts/ovos-tts-plugin-piper/voice	 # get a specific value
+  
+  ################################################################################################################
+  
+  pip install --break-system-package ovos-skill-config-tool
+  
+  ovos-skill-config-tool
+  
+  http://raspOVOS:8000
+  
+  ##########################################################################
+  
+  pip install --break-system-package ovos-ww-plugin-openwakeword
+  
+  sudo nano ~/.config/mycroft/mycroft.conf
+
+ovos-config get -k hotwords
+ovos-config get -k listener/wake_word
+ovos-config get
+ovos-cli listen
+
+
+pip install --break-system-packages  ovos-stt-http-server
+pip install  --break-system-packages ovos-stt-plugin-server
+pip uninstall  --break-system-packages ovos-stt-plugin-server
+pip3 install --break-system-packages  --upgrade speechrecognition
+
+nano ~/ovos/config/mycroft.conf | jq
+sudo nano ~/.config/mycroft/mycroft.conf
+
+ovos-stt-server \
+ --engine ovos-stt-plugin-xxx \
+ --lang-engine \
+ --host 0.0.0.0 \
+ --port 9666
+ 
+ 
+ - Hey Johnny, what time is it?                                                      │
+ - Hey ziggy, what is the temperature?                                              │
+ - Hey ziggy, who made you?                                                         │
+ - Hey ziggy, who is Ada Lovelace?                                                  │
+ - Hey ziggy, what would Duke Nukem say?   
+
+https://ovoshatchery.github.io/community-docs/062-config_manual_config/
+
+sh -c "curl -s https://raw.githubusercontent.com/OpenVoiceOS/ovos-installer/main/installer.sh -o installer.sh && chmod +x installer.sh && sudo ./installer.sh && rm installer.sh"
+
+ovos-config --help
+ovos-config show
+ovos-config show --section tts
+ovos-config show --section hotwords
+ovos-config show --section skills
+
+ovos-config set -k tts
+
+ovos-speak "hello, this is a test"
+ovos-say-to "what time is it?"
+ovos-say-to "What's your IP address?"
+ovos-say-to "play the news"
+ovos-say-to "tell me the word of the day"
+ovos-say-to "what is your name?"
+ovos-say-to "How are you?"
+ovos-say-to "Robot stop"
+ovos-say-to "Robot test rainbow"
+ovos-say-to "Robot forward"
+ovos-say-to "Robot backward"
+ovos-say-to "Robot turnright"
+ovos-say-to "Robot turnleft"
+ovos-say-to "who am I tell me about myself"
+
+nano ~/.config/mycroft/mycroft.conf
+
+sudo apt install jq
+###########################################################
+systemctl --user list-units "*ovos*"
+#####################################################################################
+sudo apt install virtualenv python3-virtualenv -y
+virtualenv -p /usr/bin/python3 testpip
+source testpip/bin/activate
+#################################################
+
+systemctl --user start ovos
+sudo systemctl start ovos-phal-admin
+sudo systemctl start ovos-admin-phal
+
+systemctl --user stop ovos
+sudo systemctl stop ovos-phal-admin
+sudo systemctl stop ovos-phal-admin
+
+systemctl --user restart ovos
+
+source ~/.venvs/ovos/bin/activate 
+python setup.py clean --all
+pip uninstall my-robot-skill
+
+pip uninstall my_awesome_skill
+pip uninstall ovos-skill-hello-world
+
+####################################################################################################
+python3 -m venv ~/.venvs/ovos/bin/activate
+source ~/.venvs/ovos/bin/activate
+pip list | grep my_skill_test 
+
+journalctl --user -f -u ovos-core -u ovos-skills -u ovos-messagebus
+
+ls -l /home/ovos/.venvs/ovos/lib/python3.11/site-packages/my_awesome_skill
+
+ls -l /home/ovos/.venvs/ovos/lib/python3.11/site-packages/my_robot_skill
+ls -l /home/ovos/.venvs/ovos/lib/python3.11/site-packages/ovos-skill-hello-world
+
+source ~/.venv/ovos/bin/activate
+pip uninstall my_skill_test
+pip install -e . -v
+
+ssh -v ovos@raspOVOS
+ssh -v user@raspberrypi-4    -> user / Robot25
+
+arecord -f S16_LE -r 16000 -c 1 --duration=5 output.wav
+arecord -v -f S16_LE -r 16000 -c 1 --duration=5 wake_word_sample-14.wav
+aplay wake_word_sample-14.wav
+
+#### install precise-lite-trainer
+# Create a virtual environment (if you haven't already)
+python3 -m venv precise_env
+# Activate it
+source precise_env/bin/activate
+
+
+sudo apt install portaudio19-dev python3-pyaudio
+pip install --break-system-packages precise-lite-runner
+pip install --break-system-packages tensorflow
+pip install --break-system-packages bbopt==1.0
+pip install --break-system-packages wavio
+pip install --break-system-packages pyache
+pip install --break-system-packages click
+
+pip uninstall --break-system-packages precise-lite-runner
+pip uninstall --break-system-packages precise-lite-trainer
+
+pip install --break-system-packages precise-lite-runner==0.4.1
+pip install --break-system-packages precise-lite-trainer==0.0.1a2
+pip install --break-system-packages git+https://github.com/OpenVoiceOS/precise-lite-trainer.git@release-0.0.1a2
+pip install --break-system-packages "tensorflow>=2.2,<2.16"
+pip install --break-system-packages tensorflow==2.15.0
+
+pip install --break-system-packages precise-lite-trainer
+
+sudo apt install portaudio19-dev python3-pyaudio
+https://github.com/OpenVoiceOS/precise-lite?tab=readme-ov-file
+git clone https://github.com/OpenVoiceOS/precise-lite-trainer.git
+sudo pip install --break-system-packages -e . -v
+
+
+pip install --break-system-packages flask
+pip install --break-system-packages ovos-bus-client
+
+pip install ovos-tts-plugin-mimic3
+
+
+
+https://community.rhasspy.org/t/mycroft-precise-installation-and-use/628
+#####################################################################################################
+source ~/.venvs/ovos/bin/activate
+
+python -m unittest discover test
+
+https://github.com/OpenVoiceOS/precise-lite-models/blame/master/wakewords/en/hey_k9.tflite
+https://github.com/MycroftAI/precise-data/raw/models-dev/hey-mycroft.tar.gz
+https://github.com/MycroftAI/precise-data/raw/models-dev/hey-k9.tar.gz
+
+https://github.com/OpenVoiceOS/precise-lite-models/raw/refs/heads/master/wakewords/en/hey_k9.tflite
+https://github.com/OpenVoiceOS/precise-lite-models/tree/master/wakewords/en/hey_k9.tflite
+
+########################################################################################################
+apt-get 
+mkdir -p  ~/ovos_data/models
+wget https://raw.githubusercontent.com/OpenVoiceOS/precise-lite-models/master/wakewords/en/hey_k9.tflite -O ~/ovos_data/models/hey_k9.tflite
+ls -lh ~/ovos_data/ovos_models/hey_k9.tflite
+file ~/ovos_data/ovos_models/hey_k9.tflite
+
+#####################################################################################################
+cat ~/.config/mycroft/mycroft.conf
+
+source /home/ovos/.venv/bin/activate
+pip download ovos-tts-plugin-piper
+
+https://rhasspy.github.io/piper-samples/#en_US-hfc_male-medium
+cd /home/ovos/.local/share/piper/voices/en_US
+curl -L -O https://huggingface.co/rhasspy/piper-voices/resolve/v1.0.0/en/en_US/kathleen/low/en_US-kathleen-low.onnx?download=true
+curl -L -O https://huggingface.co/csukuangfj/vits-piper-en_US-ryan-low/resolve/main/en_US-ryan-low.onnx.json?download=true
+curl -L -O https://huggingface.co/csukuangfj/vits-piper-en_US-ryan-medium/resolve/main/en_US-ryan-medium.onnx?download=true
+curl -L -O https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/bryce/medium/en_US-bryce-medium.onnx.json?download=true
+
+realpath file.py

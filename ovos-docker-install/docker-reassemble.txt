@@ -1,0 +1,114 @@
+docker inspect ovos_messagebus | grep -i image
+docker inspect --format='{{.Config.Image}}' ovos_messagebus
+
+2. Environment variables
+docker inspect --format='{{range .Config.Env}}{{println .}}{{end}}' ovos_messagebus
+
+3. Entrypoint and CMD
+docker inspect --format='{{.Config.Entrypoint}} {{.Config.Cmd}}' ovos_messagebus
+
+4. Exposed ports
+docker inspect --format='{{.Config.ExposedPorts}}' ovos_messagebus
+
+5. Working directory
+docker inspect --format='{{.Config.WorkingDir}}' ovos_messagebus
+
+6. Volumes
+docker inspect --format='{{.Config.Volumes}}' ovos_messagebus
+
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+  ghcr.io/laniksj/dfimage 5354e2702d11
+
+docker history --no-trunc 5354e2702d11
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock alpine/dfimage 5354e2702d11
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/red5d/docker-autocompose <container_id_or_name>
+
+docker run --rm -v /var/run/docker.sock:/var/run/docker.sock ghcr.io/red5d/docker-autocompose ovos_messagebus
+docker-compose.yml:
+services:
+  ovos_messagebus:
+
+    container_name: "ovos_messagebus"
+
+    entrypoint:
+      - "ovos-messagebus"
+
+    environment:
+      - "TZ=Europe/Berlin"
+      - "PATH=/home/ovos/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      - "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305"
+      - "PYTHON_VERSION=3.13.11"
+      - "PYTHON_SHA256=16ede7bb7cdbfa895d11b0642fa0e523f291e6487194d53cf6d3b338c3a17ea2"
+      - "DEBIAN_FRONTEND=noninteractive"
+      - "PYTHONUNBUFFERED=1"
+      - "PYTHONDONTWRITEBYTECODE=1"
+      - "PIP_NO_CACHE_DIR=1"
+      - "PIP_DISABLE_PIP_VERSION_CHECK=1"
+      - "OVOS_CHANNEL=testing"
+      - "IS_OVOS_CONTAINER=true"
+      - "VIRTUAL_ENV=/home/ovos/.venv"
+
+    hostname: "ovos_messagebus"
+
+    image: "docker.io/smartgic/ovos-messagebus:testing"
+
+    ipc: "private"
+
+    labels:
+      com.docker.compose.config-hash: "6fe7fb479c924e8f84bf6e414996aaec8fc089db49d45db0cfb1a4006e5f9a7b"
+      com.docker.compose.container-number: "1"
+      com.docker.compose.depends_on: ""
+      com.docker.compose.image: "sha256:5354e2702d11cc47e706e6b7aeaf8afd82a0197fdb24e933ae70484588c08ed5"
+      com.docker.compose.oneoff: "False"
+      com.docker.compose.project: "ovos"
+      com.docker.compose.project.config_files: "/tmp/ovos-docker/compose/docker-compose.yml,/tmp/ovos-docker/compose/docker-compose.raspberrypi.yml,/tmp/ovos-docker/compose/docker-compose.skills.yml"
+      com.docker.compose.project.working_dir: "/tmp/ovos-docker/compose"
+      com.docker.compose.service: "ovos_messagebus"
+      com.docker.compose.version: "5.0.1"
+      org.opencontainers.image.authors: "Open Voice OS Community"
+      org.opencontainers.image.base.name: "docker.io/smartgic/ovos-base:testing"
+      org.opencontainers.image.created: "2026-01-05T16:34:28Z"
+      org.opencontainers.image.description: "Message bus service, the nervous system of OpenVoiceOS (Python\
+        \ implementation)"
+      org.opencontainers.image.documentation: "https://openvoiceos.github.io/community-docs"
+      org.opencontainers.image.licenses: "Apache-2.0"
+      org.opencontainers.image.ref.name: "docker.io/smartgic/ovos-messagebus:testing"
+      org.opencontainers.image.revision: "55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c"
+      org.opencontainers.image.source: "https://github.com/OpenVoiceOS/ovos-docker"
+      org.opencontainers.image.title: "Open Voice OS OCI message bus image"
+      org.opencontainers.image.url: "https://openvoiceos.github.io/ovos-docker"
+      org.opencontainers.image.vendor: "Open Voice OS"
+      org.opencontainers.image.version: "testing"
+
+    logging:
+      driver: "json-file"
+      options:
+        max-buffer-size: "4m"
+        max-file: "1"
+        max-size: "200m"
+        mode: "non-blocking"
+
+    network_mode: "host"
+
+    restart: "unless-stopped"
+
+    security_opt:
+      - "label=disable"
+
+    user: "ovos"
+
+    volumes:
+      - "/home/ovos/ovos/config:/home/ovos/.config/mycroft:ro"
+      - "/home/ovos/ovos/tmp:/tmp/mycroft"
+      - "ovos_local_state:/home/ovos/.local/state/mycroft"
+
+    working_dir: "/home/ovos"
+
+version: "3.6"
+
+volumes:
+  ovos_local_state:
+    external: true

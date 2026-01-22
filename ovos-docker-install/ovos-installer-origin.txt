@@ -1,0 +1,23 @@
+docker exec ovos_messagebus ovos-config get -k /websocket/host
+Value: 0.0.0.0, found in /websocket/host
+Value: 0.0.0.0, found in /gui_websocket/host
+
+ docker exec -it ovos_messagebus python3 -c "import socket; s=socket.socket(); print('SUCCESS' if s.connect_ex(('172.18.0.2', 8181))==0 else 'STILL_FAILED')"
+STILL_FAILED
+
+docker logs ovos_messagebus --tail 20
+2026-01-13 18:59:05.761 - bus - ovos_messagebus.__main__:main:46 - INFO - Starting message bus service...
+2026-01-13 18:59:05.762 - bus - ovos_messagebus.load_config:load_message_bus_config:33 - INFO - Loading message bus configs
+2026-01-13 18:59:05.858 - bus - ovos_messagebus.__main__:on_ready:32 - INFO - Message bus service started!
+2026-01-13 18:59:11.836 - bus - ovos_config.config:_on_file_change:318 - INFO - /home/ovos/.config/mycroft/web_cache.json changed on disk
+2026-01-13 18:59:18.137 - bus - ovos_config.config:_on_file_change:318 - INFO - /home/ovos/.config/mycroft/mycroft.conf changed on disk
+
+
+docker exec -it ovos_core curl -I http://ovos_messagebus:8181/core
+curl: (6) Could not resolve host: ovos_messagebus
+
+docker inspect ovos_messagebus --format '{{json .NetworkSettings.Networks}}'
+{"host":{"IPAMConfig":null,"Links":null,"Aliases":null,"DriverOpts":null,"GwPriority":0,"NetworkID":"648a50703af6bcf5bcdf0a584e34ac6b4e818e04f7e7ed1d9e8fdd060ae9575e","EndpointID":"9b413f0f8cd0c96b67fd26d75277b7443d5d0c614a40b1aa529b00830e549711","Gateway":"","IPAddress":"","MacAddress":"","IPPrefixLen":0,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":null}}
+
+docker inspect ovos_core --format '{{json .NetworkSettings.Networks}}'
+{"host":{"IPAMConfig":null,"Links":null,"Aliases":null,"DriverOpts":null,"GwPriority":0,"NetworkID":"648a50703af6bcf5bcdf0a584e34ac6b4e818e04f7e7ed1d9e8fdd060ae9575e","EndpointID":"93179d4c31523ab340862b7689610df483bf5661f48b170a2636a225413c6c50","Gateway":"","IPAddress":"","MacAddress":"","IPPrefixLen":0,"IPv6Gateway":"","GlobalIPv6Address":"","GlobalIPv6PrefixLen":0,"DNSNames":null}}

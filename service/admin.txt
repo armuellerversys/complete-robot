@@ -1,0 +1,10 @@
+
+sudo systemctl daemon-reload
+sudo systemctl restart menu_server.service
+
+sudo systemctl stop menu_server.service
+
+journalctl -u menu_server.service -f
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now hailo-web-diagnostics

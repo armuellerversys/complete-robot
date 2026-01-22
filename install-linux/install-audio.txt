@@ -1,0 +1,159 @@
+
+https://wiki.seeedstudio.com/respeaker_2_mics_pi_hat_raspberry_v2
+
+https://www.amazon.de/CTRICALVER-Lautsprecher-JST-PH2-0-PinSchnittstelle-Elektronischer/dp/B09ZY1YJP6/ref=asc_df_B09ZY1YJP6?tag=bingshoppin0b-21&linkCode=df0&hvadid=79852223419884&hvnetw=o&hvqmt=e&hvbmt=be&hvdev=c&hvlocint=&hvlocphy=&hvtargid=pla-4583451688340347&psc=1&msclkid=44cc9ea7cf601d67f5f0f683184ebc40
+
+
+
+Step 1: Get Device Tree Source (DTS) for the ReSpeaker 2-Mics Pi HAT (V2.0), compile it and install the device tree overlay.
+
+curl https://raw.githubusercontent.com/Seeed-Studio/seeed-linux-dtoverlays/refs/heads/master/overlays/rpi/respeaker-2mic-v2_0-overlay.dts -o respeaker-2mic-v2_0-overlay.dts
+dtc -I dts respeaker-2mic-v2_0-overlay.dts -o respeaker-2mic-v2_0-overlay.dtbo
+sudo dtoverlay respeaker-2mic-v2_0-overlay.dtbo
+sudo cp respeaker-2mic-v2_0-overlay.dtbo /boot/firmware/overlays
+
+
+Step 2: Edit /boot/firmware/config.txt and add the following lines:
+sudo nano /boot/firmware/config.txt 
+dtoverlay=respeaker-2mic-v2_0-overlay
+dtoverlay=i2s-mmap
+
+git clone https://github.com/respeaker/seeed-voicecard.git
+cd seeed-voicecard
+sudo ./install.sh
+sudo reboot now
+
+
+aplay -L
+aplay -lcd audio
+
+arecord -D hw:0,0 -f S16_LE -r 16000 -v --dump-hw-params
+arecord -f S24_LE -c 0 -r 192000 -d 20 test.wav
+arecord -f S24_LE  -r 192000 -d 20 test.wav
+
+Default Audio Device
+sysdefault:CARD=vc4hdmi1
+
+aplay -Dplayback /usr/share/sounds/alsa/Front_Left.wav
+
+aplay -D hw:2,0 Rear_Right.wav
+aplay -D hw:2,0 -c 1 Rear_Right_stereo.wav
+
+
+git clone https://github.com/respeaker/mic_hat.git
+cd mic_hat
+sudo apt-get install --break-system-packages portaudio19-dev libatlas-base-dev
+pip3 install --break-system-packages -r requirements.txt
+
+git clone https://github.com/respeaker/seeed-voicecard.git
+cd seeed-voicecard
+sudo ./install.sh
+sudo reboot now
+
+pip install --break-system-packages sounddevice
+pip install --break-system-packages soundfile
+pip install --break-system-packages snumpy
+
+cat /proc/asound/cards
+aplay -D hw:0,0 -c 1 Rear_Right_stereo.wav
+aplay Rear_Right_stereo.wavapl
+
+sudo
+aplay -f cd -D hw:2,0 file.wav
+aplay -D plughw:2,0 test01.wav
+
+amixer -c 1 sset 'Speaker' 100%
+amixer -c 1 sset 'Capture' 100%
+
+speaker-test -c2 -t wav
+
+arecord -l
+arecord -f cd test.wav
+arecord -D plughw:0,0 -f cd test.wav
+aplay test.wav
+arecord -D plughw:2,0 -f cd | aplay
+
+sudo apt-get install asunder lame
+arecord -v -f cd -t raw | lame -r - output.mp3
+
+amixer -c 0 scontrols
+
+###################
+https://wiki.ubuntuusers.de/Alsamixer/
+alsamixer -c 0
+
+sudo alsactl store
+
+sudo apt install ffmpeg
+pip3 install --break-system-packages sounddevice pydub numpy
+
+aplay /usr/share/sounds/alsa/Front_Center.wav
+
+### ovos
+
+https://openvoiceos.github.io/ovos-technical-manual/50-ovos_installer/
+
+### mycroft
+https://mycroft-ai.gitbook.io/docs/using-mycroft-ai/get-mycroft/linux
+cd ~/
+git clone https://github.com/MycroftAI/mycroft-core.git
+cd mycroft-core
+bash dev_setup.sh
+
+sudo sh -c "$(curl -fsSL https://raw.githubusercontent.com/OpenVoiceOS/ovos-installer/main/installer.sh)"
+
+amixer -c 2 scontrols
+
+###################################################
+alsamixer -c 0
+
+amixer controls
+aplay -l
+
+amixer cget numid=3
+
+
+amixer cset numid=3 50%,100%
+
+amixer cset numid=1,iface=MIXER,name='Capture Volume' 45000
+
+amixer cset numid=3 40%
+
+amixer set 'Master' 100% unmute
+
+sudo alsactl store
+#############################################################
+
+pip install --break-system-packages precise-lite-trainer
+
+arecord -D plughw:0,0 -f S16_LE  -r 16000 | aplay -f S16_LE  -r 16000
+arecord -D plughw:0,0 -f S16_LE  -r 16000 test.wav
+
+aplay -f S16_LE  -r 16000  test.wav
+
+amixer -c seeed2micvoicec sset 'Master Playback Switch' on
+amixer -c seeed2micvoicec sset 'Master Playback Volume' 80%
+
+amixer -c seeed2micvoicec scontrols
+amixer -c seeed2micvoicec scontents
+
+sudo rm -r /home/ovos/.config/pulse/cookie
+
+amixer -c seeed2micvoicec sset 'Left Line Mixer DACL1' on
+amixer -c seeed2micvoicec sset 'Right Line Mixer DACR1' on
+amixer -c seeed2micvoicec sset Line on
+
+amixer -c seeed2micvoicec sset 'Line DAC' 100%
+amixer -c seeed2micvoicec sset 'PCM' 100%
+amixer -c seeed2micvoicec sset Line 100%
+sudo alsactl store
+sudo systemctl restart alsa-restore
+
+sudo nano /etc/systemd/system/respeaker-mixer.service
+sudo chmod +x /usr/local/bin/respeaker-mixer.sh
+
+amixer -c seeed2micvoicec sget 'Left Line Mixer DACL1'
+
+aplay /usr/share/sounds/alsa/Front_Center.wav
+
+sudo alsactl store

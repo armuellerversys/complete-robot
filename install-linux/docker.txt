@@ -1,0 +1,145 @@
+
+docker exec -ti ovos_core /bin/bash
+
+sudo ovos-config autoconfigure --male --lang en
+
+docker context create ovos-docker --docker "host=ovos@ovos_core"
+docker context create my-context --description "ovos-docker" --docker "host=ovos@ovos_core"
+
+docker logs ovos_core
+docker exec ovos-core ovos-config --help
+
+docker exec ovos_core ovos-config
+
+docker exec ovos_core ovos-config get location
+docker exec ovos_core ovos-config set --key location.city "Gechingen"
+docker exec ovos_core ovos-config set mycroft.location.country.code "DE"
+docker exec ovos_core ovos-config set mycroft.location.timezone.code "Europe/Berlin"
+
+docker exec ovos_core ovos-config show
+
+docker exec --interactive --tty ovos_cli ovos-speak "hello world"
+
+
+docker cp /home/ovos/tflite ovos_core:/home/ovos/audio
+docker cp /home/ovos/tflite ovos_listener:/home/ovos/audio
+docker cp ovos_core:/home/ovos/.config/mycroft/mycroft.com /home/ovos/config
+
+docker cp /home/ovos/python/voice-server/install_piper.sh ovos_audio:/home/ovos/audio
+
+docker cp /home/ovos/tflite ovos_core:/home/ovos/audio
+
+docker cp my-skill-test ovos_listener:/home/ovos/python
+docker cp my-skill-test ovos_core:/home/ovos/python
+
+docker cp my-skill-test ovos_core:/home/ovos/python
+
+docker cp /home/ovos/audio ovos_core:/home/ovos/.config/mycroft/audio
+
+docker cp /home/ovos/python/voice-server/install_piper_models.sh ovos_audio:/home/ovos/audio
+
+docker cp sendUtterance.py ovos_core:/home/ovos/python/my-skill-test/test/sendUtteranceGemini.py
+
+/home/ovos/ovos_data/models
+
+~/ovos_data/ovos_models/hey_k9.tflite
+
+docker logs -f ovos_listener
+docker logs -f ovos_core
+docker logs -f ovos_audio
+
+2025-08-06 15:19:50.086 
+
+truncate -s 0 /var/lib/docker/containers/ovos_audio/ovos_audio-json.log
+
+docker ps -q | while read cid; do truncate -s 0 /var/lib/docker/containers/$cid/$cid-json.log; done
+
+
+find . -name "mycroft.conf"
+
+exec ovos_core ovos-install-skill https://github.com/ovos-skills/skill-example
+
+docker exec -it ovos_core bash
+docker exec -it ovos_listener bash
+docker exec -it ovos_audio bash
+
+docker exec -it --user root ovos_core bash
+docker exec -it --user root ovos_listener bash
+-> source /home/ovos/.venv/bin/activate
+-> which python
+
+docker restart ovos_core
+
+docker container list --all --filter 'name=ovos'
+
+docker kill $(docker ps -q)
+docker restart $(docker ps -a -q)
+docker stop $(docker ps -a -q)
+docker start $(docker ps -a -q)
+
+apt-get update
+ls -l -a
+sudo apt-get install nano
+
+find / -name listener.log 2>/dev/null
+
+curl -I https://raw.githubusercontent.com/OpenVoiceOS/precise-lite-models/master/wakewords/en/hey_k9.tflite
+
+docker exec -it ovos_core tail -f /home/ovos/.local/state/mycroft/skills.log
+
+docker exec -it ovos_core ovos-say-to "what is your name?"
+
+sudo su - 
+
+sudo docker inspect --format='{{.LogPath}}' ovos_core
+## clean log files
+sudo journalctl -xu docker.service
+## clean all log files
+sudo sh -c 'truncate -s 0 /var/lib/docker/containers/*/*-json.log'
+
+LOG_PATH=$(sudo docker inspect --format='{{.LogPath}}' <container_name_or_id>)
+
+docker logs ovos_core | grep "hey_k9"
+docker logs ovos_listener | grep "hey_k9"
+docker logs ovos_core | grep "my-skill-test.openvoiceos"
+
+docker network connect <network_name> ovos_audio
+docker network connect <network_name> ovos_ttsdocker run --rm busybox ping -c 3 8.8.8.8
+docker run --rm busybox nslookup google.com
+
+ip addr show docker0
+ip route
+sudo iptables -t nat -L -n -v
+
+
+sudo systemctl restart docker
+
+docker network ls
+docker network inspect <network_name>
+docker network connect <network_name> ovos_audio
+docker network connect <network_name> ovos_tts
+
+-> Switch to a local TTS plugin (simpler)
+docker exec -it --user root ovos_audio bash
+apt update && apt install build-essential
+apt-get install python-dev-is-python3
+pip install ovos-tts-plugin-mimic3
+
+myconfig.conf
+"tts": {
+  "module": "ovos-tts-plugin-mimic3",
+  "ovos-tts-plugin-mimic3": {
+    "voice": "en_US/vctk_low"
+  }
+}
+
+### set sound volumne
+speaker-test -c2 -twav
+amixer cset numid=3 40%
+
+# install ovos-tts-plugin-mimic3
+apt-get update
+apt-get install -y libasound-dev libsndfile1-dev
+source /home/ovos/.venv/bin/activate
+pip install --upgrade --no-cache-dir ovos-tts-plugin-mimic3
+docker restart ovos_audio

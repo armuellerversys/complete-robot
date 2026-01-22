@@ -1,0 +1,23 @@
+FROM smartgic/ovos-listener:testing
+
+USER root
+RUN apt-get update && \
+    apt-get install -y gcc g++ python3-espeak espeak-ng python3-dev libasound2-dev libportaudio2 portaudio19-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+USER ovos
+RUN . ~/.venv/bin/activate && \
+    pip install --no-cache-dir \
+    ovos-ww-plugin-precise-lite[tflite] \
+    ovos-ww-plugin-vosk \
+    ovos-tts-plugin-piper \
+    ovos-stt-plugin-vosk
+
+# --- Critical Patches for Python 3.13 ---
+
+# 1. Fix NumPy 'fromstring' in Precise
+RUN sed -i 's/np.fromstring/np.frombuffer/g' ~/.venv/lib/python3.13/site-packages/precise_lite_runner/util.py
+
+# This version uses regex to find the function and replaces whatever is in the 
+# brackets with (*args, **kwargs) to ensure it never misses an argument again.
+RUN find ~/.venv/lib/python3.13/site-packages/ -name "*.py" -exec sed -i 's/def found_wake_word(self.*):/def found_wake_word(self, *args, **kwargs):/g' {} +

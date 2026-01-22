@@ -1,0 +1,38 @@
+services:
+  camera_ai:
+    build: .
+    image: minimal-camera2-ovos
+    container_name: picamera_hailo_ovos
+    privileged: true
+    # network mode used by ovos
+    network_mode: "host"
+
+    devices:
+      - /dev/dri:/dev/dri
+      - /dev/hailo0:/dev/hailo0
+      - /dev/i2c-1:/dev/i2c-1
+
+    volumes:
+      # Camera (Pi 5 requirements)
+      - /sys:/sys:ro
+      - /run/udev:/run/udev:ro
+      - /sys/class/hailo_chardev:/sys/class/hailo_chardev:ro
+      
+      - /lib/libhailort.so.4.23.0:/lib/libhailort.so.4.23.0:ro
+      - /lib/libhailort.so.4.23.0:/lib/libhailort.so:ro
+      - /usr/lib/aarch64-linux-gnu/hailo:/usr/lib/aarch64-linux-gnu/hailo:ro
+      - /usr/lib/python3/dist-packages/hailo_platform:/usr/lib/python3/dist-packages/hailo_platform:ro
+      - /usr/bin/hailortcli:/usr/bin/hailortcli:ro
+
+      # Hailo CLI
+      - /usr/bin/hailortcli:/usr/bin/hailortcli:ro
+
+    environment:
+      - HAILO_MONITOR=1
+      - LIBCAMERA_IPA_PATH=/usr/lib/aarch64-linux-gnu/libcamera/ipa
+      - LD_LIBRARY_PATH=/usr/lib/aarch64-linux-gnu/hailo
+      - OVOS_BUS_HOST=127.0.0.1
+      - OVOS_BUS_PORT=8181
+
+    tty: true
+    stdin_open: true

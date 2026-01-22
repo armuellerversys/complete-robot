@@ -1,0 +1,345 @@
+[
+    {
+        "Id": "3c1aabde13b1c7474317b096d88bcc35fd280291ca810cb00f4cb11118fe1daa",
+        "Created": "2026-01-13T18:39:16.548766797Z",
+        "Path": "/bin/bash",
+        "Args": [
+            "/usr/local/bin/entrypoint.sh"
+        ],
+        "State": {
+            "Status": "running",
+            "Running": true,
+            "Paused": false,
+            "Restarting": false,
+            "OOMKilled": false,
+            "Dead": false,
+            "Pid": 1709,
+            "ExitCode": 0,
+            "Error": "",
+            "StartedAt": "2026-01-14T15:33:37.252740552Z",
+            "FinishedAt": "2026-01-14T15:33:30.329475538Z"
+        },
+        "Image": "sha256:dea0b070cfd701da0b609a28f2d60fce104e8f10babeac5d6db98973d05ba853",
+        "ResolvConfPath": "/var/lib/docker/containers/3c1aabde13b1c7474317b096d88bcc35fd280291ca810cb00f4cb11118fe1daa/resolv.conf",
+        "HostnamePath": "/var/lib/docker/containers/3c1aabde13b1c7474317b096d88bcc35fd280291ca810cb00f4cb11118fe1daa/hostname",
+        "HostsPath": "/var/lib/docker/containers/3c1aabde13b1c7474317b096d88bcc35fd280291ca810cb00f4cb11118fe1daa/hosts",
+        "LogPath": "/var/lib/docker/containers/3c1aabde13b1c7474317b096d88bcc35fd280291ca810cb00f4cb11118fe1daa/3c1aabde13b1c7474317b096d88bcc35fd280291ca810cb00f4cb11118fe1daa-json.log",
+        "Name": "/ovos_core",
+        "RestartCount": 0,
+        "Driver": "overlayfs",
+        "Platform": "linux",
+        "MountLabel": "",
+        "ProcessLabel": "",
+        "AppArmorProfile": "",
+        "ExecIDs": null,
+        "HostConfig": {
+            "Binds": [
+                "/home/ovos/ovos/config:/home/ovos/.config/mycroft:rw",
+                "/home/ovos/ovos/config/persona:/home/ovos/.config/ovos_persona:rw",
+                "ovos_local_state:/home/ovos/.local/state/mycroft:rw",
+                "ovos_nltk:/home/ovos/nltk_data:rw",
+                "/home/ovos/ovos/share:/home/ovos/.local/share/mycroft:rw",
+                "/run/user/1000/pipewire-0:/run/user/1000/pipewire-0:ro",
+                "/home/ovos/ovos/tmp:/tmp/mycroft:rw",
+                "/run/user/1000/pulse:/run/user/1000/pulse:ro",
+                "/home/ovos/.config/pulse/cookie:/home/ovos/.config/pulse/cookie:ro"
+            ],
+            "ContainerIDFile": "",
+            "LogConfig": {
+                "Type": "json-file",
+                "Config": {
+                    "max-buffer-size": "4m",
+                    "max-file": "1",
+                    "max-size": "200m",
+                    "mode": "non-blocking"
+                }
+            },
+            "NetworkMode": "host",
+            "PortBindings": {},
+            "RestartPolicy": {
+                "Name": "unless-stopped",
+                "MaximumRetryCount": 0
+            },
+            "AutoRemove": false,
+            "VolumeDriver": "",
+            "VolumesFrom": null,
+            "ConsoleSize": [
+                0,
+                0
+            ],
+            "CapAdd": null,
+            "CapDrop": null,
+            "CgroupnsMode": "private",
+            "Dns": [],
+            "DnsOptions": [],
+            "DnsSearch": [],
+            "ExtraHosts": [],
+            "GroupAdd": [
+                "986",
+                "988",
+                "989"
+            ],
+            "IpcMode": "private",
+            "Cgroup": "",
+            "Links": null,
+            "OomScoreAdj": 0,
+            "PidMode": "",
+            "Privileged": false,
+            "PublishAllPorts": false,
+            "ReadonlyRootfs": false,
+            "SecurityOpt": [
+                "label=disable"
+            ],
+            "UTSMode": "",
+            "UsernsMode": "keep-id",
+            "ShmSize": 67108864,
+            "Runtime": "runc",
+            "Isolation": "",
+            "CpuShares": 0,
+            "Memory": 0,
+            "NanoCpus": 800000000,
+            "CgroupParent": "",
+            "BlkioWeight": 0,
+            "BlkioWeightDevice": null,
+            "BlkioDeviceReadBps": null,
+            "BlkioDeviceWriteBps": null,
+            "BlkioDeviceReadIOps": null,
+            "BlkioDeviceWriteIOps": null,
+            "CpuPeriod": 0,
+            "CpuQuota": 0,
+            "CpuRealtimePeriod": 0,
+            "CpuRealtimeRuntime": 0,
+            "CpusetCpus": "",
+            "CpusetMems": "",
+            "Devices": [
+                {
+                    "PathOnHost": "/dev/snd",
+                    "PathInContainer": "/dev/snd",
+                    "CgroupPermissions": "rwm"
+                }
+            ],
+            "DeviceCgroupRules": null,
+            "DeviceRequests": null,
+            "MemoryReservation": 0,
+            "MemorySwap": -1,
+            "MemorySwappiness": null,
+            "OomKillDisable": null,
+            "PidsLimit": null,
+            "Ulimits": null,
+            "CpuCount": 0,
+            "CpuPercent": 0,
+            "IOMaximumIOps": 0,
+            "IOMaximumBandwidth": 0,
+            "MaskedPaths": [
+                "/proc/acpi",
+                "/proc/asound",
+                "/proc/interrupts",
+                "/proc/kcore",
+                "/proc/keys",
+                "/proc/latency_stats",
+                "/proc/sched_debug",
+                "/proc/scsi",
+                "/proc/timer_list",
+                "/proc/timer_stats",
+                "/sys/devices/virtual/powercap",
+                "/sys/firmware"
+            ],
+            "ReadonlyPaths": [
+                "/proc/bus",
+                "/proc/fs",
+                "/proc/irq",
+                "/proc/sys",
+                "/proc/sysrq-trigger"
+            ]
+        },
+        "Storage": {
+            "RootFS": {
+                "Snapshot": {
+                    "Name": "overlayfs"
+                }
+            }
+        },
+        "Mounts": [
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/.config/pulse/cookie",
+                "Destination": "/home/ovos/.config/pulse/cookie",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "volume",
+                "Name": "ovos_local_state",
+                "Source": "/var/lib/docker/volumes/ovos_local_state/_data",
+                "Destination": "/home/ovos/.local/state/mycroft",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "volume",
+                "Name": "ovos_nltk",
+                "Source": "/var/lib/docker/volumes/ovos_nltk/_data",
+                "Destination": "/home/ovos/nltk_data",
+                "Driver": "local",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": ""
+            },
+            {
+                "Type": "bind",
+                "Source": "/run/user/1000/pipewire-0",
+                "Destination": "/run/user/1000/pipewire-0",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/run/user/1000/pulse",
+                "Destination": "/run/user/1000/pulse",
+                "Mode": "ro",
+                "RW": false,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/ovos/tmp",
+                "Destination": "/tmp/mycroft",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/ovos/config",
+                "Destination": "/home/ovos/.config/mycroft",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/ovos/config/persona",
+                "Destination": "/home/ovos/.config/ovos_persona",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            },
+            {
+                "Type": "bind",
+                "Source": "/home/ovos/ovos/share",
+                "Destination": "/home/ovos/.local/share/mycroft",
+                "Mode": "rw",
+                "RW": true,
+                "Propagation": "rprivate"
+            }
+        ],
+        "Config": {
+            "Hostname": "ovos_core",
+            "Domainname": "",
+            "User": "ovos",
+            "AttachStdin": false,
+            "AttachStdout": true,
+            "AttachStderr": true,
+            "Tty": false,
+            "OpenStdin": false,
+            "StdinOnce": false,
+            "Env": [
+                "XDG_RUNTIME_DIR=/run/user/1000",
+                "TZ=Europe/Berlin",
+                "PULSE_SERVER=unix:/run/user/1000/pulse/native",
+                "PULSE_COOKIE=/home/ovos/.config/pulse/cookie",
+                "PATH=/home/ovos/.venv/bin:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                "GPG_KEY=7169605F62C751356D054A26A821E680E5FA6305",
+                "PYTHON_VERSION=3.13.11",
+                "PYTHON_SHA256=16ede7bb7cdbfa895d11b0642fa0e523f291e6487194d53cf6d3b338c3a17ea2",
+                "DEBIAN_FRONTEND=noninteractive",
+                "PYTHONUNBUFFERED=1",
+                "PYTHONDONTWRITEBYTECODE=1",
+                "PIP_NO_CACHE_DIR=1",
+                "PIP_DISABLE_PIP_VERSION_CHECK=1",
+                "OVOS_CHANNEL=testing",
+                "IS_OVOS_CONTAINER=true",
+                "VIRTUAL_ENV=/home/ovos/.venv"
+            ],
+            "Cmd": null,
+            "Healthcheck": {
+                "Test": [
+                    "NONE"
+                ],
+                "Interval": 60000000000,
+                "Timeout": 10000000000,
+                "StartPeriod": 60000000000,
+                "Retries": 3
+            },
+            "Image": "docker.io/smartgic/ovos-core:testing",
+            "Volumes": null,
+            "WorkingDir": "/home/ovos",
+            "Entrypoint": [
+                "/bin/bash",
+                "/usr/local/bin/entrypoint.sh"
+            ],
+            "Labels": {
+                "com.docker.compose.config-hash": "ba38a2c44a9af8f7560d5b83521c2e1be5c033fb6db082a19f8d0ac252de1e4f",
+                "com.docker.compose.container-number": "1",
+                "com.docker.compose.depends_on": "ovos_messagebus:service_started:false,ovos_phal:service_started:false",
+                "com.docker.compose.image": "sha256:dea0b070cfd701da0b609a28f2d60fce104e8f10babeac5d6db98973d05ba853",
+                "com.docker.compose.oneoff": "False",
+                "com.docker.compose.project": "ovos",
+                "com.docker.compose.project.config_files": "/tmp/ovos-docker/compose/docker-compose.yml,/tmp/ovos-docker/compose/docker-compose.raspberrypi.yml,/tmp/ovos-docker/compose/docker-compose.skills.yml",
+                "com.docker.compose.project.working_dir": "/tmp/ovos-docker/compose",
+                "com.docker.compose.service": "ovos_core",
+                "com.docker.compose.version": "5.0.1",
+                "org.opencontainers.image.authors": "Open Voice OS Community",
+                "org.opencontainers.image.base.name": "ovos-sound-base",
+                "org.opencontainers.image.created": "2026-01-05T16:34:28Z",
+                "org.opencontainers.image.description": "The skills service is responsible for loading skills and intent parsers",
+                "org.opencontainers.image.documentation": "https://openvoiceos.github.io/community-docs",
+                "org.opencontainers.image.licenses": "Apache-2.0",
+                "org.opencontainers.image.ref.name": "ovos-core:testing",
+                "org.opencontainers.image.revision": "55c06b516a7c039c8f5b0cbfd0fb7b49c1ae747c",
+                "org.opencontainers.image.source": "https://github.com/OpenVoiceOS/ovos-docker",
+                "org.opencontainers.image.title": "Open Voice OS OCI core image",
+                "org.opencontainers.image.url": "https://openvoiceos.github.io/ovos-docker",
+                "org.opencontainers.image.vendor": "Open Voice OS",
+                "org.opencontainers.image.version": "testing"
+            }
+        },
+        "NetworkSettings": {
+            "SandboxID": "a41091e6bc8844fe0a557a38cc770694c2c2ab98334b37500d40edf3b5e93a38",
+            "SandboxKey": "/var/run/docker/netns/default",
+            "Ports": {},
+            "Networks": {
+                "host": {
+                    "IPAMConfig": null,
+                    "Links": null,
+                    "Aliases": null,
+                    "DriverOpts": null,
+                    "GwPriority": 0,
+                    "NetworkID": "648a50703af6bcf5bcdf0a584e34ac6b4e818e04f7e7ed1d9e8fdd060ae9575e",
+                    "EndpointID": "97d3a281f9ca9b1a36ccf6d3c0b0d48dab0bad67ec4181f796dba94e81db099a",
+                    "Gateway": "",
+                    "IPAddress": "",
+                    "MacAddress": "",
+                    "IPPrefixLen": 0,
+                    "IPv6Gateway": "",
+                    "GlobalIPv6Address": "",
+                    "GlobalIPv6PrefixLen": 0,
+                    "DNSNames": null
+                }
+            }
+        },
+        "ImageManifestDescriptor": {
+            "mediaType": "application/vnd.oci.image.manifest.v1+json",
+            "digest": "sha256:d4450fa39191d6a93f0adc56bc64adba72be7d6f13820071f62cf79a8456baec",
+            "size": 3907,
+            "platform": {
+                "architecture": "arm64",
+                "os": "linux"
+            }
+        }
+    }
+]

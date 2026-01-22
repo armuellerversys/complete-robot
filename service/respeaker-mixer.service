@@ -1,0 +1,10 @@
+[Unit]
+Description=ReSpeaker Mixer Settings
+After=sound.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/respeaker-mixer.sh
+
+[Install]
+WantedBy=multi-user.target

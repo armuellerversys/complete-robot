@@ -1,0 +1,29 @@
+[Unit]
+Description=Robot Menu Server (Flask service)
+After=network.target
+
+[Service]
+# Run as your user (or 'www-data' etc.)
+User=user
+Group=user
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=10s
+StandardOutput=journal
+StandardError=journal
+
+# The working directory (where menu_server.py is located)
+WorkingDirectory=/home/user/python/new-robot-hailo
+
+# Command to start your program
+ExecStart=/usr/bin/python3 /home/user/python/new-robot-hailo/control_server.py
+
+# Optional: keep it running if it crashes
+Restart=always
+RestartSec=5
+
+# Environment variables (optional)
+Environment="PATH=/home/user/.local/bin:/usr/bin"
+
+[Install]
+WantedBy=multi-user.target

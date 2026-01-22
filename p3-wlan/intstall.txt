@@ -1,0 +1,44 @@
+bash rpi-ap-router.sh
+
+sudo systemctl status hostapd
+
+journalctl -xeu hostapd
+
+
+sudo ip link set wlan0 up
+
+
+sudo systemctl stop hostapd
+sudo hostapd -dd /etc/hostapd/hostapd.conf
+
+sudo systemctl restart hostapd
+sudo systemctl status hostapd
+
+sudo systemctl status hostapd
+
+rfkill list all
+sudo rfkill unblock wlan
+
+sudo nano /etc/systemd/system/unblock-wifi.service
+
+
+sudo systemctl enable unblock-wifi.service
+
+
+sudo systemctl edit hostapd
+## see hostapd ##
+
+cat /var/lib/misc/dnsmasq.leases
+
+
+sudo systemctl daemon-reexec
+sudo systemctl daemon-reload
+sudo reboot
+
+ip addr
+
+sudo nano /etc/dnsmasq.conf
+
+sudo systemctl restart dnsmasq
+sudo nmcli connection down PiAccessPoint
+sudo nmcli connection up PiAccessPoint

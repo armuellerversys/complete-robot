@@ -1,0 +1,119 @@
+
+# Linux version
+lsb_release -a
+
+pi-config
+sudo apt-get update
+sudo apt update
+sudo apt full-upgrade -y
+sudo apt install -y software-properties-common
+sudo apt install build-essential
+sudo apt-get update && apt-get install raspi-config
+sudo apt install i2c-tools
+sudo apt install git
+
+sudo apt-get install -y git python3-pip python3-smbus i2c-tools
+sudo apt-get install coreutils
+sudo apt-get install raspi-config
+
+watch -n 5 free -m
+sudo raspi-config
+
+sudo netstat -tulnp | grep 5678
+// kill PID
+sudo kill -9 974
+
+export DEBUG_MODE="true"
+python3 /path/to/your/script.py
+
+# list USB
+lsusb
+
+sudo mkdir /media/usbstick
+sudo blkid -o list -w /dev/null
+sudo mount -t vfat -o utf8,uid=pi,gid=pi,noatime /dev/sda1 /media/usbstick
+sudo mount /dev/sda1 /media/usbstick
+
+sudo adduser user gpio
+
+sudo chown root.gpio /dev/gpiomem
+sudo chmod g+rw /dev/gpiomem
+sudo chmod g+rw /dev/mem
+
+sudo chmod 777 /dev/gpiomemS
+sudo chmod 777 /dev/mem
+
+sudo apt-get install p7zip-full
+
+find /usr/ -iname "haarca*"
+
+ps -fA | grep python
+sudo kill xxxx
+
+sudo apt update
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+sudo apt-get install -y git python3-pip python3-smbus i2c-tools
+pip3 install --break-system-packages  git+https://github.com/orionrobots/Raspi_MotorHAT
+
+pip3 install RPi.GPIO gpiozero
+sudo apt install pigpio python3-pigpio
+
+sudo apt install -y python3-setuptools python3-full
+wget https://github.com/joan2937/pigpio/archive/refs/tags/v79.tar.gz
+tar zxf v79.tar.gz
+cd pigpio-79
+make
+sudo make install
+
+sudo systemctl start pigpiod
+sudo systemctl enable pigpiod
+
+pip3 install --break-system-packages ledshim
+
+sudo i2cdetect -y 1
+
+sudo apt install libatlas3-base libgfortran5
+
+pip3 install matplotlib
+
+pip3 install git+https://github.com/vpython/vpython-jupyter
+
+sudo apt install -y libavcodec58
+
+sudo pip3 install --break-system-packages  "opencv_python_headless" "opencv_contrib_python_headless"
+
+echo export LD_PRELOAD=/usr/lib/arm-linux-gnueabihf/libatomic.so.1 >> source .bashrc
+pip3 install --break-system-packages  flask
+sudo apt install -y libgfortran5 libatlas3-base
+sudo pip3 install --break-system-packages  numpy
+
+sudo pip3 install --break-system-packages vpython 
+
+sudo pip3 install --break-system-packages picamera[array]
+
+// https://github.com/pimoroni/matrix11x7-python
+sudo pip3 install --break-system-packages matrix11x7
+
+*********************************
+Force reinstall Numpy to match binaries
+pip3 uninstall --break-system-packages  numpy --yes
+pip3 install --break-system-packages  --no-binary :all: numpy
+
+Reinstall dependent packages (if problem persists)
+pip3 uninstall --break-system-packages  opencv-python picamera2 --yes
+pip3 install --break-system-packages  opencv-python picamera2
+
+Use a virtual environment
+python3 -m venv camenv
+source camenv/bin/activate
+pip install numpy opencv-python picamera2
+
+************************************
+sudo apt install python3-picamera2 
+
+sudo apt-get install python3-pip
+pip3 install --break-system-packages debugpy
+

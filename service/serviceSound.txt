@@ -1,0 +1,19 @@
+
+sudo systemctl daemon-reload
+sudo systemctl enable respeaker-mixer.service
+sudo systemctl start respeaker-mixer.service
+
+journalctl -u respeaker-mixer.service -f
+
+amixer -c seeed2micvoicec sget 'Left Line Mixer DACL1'
+-> Playback [on]
+
+amixer -c seeed2micvoicec scontents
+
+aplay /usr/share/sounds/alsa/Front_Center.wav
+
+sudo systemctl enable respeaker-capture.service
+sudo systemctl start respeaker-capture.service
+
+arecord -D hw:seeed2micvoicec -r 16000 -c 2 -f S16_LE test.wav
+aplay test.wav

@@ -1,0 +1,66 @@
+ip -brief address show eth0
+ip a
+sudo iw dev wlan0 link 
+
+iwgetid -r
+sudo iw dev wlan0 link
+ip -brief address show wlan0
+ping -c 4 8.8.8.8
+
+- unfiltered view 
+sudo iwlist wlan0 scan | grep -i ssid
+nmcli dev wifi list
+
+sudo nmcli device disconnect wlan0
+sudo nmcli device wifi connect "PiAccessPoint" password "Robot2025"
+
+nmcli connection delete "MueFritz2022"
+nmcli connection delete "MueFritz2022-1"
+
+nmcli con down wlan0 && nmcli con up wlan0
+sudo nmcli connection modify "PiAccessPoint" connection.autoconnect-priority 10
+sudo nmcli connection modify "MueFritz2022" connection.autoconnect-priority 1
+
+
+
+sudo journalctl -u wpa_supplicant --no-pager -f
+arp -n
+sudo wpa_cli -i wlan0 status
+
+## restart client network ##
+sudo systemctl restart dhcpcd.service
+
+
+sudo nano /etc/wpa_supplicant/wpa_supplicant-wlan0.conf
+
+
+sudo nano /usr/local/bin/log-wifi-status.sh
+
+#!/bin/bash
+LOGFILE="/var/log/wifi-status.log"
+
+{
+  echo "==== $(date) ===="
+  iwgetid
+  ip -brief addr show wlan0
+  ip route
+  echo
+} >> "$LOGFILE" 2>&1
+
+sudo chmod +x /usr/local/bin/log-wifi-status.sh
+
+sudo nano /etc/systemd/system/log-wifi-status.service
+
+[Unit]
+Description=Log Wi-Fi SSID and IP at boot
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/log-wifi-status.sh
+
+[Install]
+WantedBy=multi-user.target
+
+
+sudo systemctl enable log-wifi-status.service

@@ -1,0 +1,178 @@
+.content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 10px 5px; /* Reduced horizontal padding to 5px */
+    box-sizing: border-box;
+}
+
+html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+    background: #f4f4f4;
+    font-family: sans-serif;
+}
+
+/* Layout wrapper: sliders on the sides, content in middle */
+.layout {
+    display: flex;
+    height: 100%;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.slider_track {
+    width: 8vw;
+    height: 90vh;
+    border: 1px solid blue;
+    background-color: lightblue;
+}
+.slider_tick {
+    fill: mistyrose;
+}
+#left_slider, #right_slider {
+    /* Use a smaller, responsive width (e.g., 8vw)
+       or a smaller fixed width that's safe on mobile (e.g., 40px) */
+    width: 8vw; /* Reduced fixed width */
+    /* width: 8vw; /* Alternative: Use viewport width */
+    height: 80%;
+    flex-shrink: 0;
+}
+.button {
+    display: block;
+    height: 8vh;
+    text-align: center;
+    font-size: 3vw; 
+    line-height: 8vh; 
+    text-decoration: none;
+    background-color: blue;
+    color: white;
+}
+
+#video {
+    text-align: center;
+}
+
+ /* Video 
+#video img {
+    width: 100%;
+    max-height: 50vh;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 10px auto;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+    */
+
+#video img {
+    margin-top: 5px; 
+    width: 80vmin;
+    height: auto;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 5px auto; 
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.menu {
+    width: 100%;
+    margin-top: 0;
+    margin-bottom: 0;
+    padding: 0;
+}
+
+.menu li {
+    list-style-type: none;
+    list-style-position: initial;
+}
+
+.menu .button {
+    margin-left: auto;
+    margin-right: auto;
+    width: 60vw;
+    border: 1px solid lightblue;
+}
+
+ /* Buttons */
+.button-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 400px;
+    margin: 5px auto;
+}
+
+.button-row .button {
+    flex-grow: 1;
+    margin: 0 5px;
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: normal;
+    cursor: pointer;
+    user-select: none;
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+}
+
+.input-row {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    max-width: 400px;
+    margin: 5px auto; 
+}
+
+.input-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    flex-grow: 1;
+    margin: 0 5px; 
+}
+
+.input-group label {
+    font-size: 0.8em;
+    color: #333;
+    margin-bottom: 2px;
+}
+
+.input-group input[type="number"] {
+    width: 100%;
+    padding: 8px 5px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    text-align: center;
+    font-size: 1.1em;
+}
+
+/* Color coding */
+#forwardbutton { background: #28a745; }   /* green */
+#backwardbutton { background: #dc3545; }  /* red */
+#stopbutton { background: #6c757d; }      /* gray */
+#leftbutton { background: #007bff; }      /* blue */
+#rightbutton { background: #17a2b8; }     /* teal */
+#exitbutton { background: #ff8800; }      /* orange */
+
+#message {
+    /* Ensures it acts as a block element, taking up the full width */
+    display: block; 
+    
+    /* Forces it to take up the full width */
+    width: 100%;
+    
+    /* Clears any left or right floats that might be affecting it */
+    clear: both;
+    
+    /* ----------------------------------------------------------------- */
+    /* *** ADDED/MODIFIED: Reduce/Remove default top and bottom margin *** */
+    /* ----------------------------------------------------------------- */
+    margin-top: 5px;   /* Set a small top gap (e.g., 5px) */
+    margin-bottom: 5px;/* Set a small bottom gap (e.g., 5px) */
+}

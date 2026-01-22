@@ -1,0 +1,6 @@
+FROM smartgic/ovos-core:testing
+
+USER ovos
+RUN . ~/.venv/bin/activate && \
+    pip install --no-cache-dir \
+    ovos-skill-date-time

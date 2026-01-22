@@ -1,0 +1,29 @@
+[Unit]
+Description=Voice Server (Flask service)
+After=network.target
+
+[Service]
+# Run as your user (or 'www-data' etc.)
+User=ovos
+Group=ovos
+KillMode=mixed
+KillSignal=SIGTERM
+TimeoutStopSec=10s
+StandardOutput=journal
+StandardError=journal
+
+# The working directory (where voice_server.py is located)
+WorkingDirectory=/home/ovos/python/voice-server
+
+# Command to start your program
+ExecStart=/usr/bin/python3 /home/ovos/python/voice-server/voice_server.py
+
+# Optional: keep it running if it crashes
+Restart=always
+RestartSec=5
+
+# Environment variables (optional)
+Environment="PATH=/home/ovos/.local/bin:/usr/bin"
+
+[Install]
+WantedBy=multi-user.target

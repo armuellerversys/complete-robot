@@ -1,0 +1,63 @@
+docker build -t minimal-camera2 --no-cache .
+
+docker run -it --rm --privileged minimal-camera2 bash
+
+
+docker run -it --rm \
+  --privileged \
+  -v /usr/lib/aarch64-linux-gnu:/usr/lib/aarch64-linux-gnu:ro \
+  -v /lib/aarch64-linux-gnu:/lib/aarch64-linux-gnu:ro \
+  minmalcamera2
+
+docker run -it --rm   --privileged   --device /dev/dri   -v /sys:/sys:ro   -v /run/udev:/run/udev:ro   minimal-camera2 bash
+
+
+from picamera2 import Picamera2
+picam2 = Picamera2()
+print(picam2.global_camera_info())
+
+python3 -c "from picamera2 import Picamera2; picam2 = Picamera2(); print('Picamera OK')"
+python3 -c "from picamera2 import Picamera2; picam2 = Picamera2(); print(picam2.global_camera_info())"
+
+pip install --break-system-packages picamera2
+
+##find where the import is located by running
+python3 -c "import hailo_platform.pyhailort._pyhailort as _py; print(_py.__file__)"
+
+docker compose build
+
+docker compose up
+
+docker run -it picamera2 bash
+
+docker inspect ovos_messagebus -f '{{json .NetworkSettings.Networks}}'
+
+docker update --restart=no 082ce90ef90b 
+docker stop 082ce90ef90b 
+docker start -ai 082ce90ef90b 
+
+sudo find / -type f -iname "*pyhailort*"
+sudo find / -type f -iname "libhailort.so.4.23.0"
+sudo find /dev -type f -name "hailo*"
+
+sudo find /usr/lib -name "libhailort.so.4.23.0"
+
+sudo find / -name "libhailort.so*" 2>/dev/null
+
+docker update --restart=no ovos_core
+docker stop ovos_core
+docker start -ai ovos_core
+
+ldconfig -p | grep hailort
+
+ldd /usr/lib/python3/dist-packages/hailo_platform/pyhailort/_pyhailort*.so
+
+docker exec -it picamera_hailo_ovos python3 -c "from hailo_platform import VDevice; v = VDevice(); p = v.get_physical_devices()[0]; print(dir(p))"
+
+docker exec -it picamera_hailo_ovos python3 -c "from hailo_platform import VDevice; v = VDevice(); print(dir(v))"
+
+docker exec -it picamera_hailo_ovos python3 -c "from hailo_platform import VDevice; v = VDevice(); p = v.get_physical_devices()[0]; print([d for d in dir(p) if 'temp' in d.lower() or 'control' in d.lower()])"
+
+hailortcli scan
+
+hailortcli run yolov8m.hef --measure-temp

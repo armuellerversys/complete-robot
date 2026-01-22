@@ -1,0 +1,2 @@
+ping raspovos.local
+ssh ovos@raspovos.local

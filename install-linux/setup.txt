@@ -1,0 +1,231 @@
+https://www.bing.com/videos/riverview/relatedvideo?q=windows+ssh+Permission+denied+(publickey)&mid=16000A181DAB64953BFD16000A181DAB64953BFD&FORM=VAMTRV
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+match test:
+ssh-keygen -y -e -f id_rsa
+
+ssh -v user@raspberrypi-4
+
+sudo apt-get update -y && sudo apt-get upgrade -y
+
+sudo apt-get install coreutils
+sudo apt-get install raspi-config
+sudo raspi-config
+
+sudo apt install python3.13
+sudo apt-get install -y git python3-pip python3-smbus i2c-tools
+
+python -m pip install --break-system-packages --upgrade debugpy
+
+c:\develop\raspberry\book\setup.txt
+
+sudo raspi-config
+
+i2cdetect -y 1
+
+************************************
+(pip3 install RPIO.GPIO gpiozero)
+apt-get -y install python3-rpi.gpio
+
+sudo apt-get update
+sudo apt-get install python3-pip 
+sudo pip install RPi.GPIO
+sudo apt-get install python3-smbus
+
+*********************************
+https://seengreat.com/wiki/91/
+sudo apt-get install wiringpi
+
+pip3 install --break-system-packages wiringpi
+
+pip3 install --break-system-packages adafruit-blinka
+
+## https://github.com/adafruit/Adafruit_CircuitPython_BusDevice
+pip3 install --break-system-packages adafruit-circuitpython-busdevice
+
+## https://github.com/adafruit/Adafruit_CircuitPython_Register
+pip3 install adafruit-circuitpython-register
+
+## https://github.com/adafruit/Adafruit_CircuitPython_PCA9685
+pip3 install --break-system-packages adafruit-circuitpython-pca9685
+
+## https://github.com/adafruit/Adafruit_CircuitPython_MotorKit
+pip3 install --break-system-packages  adafruit-circuitpython-motorkit
+
+pip3 install --break-system-packages adafruit-circuitpython-motorkit
+
+## https://github.com/orionrobots/Raspi_MotorHAT
+pip3 install --break-system-packages git+https://github.com/orionrobots/Raspi_MotorHAT
+
+https://github.com/adafruit/Adafruit_CircuitPython_Motor
+pip3 install --break-system-packages  adafruit-circuitpython-motor
+
+--break-system-packages
+pip3 install --break-system-packages --break-system-packages git+https://github.com/orionrobots/Raspi_MotorHAT
+https://www.adafruit.com/product/2348
+
+******************************************************
+pip3 install git+https://github.com/orionrobots/Raspi_MotorHAT
+******************************************************
+pip3 install --break-system-packages RPi.GPIO gpiozero
+
+*****************************************************
+pip3 install --break-system-packages RPi.GPIO gpiozeroledshim
+
+sudo apt install --break-system-packages python3-gpiozero
+sudo apt install python3-colorzero
+
+ls -l /dev/spidev*
+
+**************************************************************
+git clone https://github.com/pimoroni/icm20948-python
+pip3 install  git+https://github.com/orionrobots/vpython-jupyter.git
+pip install -e .
+*********************************************************************
+python3 -m venv .venv
+source .venv/bin/activate
+pip3 install  smbus2
+pip3 install smbus
+sudo apt-get install -y git python3-pip python3-smbus i2c-tools
+
+ pip3 install vpython
+***********************************************************************
+git clone https://github.com/pimoroni/led-shim
+cd led-shim
+./install.sh
+********************************************************************
+sudo pip3 install --break-system-packages adafruit-circuitpython-motorkit
+********************************************************************
+sudo apt-get update
+sudo apt-get install python3-pip 
+sudo pip install --break-system-packages RPi.GPIO
+sudo apt-get install python3-smbus
+
+********************************************************************
+python3 -Xfrozen_modules=off debugtest.py
+
+i2cdetect -y 1
+## show register
+i2cdump -y 1 0x64
+
+i2cget -y 1 0x60 0x00
+i2cget -y 1 0x60 0x01
+
+## set registers visible through the I2C bus
+i2cset -y 1 0x68 0x00 0x13
+-y Disable interactive mode. By default, i2cset will wait for a confirmation from the user before messing with the I2C bus. When this flag is used, it will perform the operation directly.
+-1 Indicates the number or name of the I2C bus to be scanned.
+-0x68 Specifies the address of the chip on that bus. Here is DS3231 RTC clock chip.
+-0x00 Specifies the address on that chip to write to.
+-0x13 If specified, is the value to write to that location on the chip
+
+i2cset -y 1 0x60 0x00 0x00
+i2cset -y 1 0x60 0x00 0x80
+i2cset -y 1 0x60 0x00 0x24
+i2cset -y 1 0x60 0xFE 0x79
+i2cset -y 1 0x60 0x00 0x00
+
+i2cset -y 1 0x60 0x00 0x80
+
+i2cset -y 1 0x60 0x06 0x00
+i2cset -y 1 0x60 0x07 0x0f
+i2cset -y 1 0x60 0x08 0x00
+i2cset -y 1 0x60 0x09 0x00
+
+i2cset -y 1 0x60 0x0E 0x00
+i2cset -y 1 0x60 0x0F 0x00
+i2cset -y 1 0x60 0x10 0x00
+i2cset -y 1 0x60 0x11 0x00
+i2cset -y 1 0x60 0x0A 0x00
+i2cset -y 1 0x60 0x0B 0x00
+i2cset -y 1 0x60 0x0C 0xFF
+i2cset -y 1 0x60 0x0D 0x0F
+M1 rotate
+i2cset -y 1 0x60 0x0E 0x00
+i2cset -y 1 0x60 0x0F 0x00
+i2cset -y 1 0x60 0x10 0xFF
+i2cset -y 1 0x60 0x11 0x0F
+i2cset -y 1 0x60 0x0A 0x00
+i2cset -y 1 0x60 0x0B 0x00
+i2cset -y 1 0x60 0x0C 0x00
+i2cset -y 1 0x60 0x0D 0x00
+M1 rotate opposite
+i2cset -y 1 0x60 0x06 0x00
+i2cset -y 1 0x60 0x07 0x00
+i2cset -y 1 0x60 0x08 0x00
+i2cset -y 1 0x60 0x09 0x00
+M1 stop
+
+M2 #############################################
+i2cset -y 1 0x60 0x1A 0x00
+i2cset -y 1 0x60 0x1B 0x00
+i2cset -y 1 0x60 0x1C 0x00
+i2cset -y 1 0x60 0x1D 0x0C
+i2cset -y 1 0x60 0x12 0x00
+i2cset -y 1 0x60 0x13 0x00
+i2cset -y 1 0x60 0x14 0x00
+i2cset -y 1 0x60 0x15 0x00
+i2cset -y 1 0x60 0x16 0x00
+i2cset -y 1 0x60 0x17 0x00
+i2cset -y 1 0x60 0x18 0xFF
+i2cset -y 1 0x60 0x19 0x0F
+M2 rotate
+i2cset -y 1 0x60 0x12 0x00
+i2cset -y 1 0x60 0x13 0x00
+i2cset -y 1 0x60 0x14 0xFF
+i2cset -y 1 0x60 0x15 0x0F
+i2cset -y 1 0x60 0x16 0x00
+i2cset -y 1 0x60 0x17 0x00
+i2cset -y 1 0x60 0x18 0x00
+i2cset -y 1 0x60 0x19 0x00
+M2 rotate opposite
+i2cset -y 1 0x60 0x1A 0x00
+i2cset -y 1 0x60 0x1B 0x00
+i2cset -y 1 0x60 0x1C 0x00
+i2cset -y 1 0x60 0x1D 0x00
+M2 stop
+
+##
+## read registers visible through the I2C bus 
+i2cget -y 1 0x68 0x00
+-y Disable interactive mode. By default, i2cget will wait for a confirmation from the user before messing with the I2C bus. When this flag is used, it will perform the operation directly.
+1 Indicates the number or name of the I2C bus to be scanned.
+0x68 Specifies the address of the chip on that bus. Here is DS3231 RTC clock chip.
+0x00 specifies the address on that chip to read from.
+## 
+
+sudo python3 pca9685.py
+
+sftp://raspberrypi-3 / sftp://raspberrypi-4
+
+python3 test_motors.py
+
+************************************************
+pip3 install --break-system-packages wiringpi
+
+
+
+sudo pip install smbus --break-system-packages 
+
+sudo pip install python3-smbus --break-system-packages 
+
+sudo python3 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+ sudo apt-get install python3-smbus
+
+ 
+pip install git+https://github.com/orionrobots/Raspi_MotorHAT
+
+pip3 install git+https://github.com/orionrobots/Raspi_MotorHAT
+
+pip3 install smbus2 
+
+sudo python3 test_motors-7f.py
+
+sudo apt-get install python3-smbus python3-dev
+
+Installing pip: sudo apt-get install python-pip python3-pip
+
+Installing smbus: sudo apt-get install python-smbus python3-smbus python-dev python3-dev
+
+sudo i2cdetect -y 1

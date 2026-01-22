@@ -1,0 +1,7 @@
+Make sure the Flask server (voice_server.py) is running in one terminal.
+
+Make sure the OVOS bus client (ovos_client.py) is running in another terminal.
+
+Save the code above as a new Python file, for example, test_client.py.
+
+Run the file from your terminal: python test_client.py.

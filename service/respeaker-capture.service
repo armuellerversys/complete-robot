@@ -1,0 +1,11 @@
+[Unit]
+Description=ReSpeaker Microphone Mixer Restore
+After=sound.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/respeaker-capture.sh
+
+[Install]
+WantedBy=multi-user.target
+
