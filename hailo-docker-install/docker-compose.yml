@@ -1,12 +1,14 @@
 services:
   camera_ai:
-    build: .
-    image: minimal-camera2-ovos
+    build:
+      context: .
+      dockerfile: Dockerfile.hailo
+    image: hailo-camera2
     container_name: picamera_hailo_ovos
     privileged: true
     # network mode used by ovos
     network_mode: "host"
-
+    restart: unless-stopped
     devices:
       - /dev/dri:/dev/dri
       - /dev/hailo0:/dev/hailo0

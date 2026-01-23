@@ -96,4 +96,4 @@ def get_lan_ip():
     return ip
 
 logger.debug("Start control server: " + get_lan_ip())
-app.run(host="0.0.0.0")
+app.run(host='0.0.0.0', port=5000, use_reloader=False)

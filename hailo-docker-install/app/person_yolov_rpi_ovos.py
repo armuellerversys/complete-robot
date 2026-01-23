@@ -4,6 +4,7 @@ import time
 import logging
 import os
 import ledshim
+import requests
 from datetime import datetime # New import for timestamps
 from flask import Flask, Response, render_template_string
 from picamera2 import Picamera2
@@ -19,6 +20,13 @@ from hailo_platform.pyhailort.control_object import PcieHcpControl
 RGB_BLUE = (0, 0, 255)
 RGB_RED = (0, 255, 0)
 RGB_WHITE = (255, 255, 255)
+
+URL = "http://192.168.4.8:5000"
+
+# The headers specify that you are sending JSON data
+headers = {
+    "Content-Type": "application/json"
+}
 
 # Environment setup
 os.environ['HAILO_MONITOR'] = '1'
@@ -67,11 +75,6 @@ class HardwareManager:
         self.picam2.start()
         self.device_infos = PcieDevice.scan_devices()
         self.device_temps_t = [PcieHcpControl(device_info=di) for di in self.device_infos]
-
-    #def set_led_color(self, r, g, b):
-    #    for i in range(ledshim.NUM_PIXELS):
-    #        ledshim.set_pixel(i, r, g, b)
-    #    ledshim.show()
 
     def set_led_color(self, color):
         ledshim.set_all(*color)
@@ -165,6 +168,7 @@ class PersonTracker:
                                     if len(valid) > 0:
                                         # Snapshot Logic
                                         self.say_text("I have detected a person.")
+                                        self.stop_vehicle()
                                         # Box Smoothing
                                         det = valid[0]
                                         new_box = np.array([det[1], det[0], det[3], det[2]])
@@ -217,6 +221,27 @@ class PersonTracker:
             self.smooth_box = None
             hw.set_led_color(RGB_BLUE)
 
+    def stop_vehicle(self):
+        # #curl -X POST http://192.168.4.8:5000/stop -H "Content-Type: application/json"
+        try:
+        
+            # Send a POST request to the server with the JSON data
+            logger.debug(f"Sending request stop to {URL}...")
+            response = requests.post(URL + "/stop", headers=headers)
+
+            # Check if the request was successful
+            if response.status_code == 200:
+                logger.debug("Success! Vehicle stopped")
+            else:
+                logger.debug(f"Vehicle Server Error! Status code: {response.status_code}")
+                logger.debug("Vehicle Server response:", response.text)
+
+        except requests.exceptions.ConnectionError as e:
+            logger.debug(f"Failed to connect to the Vehicle Server at {URL}.")
+            logger.debug("Please ensure the Vehicle Server is running and accessible.")
+            logger.debug(f"Error details: {e}")      
+    
+
 tracker = PersonTracker()
 
 @app.route('/')
@@ -228,5 +253,5 @@ def video_feed():
     return Response(tracker.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 if __name__ == '__main__':
-    tracker.say_text("welcome Albrecht, Lets start")
+    tracker.say_text("Hello Albrecht, K6 welcoms you, let's start")
     app.run(host='0.0.0.0', port=5000, threaded=True)

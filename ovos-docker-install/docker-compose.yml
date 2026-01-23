@@ -106,11 +106,11 @@ services:
       context: ./voice-server
       dockerfile: Dockerfile.voice_server
     container_name: ovos_voice_server
-    restart: "no"
+    restart: unless-stopped
     network_mode: host
     environment:
       - TZ=Europe/Berlin
-      - VOICE_SERVER_PORT=7000
+      - VOICE_SERVER_PORT=6000
     volumes:
       - ~/ovos/sounds:/home/ovos/sounds:ro
     depends_on:
