@@ -1,3 +1,5 @@
-(start|stop) vehicle
-(start|stop) the vehicle
-vehicle (start|stop)
+stop vehicle
+start vehicle
+(engine|motor) (start|stop)
+turn (off|on) the vehicle
+(activate|deactivate) the engine

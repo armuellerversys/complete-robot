@@ -18,7 +18,8 @@ class VehicleControlSkill(OVOSSkill):
 
         url = f"{self.base_url}/{action}-vehicle"
         try:
-            response = requests.post(url, timeout=5)
+            # self.log.info(f"Vehicle {action}: {url}")
+            response = self.post_cmd("stop")
             if response.status_code == 200:
                 self.speak_dialog(f"vehicle.{action}ed")
             else:
@@ -51,6 +52,21 @@ class VehicleControlSkill(OVOSSkill):
         """Helper to send the beep signal to the audio service"""
         beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
         self.bus.emit(message.forward("mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
+
+    def post_cmd(self, action):
+     url =  f"http://192.168.4.8:5000/stop"
+     self.log.info(f"Post {action}: {url}")
+     return requests.post(url)
+
+    ##   $.post('/control', {'command':'set_' + name, 'speed': speed, 'distance': distance });}
+    def post_command_json(self, action):
+        ## self.base_url
+        url = self.base_url + "/control"
+        self.log.info(f"Vehicle {action}: {url}")
+        # payload = {f"command": set_{action}, speed: 0, distance: 0"}
+        payload ={"command": "set_stop", "speed": "80", "distance": "1200"}
+        self.log.info(f"Send control request http post-> {url}")
+        response = requests.post(self.SERVER_MOVE_URL, data=payload, timeout=4)
 
 def create_skill():
     return VehicleControlSkill()
