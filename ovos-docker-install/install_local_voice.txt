@@ -79,6 +79,7 @@ pip install --break-system-packages ovos-stt-plugin-fasterwhisper
 
 ovos-speak "hello, this is a test"
 ovos-speak "what time is it?"
+ovos-say-to "Hey K6, stop vehicle"
 ovos-say-to "what time is it?"
 
 ## watch the message bus

@@ -1,0 +1,24 @@
+FROM smartgic/ovos-skill-base:testing
+
+
+
+# Install requests
+RUN . ~/.venv/bin/activate && pip install --no-cache-dir requests
+
+USER root
+
+RUN mkdir -p skill-vehicle-control
+
+COPY --chown=ovos:ovos ./skill-vehicle-control ./skill-vehicle-control/
+
+COPY --chown=ovos:ovos test.py test.py
+
+USER ovos
+
+# Set PYTHONPATH
+#ENV PYTHONPATH="./"
+ENV PYTHONPATH="/"
+# Point the launcher directly to the FOLDER path
+# ENTRYPOINT ["/bin/sh", "-c", ". ~/.venv/bin/activate && ovos-skill-launcher", "skill-vehicle-control", "skill-vehicle-control"]
+ENTRYPOINT ["/bin/sh", "-c", ". ~/.venv/bin/activate && ovos-skill-launcher vehicle-skill skill-vehicle-control"]
+#CMD ["/bin/sh", "-c", ". ~/.venv/bin/activate && python test.py"]
