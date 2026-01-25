@@ -79,8 +79,11 @@ pip install --break-system-packages ovos-stt-plugin-fasterwhisper
 
 ovos-speak "hello, this is a test"
 ovos-speak "what time is it?"
-ovos-say-to "Hey K6, stop vehicle"
+ovos-say-to "stop vehicle"
 ovos-say-to "what time is it?"
+ovos-config get -k hotwords
+ovos-config get -k listener/wake_word
+
 
 ## watch the message bus
 docker exec -it ovos_listener /home/ovos/.venv/bin/ovos-listen

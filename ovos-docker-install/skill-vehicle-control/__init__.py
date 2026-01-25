@@ -5,7 +5,8 @@ from ovos_workshop.decorators import intent_handler
 class VehicleControlSkill(OVOSSkill):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.base_url = "http://192.168.4.8:5000" 
+        self.base_url = "http://192.168.4.8:5000"
+        self.log.info("VehicleControlSkill initialized")
 
     @intent_handler('vehicle.intent')
     def handle_vehicle_intent(self, message):
@@ -21,6 +22,7 @@ class VehicleControlSkill(OVOSSkill):
             if response.status_code == 200:
                 self.speak_dialog(f"vehicle.{action}ed")
             else:
+                self.log.error(f"HTTP Error: {response.status_code} for action {action}")
                 self.speak("The vehicle controller returned an error.")
         except Exception as e:
             self.log.error(f"HTTP Error: {e}")
