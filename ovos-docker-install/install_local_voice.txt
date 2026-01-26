@@ -81,6 +81,7 @@ ovos-speak "hello, this is a test"
 ovos-speak "what time is it?"
 ovos-say-to "stop vehicle"
 ovos-say-to "what time is it?"
+ovos-say-to "what is the vehicle status"
 ovos-config get -k hotwords
 ovos-config get -k listener/wake_word
 

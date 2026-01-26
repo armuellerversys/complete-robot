@@ -141,5 +141,14 @@ class Robot:
         leds_led_shim.Leds().showWhite()
 
     @staticmethod
+    def set_led_green():
+        leds_led_shim.Leds().showGreen()
+
+    @staticmethod
+    def set_led_blue():
+        leds_led_shim.Leds().showBlue()
+
+
+    @staticmethod
     def set_green_one():
         leds = leds_led_shim.Leds().set_green_one()

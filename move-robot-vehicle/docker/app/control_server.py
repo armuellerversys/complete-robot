@@ -4,6 +4,7 @@ from robot import Robot
 from gpiozero import devices
 from matrix_display import MatrixDisplay
 import socket
+import time
 from core_utils import CoreUtils
 
 ## import debugpy
@@ -56,13 +57,25 @@ def run(mode_name):
 def stop():
     logger.debug("stop")
     devices._shutdown()
-    
+    time
     Robot.set_led_orange()
     matrixDisplay.showTemperatur()
     # Tell our system to stop the mode it's in.
     mode_manager.stop()
     logger.debug(f"Stop executed")
     return jsonify({'message': "Stopped"})
+
+@app.route("/state", strict_slashes=False)
+def state():
+    logger.debug("state request received")
+    Robot.set_led_orange()
+    time.sleep(1)
+    Robot.set_led_white()
+    time.sleep(1)
+    Robot.set_led_blue()
+    matrixDisplay.showTemperatur()
+    logger.debug("state request response send")
+    return jsonify({'state': "Vehicle OK"})
 
 @app.route('/dead_page')
 def dead_page():
@@ -95,5 +108,7 @@ def get_lan_ip():
         s.close()
     return ip
 
+print("REGISTERED ROUTES:")
+print(app.url_map)
 logger.debug("Start control server: " + get_lan_ip())
 app.run(host='0.0.0.0', port=5000, use_reloader=False)

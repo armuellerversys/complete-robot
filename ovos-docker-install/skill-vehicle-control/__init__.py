@@ -5,7 +5,7 @@ from ovos_workshop.decorators import intent_handler
 class VehicleControlSkill(OVOSSkill):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.base_url = "http://192.168.4.8:5000"
+        self.base_url = "http://192.168.4.8:5000/"
         self.log.info("VehicleControlSkill initialized")
 
     @intent_handler('vehicle.intent')
@@ -16,10 +16,9 @@ class VehicleControlSkill(OVOSSkill):
         self.log.info(f"Vehicle command: {action}")
         self.play_beep(message)
 
-        url = f"{self.base_url}/{action}-vehicle"
         try:
             # self.log.info(f"Vehicle {action}: {url}")
-            response = self.post_cmd("stop")
+            response = self.post_cmd(action)
             if response.status_code == 200:
                 self.speak_dialog(f"vehicle.{action}ed")
             else:
@@ -31,19 +30,22 @@ class VehicleControlSkill(OVOSSkill):
 
     @intent_handler('vehicle_status.intent')
     def handle_status_intent(self, message):
-        self.log.info("Checking vehicle status...")
+        self.log.info("Enter Checking vehicle status...")
         self.play_beep(message)
 
         try:
             # Assuming your API returns JSON like {"state": "running"}
-            response = requests.get(f"{self.base_url}/status", timeout=5)
+            url = f"{self.base_url}state"
+            self.log.info(f"Execute status request to {url}")
+            response = requests.get(url, timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 current_status = data.get("state", "unknown")
                 # Pass the variable 'status' to the .dialog file
                 self.speak_dialog("vehicle_status", data={"status": current_status})
             else:
-                self.speak("I couldn't get a valid status from the vehicle.")
+                self.log.info(f"Error execute status request with error: {response.status_code}")
+                self.speak(f"I couldn't get a valid status from the vehicle")
         except Exception as e:
             self.log.error(f"Status check failed: {e}")
             self.speak("The vehicle system is not responding to status requests.")
@@ -54,9 +56,9 @@ class VehicleControlSkill(OVOSSkill):
         self.bus.emit(message.forward("mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
 
     def post_cmd(self, action):
-     url =  f"http://192.168.4.8:5000/stop"
-     self.log.info(f"Post {action}: {url}")
-     return requests.post(url)
+        url = self.base_url + action
+        self.log.info(f"Post {action}: {url}")
+        return requests.post(url)
 
     ##   $.post('/control', {'command':'set_' + name, 'speed': speed, 'distance': distance });}
     def post_command_json(self, action):
