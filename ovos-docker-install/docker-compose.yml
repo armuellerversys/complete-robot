@@ -47,16 +47,16 @@ services:
       - TZ=Europe/Berlin
       - OVOS_BUS_HOST=127.0.0.1
       # 2. Tell the container to use the host's PulseAudio/PipeWire server
-      - PULSE_SERVER=unix:/run/user/1000/pulse/native
     devices:
       - /dev/snd:/dev/snd
     volumes:
+      - /etc/asound.conf:/etc/asound.conf:ro
+      - /etc/alsa:/etc/alsa:ro
+      - /usr/share/alsa:/usr/share/alsa:ro
       - ~/ovos/config:/home/ovos/.config/mycroft
       - ~/models/phoonnx:/home/ovos/models/phoonnx:ro
       - ~/ovos/persistence/audio:/home/ovos/.local
       - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
-      # 3. Map the PulseAudio socket into the container
-      - /run/user/1000/pulse:/run/user/1000/pulse
       
   ## stt section
   ovos_listener:
@@ -95,13 +95,11 @@ services:
       environment:
         - TZ=Europe/Berlin              # Changed to match your other services
         - OVOS_BUS_HOST=127.0.0.1
-        - PULSE_SERVER=unix:/run/user/1000/pulse/native
       devices:
         - /dev/snd:/dev/snd
       volumes:
         - ~/ovos/config:/home/ovos/.config/mycroft
         - ~/ovos/persistence/listener:/home/ovos/.local
-        - /run/user/1000/pulse:/run/user/1000/pulse
 
   ovos_voice_server:
     build:
@@ -119,27 +117,6 @@ services:
     depends_on:
       - ovos_messagebus
 
-  ovos_skill_vehicle_control:
-    build:
-      context: ~/skill/ovos-skill-vehicle-control
-      dockerfile: Dockerfile.vehicle_skill
-    container_name: ovos_skill_vehicle_control
-    restart: unless-stopped
-    network_mode: host
-    depends_on:
-      ovos_messagebus:
-        condition: service_healthy
-    environment:
-      - TZ=Europe/Berlin
-      - OVOS_BUS_HOST=127.0.0.1
-      - PULSE_SERVER=unix:/run/user/1000/pulse/native
-    volumes:
-      - ~/ovos/config:/home/ovos/.config/mycroft
-      - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft
-      # Map the sounds folder so the skill can find your beep-04.wav
-      - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
-    devices:
-      - /dev/snd:/dev/snd  
 
   ovos_skill_date_time:
       image: smartgic/ovos-skill-date-time:testing
@@ -155,7 +132,6 @@ services:
       environment:
         - TZ=Europe/Berlin              # Changed to match your other services
         - OVOS_BUS_HOST=127.0.0.1
-        - PULSE_SERVER=unix:/run/user/1000/pulse/native
         - PIP_INSTALL=ovos-skill-date-time
       devices:
         - /dev/snd:/dev/snd
@@ -174,7 +150,6 @@ services:
       environment:
         - TZ=Europe/Berlin              # Changed to match your other services
         - OVOS_BUS_HOST=127.0.0.1
-        - PULSE_SERVER=unix:/run/user/1000/pulse/native
         - PIP_INSTALL=ovos-skill-fallback-unknown
       devices:
         - /dev/snd:/dev/snd

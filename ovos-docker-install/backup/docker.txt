@@ -1,0 +1,21 @@
+  ovos_skill_vehicle_control:
+    build:
+      context: ~/skill/ovos-skill-vehicle-control
+      dockerfile: Dockerfile.vehicle_skill
+    container_name: ovos_skill_vehicle_control
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      ovos_messagebus:
+        condition: service_healthy
+    environment:
+      - TZ=Europe/Berlin
+      - OVOS_BUS_HOST=127.0.0.1
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native
+    volumes:
+      - ~/ovos/config:/home/ovos/.config/mycroft
+      - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft
+      # Map the sounds folder so the skill can find your beep-04.wav
+      - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
+    devices:
+      - /dev/snd:/dev/snd  

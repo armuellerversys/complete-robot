@@ -5,6 +5,8 @@ iwgetid -r
 ip -brief address show wlan0
 ip -brief address show eth0
 
+sudo nmcli dev wifi connect "Pi4_AccessPoint" --ask
+
 sudo systemctl unmask wpa_supplicant@wlan0.service
 sudo systemctl enable wpa_supplicant@wlan0.service
 sudo systemctl start wpa_supplicant@wlan0.service
@@ -22,12 +24,12 @@ sudo systemctl restart systemd-networkd
 
 nmcli connection show
 nmcli dev wifi list
-nmcli dev wifi connect "PiAccessPoint" password "Robot2025"
+nmcli dev wifi connect "Pi4_AccessPoint" password "Robot2025"
 nmcli dev wifi connect "MueFritz2022" password "psw!"
 nmcli connection delete "MueFritz2022"
-nmcli connection modify "PiAccessPoint" connection.priority 10
+nmcli connection modify "Pi4_AccessPoint" connection.priority 10
 nmcli connection modify "MueFritz2022" connection.priority 1
-nmcli connection up "PiAccessPoint"
+nmcli connection up "Pi4_AccessPoint"
 nmcli connection down "MueFritz2022"
 nmcli device status
 nmcli -p connection show --active
@@ -40,6 +42,12 @@ nmcli connection add type wifi ifname wlan0 con-name PiAccessPoint ssid PiAccess
 nmcli connection modify PiAccessPoint wifi-sec.key-mgmt wpa-psk
 nmcli connection modify PiAccessPoint wifi-sec.psk "Robot2025"
 nmcli connection up PiAccessPoint
+
+sudo nmcli con delete "Pi4_AccessPoint"
+sudo nmcli con add type wifi con-name "Pi4_AP" ifname wlan0 ssid "Pi4_AccessPoint" -- \
+wifi-sec.key-mgmt wpa-psk \
+wifi-sec.psk "Robot2025" \
+connection.autoconnect-priority 10
 
 sudo journalctl -u NetworkManager -f
 

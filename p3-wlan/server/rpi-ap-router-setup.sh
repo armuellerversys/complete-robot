@@ -6,7 +6,7 @@
 
 set -e
 
-SSID="PiAccessPoint"
+SSID="Pi4_AccessPoint"
 PASSPHRASE="Robot2025"
 WLAN_IFACE="wlan0"
 ETH_IFACE="eth0"

@@ -5,6 +5,9 @@ RUN apt-get update && \
     apt-get install -y gcc g++ python3-espeak espeak-ng python3-dev libasound2-dev libportaudio2 portaudio19-dev && \
     rm -rf /var/lib/apt/lists/*
 
+# Ensure the state directory exists and the ovos user owns it
+RUN mkdir -p /home/ovos/.local/state && chown -R ovos:ovos /home/ovos/
+
 USER ovos
 RUN . ~/.venv/bin/activate && \
     pip install --no-cache-dir \

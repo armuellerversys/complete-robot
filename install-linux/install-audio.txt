@@ -157,3 +157,10 @@ amixer -c seeed2micvoicec sget 'Left Line Mixer DACL1'
 aplay /usr/share/sounds/alsa/Front_Center.wav
 
 sudo alsactl store
+
+## set default card
+sudo nano /etc/asound.conf
+defaults.pcm.card 2
+defaults.ctl.card 2
+
+speaker-test -c 2 -t sine

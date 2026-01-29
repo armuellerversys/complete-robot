@@ -77,6 +77,8 @@ docker restart $(docker ps -a -q)
 docker stop $(docker ps -a -q)
 docker start $(docker ps -a -q)
 
+docker rmi $(docker images)
+
 apt-get update
 ls -l -a
 sudo apt-get install nano
@@ -106,6 +108,15 @@ docker logs ovos_core | grep "my-skill-test.openvoiceos"
 docker network connect <network_name> ovos_audio
 docker network connect <network_name> ovos_ttsdocker run --rm busybox ping -c 3 8.8.8.8
 docker run --rm busybox nslookup google.com
+
+docker update --restart=no ovos_core
+docker stop ovos_core
+docker start -ai ovos_core
+
+docker system prune --force --all
+
+docker compose down --remove-orphans
+
 
 ip addr show docker0
 ip route

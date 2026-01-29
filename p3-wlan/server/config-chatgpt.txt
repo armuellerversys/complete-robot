@@ -1,0 +1,83 @@
+
+/etc/dnsmasq.conf
+/etc/hostapd/hostapd.conf
+/etc/dhcpcd.conf
+/etc/sysctl.conf
+
+ip addr
+ip route
+
+# in case of error
+sudo ip addr add 192.168.4.1/24 dev wlan0
+sudo ip link set wlan0 up
+
+# Enable IPv4 forwarding
+sysctl net.ipv4.ip_forward
+sudo sysctl -w net.ipv4.ip_forward=1
+
+-> sudo nano /etc/sysctl.conf -> add
+net.ipv4.ip_forward=1
+sudo sysctl -p
+
+# install iptables-nft
+sudo nano /etc/nftables.conf:
+
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+    chain forward {
+        type filter hook forward priority 0;
+        policy drop;
+
+        iif "wlan0" oif "eth0" accept
+        iif "eth0" oif "wlan0" ct state related,established accept
+    }
+}
+
+table ip nat {
+    chain postrouting {
+        type nat hook postrouting priority 100;
+        oif "eth0" masquerade
+    }
+}
+
+
+sudo systemctl enable nftables
+sudo systemctl restart nftables
+
+sudo nano /etc/systemd/network/10-wlan0.network
+[Match]
+Name=wlan0
+
+[Network]
+Address=192.168.4.1/24
+DHCP=no
+
+sudo systemctl restart systemd-networkd
+
+
+# Test / check
+
+ping -c 3 8.8.8.8
+ping -c 3 google.com
+
+
+############# client config for trixie
+
+systemctl status NetworkManager
+nmcli dev wifi list
+nmcli dev wifi connect "Pi4_AccessPoint" password "Robot2025"
+nmcli connection modify "Pi4_AccessPoint" connection.autoconnect yes
+
+## fix PiAccessPointsudo
+sudo iw reg set DE
+
+nmcli dev wifi rescan
+nmcli dev wifi list
+
+sudo rfkill unblock wifi
+nmcli radio wifi on
+rfkill list
+nmcli device status

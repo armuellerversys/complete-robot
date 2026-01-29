@@ -1,0 +1,198 @@
+# Unblock the radio at the hardware level
+sudo rfkill unblock wifi
+
+# Force the interface to the UP state
+sudo ip link set wlan0 up
+
+sudo nmcli networking off
+sudo nmcli networking on
+
+nmcli dev wifi list
+
+# Stop the services that manage the radio
+sudo systemctl stop NetworkManager
+sudo killall wpa_supplicant
+
+# Force the physical interface down and back up
+sudo ip link set wlan0 down
+sudo ip link set wlan0 up
+
+# Restart NetworkManager
+sudo systemctl start NetworkManager
+
+nmcli dev wifi rescan
+nmcli dev wifi list
+
+sudo apt update
+sudo apt install lsof
+
+
+# Create a fresh profile
+sudo nmcli con add type wifi con-name "MyPiNet" ifname wlan0 ssid "Pi4_AccessPoint" -- \
+wifi-sec.key-mgmt wpa-psk \
+wifi-sec.psk "Robot2025"
+
+# Try to force it up
+sudo nmcli con up "MyPiNet"
+
+nmcli device
+
+sudo nano /etc/NetworkManager/NetworkManager.conf
+[main]
+plugins=ifupdown,keyfile
+
+[ifupdown]
+managed=true
+
+
+# Restart the service to apply the 'managed=true' change
+sudo systemctl restart NetworkManager
+
+# Force wlan0 to be managed
+sudo nmcli device set wlan0 managed yes
+
+# Bring the link up
+sudo ip link set wlan0 u
+
+dmesg | grep brcmfmac | tail -n 20
+
+# Disable WiFi power saving immediately
+sudo iw dev wlan0 set power_save off
+
+# Force the interface physically up
+sudo ip link set wlan0 up
+
+# Tell NetworkManager specifically to take the wheel
+sudo nmcli device set wlan0 managed yes
+
+# 1. Force the radio off and on at the kernel level
+sudo rfkill block wifi
+sudo rfkill unblock wifi
+
+# 2. Force the interface state
+sudo ip link set wlan0 down
+sudo ip link set wlan0 up
+
+# 3. Explicitly tell NetworkManager to manage this device
+sudo nmcli device set wlan0 managed yes
+
+# Stop the standalone service
+sudo systemctl stop wpa_supplicant
+
+# "Mask" it so nothing (not even another service) can start it
+sudo systemctl mask wpa_supplicant
+
+# Kill the current process one last time to be sure
+sudo killall -9 wpa_supplicant
+
+sudo systemctl restart NetworkManager
+sudo nmcli device set wlan0 managed yes
+sudo nmcli radio wifi on
+
+ls /etc/systemd/network
+sudo grep -R wlan0 /etc
+
+sudo nmcli device status
+
+sudo raspi-config nonint do_wifi_country DE
+
+# Delete the confused profile
+sudo nmcli connection delete "Pi4_Connection"
+
+# Re-add it, but force it to ONLY use the WiFi hardware MAC
+sudo nmcli con add type wifi ifname wlan0 con-name "Pi4_Fixed" ssid "Pi4_AccessPoint" \
+wifi.cloned-mac-address  88:a2:9e:00:63:ec
+
+# Set credentials
+sudo nmcli con modify "Pi4_Fixed" wifi-sec.key-mgmt wpa-psk
+sudo nmcli con modify "Pi4_Fixed" wifi-sec.psk "Robot2025"
+
+# Force it up
+sudo nmcli con up "Pi4_Fixed"
+
+# Find the hardware bus address
+basename $(readlink /sys/class/net/wlan0/device)
+# (It will likely return something like 100010000.pcie or similar)
+mmc1:0001:1
+
+echo "mmc1:0001:1" | sudo tee /sys/class/bus/platform/drivers/brcmfmac_sdio/unbind
+
+sudo killall wpa_supplicant
+
+
+""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+OVOS reset
+
+sudo killall wpa_supplicant
+
+# 1. Stop the services so they don't fight you
+sudo systemctl stop NetworkManager
+sudo systemctl stop wpa_supplicant
+
+
+
+# 2. Delete all existing connection profiles (ghosts)
+sudo rm -rf /etc/NetworkManager/system-connections/*
+sudo rm -rf /run/NetworkManager/system-connections/*
+
+# 3. Clear any Netplan "artifacts" 
+sudo rm -f /etc/netplan/90-NM-*
+sudo rm -f /run/netplan/*
+
+# 4. Clear the DHCP leases (prevents "IP already in use" errors)
+sudo rm -f /var/lib/NetworkManager/dhclient-*.lease
+sudo rm -f /var/lib/NetworkManager/NetworkManager.state
+
+# 1. Unmask and start services
+sudo systemctl unmask wpa_supplicant  # Just in case it was masked earlier
+sudo systemctl start NetworkManager
+
+# 2. Force the radio up
+sudo killall wpa_supplicant
+sudo nmcli radio wifi on
+sudo ip link set wlan0 up
+
+# 3. Apply the Netplan
+sudo netplan apply
+nmcli dev wifi list
+
+sudo chattr +i /etc/netplan/01-wifi-config.yam
+sudo chattr -i /etc/netplan/01-wifi-config.yaml
+
+###################################################
+# Stop the services
+sudo systemctl stop wpa_supplicant
+sudo systemctl stop wpa_supplicant@wlan0
+
+# Mask them so they CANNOT start on reboot
+sudo systemctl mask wpa_supplicant
+sudo systemctl mask wpa_supplicant@wlan0
+
+
+sudo nano /etc/netplan/01-wifi-config.yaml
+network:
+  version: 2
+  renderer: NetworkManager
+  wifis:
+    wlan0:
+      dhcp4: true
+      # This ensures WiFi gets an IP even if Ethernet is plugged in
+      dhcp4-overrides:
+        route-metric: 10
+      access-points:
+        "Pi4_AccessPoint":
+          password: "Robot2025"
+      # This tells the OS the boot is not finished until WiFi is UP
+      optional: false
+
+
+sudo nmcli connection modify "netplan-wlan0-Pi4_AccessPoint" \
+wifi-sec.key-mgmt wpa-psk \
+wifi-sec.psk "Robot2025" \
+connection.autoconnect yes
+
+sudo nmcli connection modify "netplan-wlan0-Pi4_AccessPoint" \
+ipv4.method auto \
+802-11-wireless-security.psk-flags 0
+
+sudo nmcli connection up "netplan-wlan0-Pi4_AccessPoint"
