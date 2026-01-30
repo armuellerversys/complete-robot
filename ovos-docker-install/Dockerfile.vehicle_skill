@@ -1,22 +1,32 @@
-FROM smartgic/ovos-skill-base:testing
-
+# Use the Skill Base, not the Core (unless you want to run the whole brain here)
+FROM smartgic/ovos-skill-base:stable
 
 USER root
-# Install requests
-RUN . ~/.venv/bin/activate && \
-    pip install --no-cache-dir requests ovos-skill-launcher
 
+# 1. Install dependencies
+# We use 'pip' which usually points to the venv in these images
+RUN pip install --no-cache-dir requests
 
-RUN mkdir -p skill
-RUN mkdir -p /skill/skill-vehicle-control
+# 2. Setup skill directory
+RUN mkdir -p /skill/ovos-skill-vehicle-control
 
-COPY --chown=ovos:ovos ./skill-vehicle-control /skill/skill-vehicle-control/
+COPY --chown=ovos:ovos ./ /skill/ovos-skill-vehicle-control/
 
-# COPY --chown=ovos:ovos test.py test.py
+WORKDIR /skill/ovos-skill-vehicle-control
+
+USER root
+RUN pip install . 
+
+# 3. Environment Setup
+# Ensure the venv bin is in the PATH so 'ovos-skill-launcher' can be found
+ENV PATH="/home/ovos/.venv/bin:$PATH"
+#ENV PYTHONPATH="/skill:/skill/ovos-skill-vehicle-control:$PYTHONPATH"
 
 USER ovos
+# WORKDIR /skill/ovos-skill-vehicle-control
 
-# Set PYTHONPATH
-WORKDIR /skill
-
-CMD ["python3", "-m", "ovos_skill_launcher"]
+# 4. Launch the skill
+# CMD ["/bin/sh", "-c", "python skill_vehicle_control/test.py"]
+# 5. The command that actually starts your skill/app
+# CMD ["python", "skill_vehicle_control"]
+CMD ["ovos-skill-launcher", "my-skill-test.openvoiceos"]

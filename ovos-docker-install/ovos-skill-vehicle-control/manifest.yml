@@ -1,0 +1,2 @@
+recursive-include skill_vehicle_control/locale *
+include *.txt
