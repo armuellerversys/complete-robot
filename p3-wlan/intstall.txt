@@ -42,3 +42,10 @@ sudo nano /etc/dnsmasq.conf
 sudo systemctl restart dnsmasq
 sudo nmcli connection down PiAccessPoint
 sudo nmcli connection up PiAccessPoint
+
+sudo nano /etc/netplan/your-file.yaml
+
+ networkmanager:
+        passthrough:
+          ipv4.method: shared
+

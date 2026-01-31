@@ -66,3 +66,47 @@ sudo systemctl restart dnsmasq
 
 sudo nmcli con add type wifi ifname wlan0 con-name wlan0-ap ssid PiAccessPoint mode ap ipv4.method manual ipv4.addresses 192.168.4.1/24
 sudo nmcli con up wlan0-ap
+
+systemctl is-active NetworkManager
+sysctl net.ipv4.ip_forward
+
+echo "net.ipv4.ip_forward=1" | sudo tee /etc/sysctl.d/99-ipforward.conf
+
+sudo systemctl is-enabled procps
+sudo systemctl enable procps
+
+ nmcli connection show
+
+sudo nano /etc/netplan/Pi4_Config.yaml
+network:
+  version: 2
+  renderer: NetworkManager
+  ethernets:
+    eth0:
+      dhcp4: true
+  wifis:
+    wlan0:
+      dhcp4: false
+      addresses:
+        - 192.168.4.1/24
+      access-points:
+        "Pi4_AccessPoint":
+          password: "Robot2025"
+          mode: ap
+      # This is the secret sauce:
+      # It tells NetworkManager this is a shared connection
+      networkmanager:
+        passthrough:
+          ipv4.method: shared
+
+# Apply the new Netplan config
+sudo netplan apply
+
+# Ensure the IP forward override is also in place for NetworkManager
+echo -e "[main]\nip-forward=yes" | sudo tee /etc/NetworkManager/conf.d/ip-forward.conf
+
+# Restart the service
+sudo systemctl restart NetworkManager
+
+## NAT configuration
+sudo nft list ruleset
