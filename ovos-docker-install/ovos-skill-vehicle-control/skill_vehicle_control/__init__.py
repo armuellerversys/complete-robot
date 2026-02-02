@@ -6,7 +6,9 @@ class VehicleControlSkill(OVOSSkill):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.base_url = "http://192.168.4.8:5000/"
-        self.log.info("VehicleControlSkill initialized")
+
+    def initialize(self):
+        self.log.info("VehicleControlSkill initialized and ready")    
 
     @intent_handler('vehicle.intent')
     def handle_vehicle_intent(self, message):
@@ -51,9 +53,15 @@ class VehicleControlSkill(OVOSSkill):
             self.speak("The vehicle system is not responding to status requests.")
 
     def play_beep(self, message):
+        
+        if not self.bus:
+            self.log.warning("Bus not ready, skipping beep")
+            return
+
         """Helper to send the beep signal to the audio service"""
         beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
-        self.bus.emit(message.forward("mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
+        self.bus.emit(message.forward(
+            "mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
 
     def post_cmd(self, action):
         url = self.base_url + action

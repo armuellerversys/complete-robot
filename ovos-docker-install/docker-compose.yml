@@ -9,7 +9,6 @@ services:
       - OVOS_BUS_HOST=127.0.0.1       # Listen on local loopback
     volumes:
       - ~/ovos/config:/home/ovos/.config/mycroft
-
     healthcheck:
       test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.connect(('127.0.0.1', 8181))"]
       interval: 5s
@@ -54,7 +53,7 @@ services:
       - /etc/alsa:/etc/alsa:ro
       - /usr/share/alsa:/usr/share/alsa:ro
       - ~/ovos/config:/home/ovos/.config/mycroft
-      - ~/models/phoonnx:/home/ovos/models/phoonnx:ro
+      - ~/models/piper:/home/ovos/models/piper:ro
       - ~/ovos/persistence/audio:/home/ovos/.local
       - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
       
@@ -106,7 +105,7 @@ services:
       context: ~/skill/ovos-skill-vehicle-control
       dockerfile: Dockerfile.vehicle_skill
     container_name: ovos_skill_vehicle_control
-    restart: "no"
+    restart: unless-stopped
     network_mode: host
     depends_on:
       ovos_messagebus:
@@ -114,7 +113,6 @@ services:
     environment:
       - TZ=Europe/Berlin
       - OVOS_BUS_HOST=127.0.0.1
-      - PULSE_SERVER=unix:/run/user/1000/pulse/native
     volumes:
       - ~/ovos/config:/home/ovos/.config/mycroft
       - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft

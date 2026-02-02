@@ -3,6 +3,9 @@ FROM smartgic/ovos-skill-base:stable
 
 USER root
 
+# 🔒 1. Pin setuptools to avoid pkg_resources deprecation warning
+RUN pip install --no-cache-dir "setuptools<81"
+
 # 1. Install dependencies
 # We use 'pip' which usually points to the venv in these images
 RUN pip install --no-cache-dir requests
