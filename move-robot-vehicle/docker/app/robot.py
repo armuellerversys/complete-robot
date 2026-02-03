@@ -1,112 +1,70 @@
-from Raspi_MotorHAT import Raspi_MotorHAT
 from gpiozero import DistanceSensor, RotaryEncoder, devices
 import leds_led_shim
 import signal
+import os
 from core_utils import CoreUtils
 
-class Robot:
+# Ensure gpiozero uses the modern lgpio factory if not set in Docker
+if 'GPIOZERO_PIN_FACTORY' not in os.environ:
+    os.environ['GPIOZERO_PIN_FACTORY'] = 'lgpio'
 
+shutdown_done = False
+
+class Robot:
     MOTOR_ADDRESS_I2C = 0x64
     wheel_diameter_mm = 60.0
     ticks_per_revolution = 624
     wheel_distance_mm = 132.0
+
     def __init__(self, motorhat_addr=MOTOR_ADDRESS_I2C):
-        
         self.logger = CoreUtils.getLogger("Robot")
         
-        # release GPIO
+        # Clean shutdown of any previous GPIO sessions
         devices._shutdown()
-        # Setup the motorhat with the passed in address
-        self._mh = Raspi_MotorHAT(addr=motorhat_addr)
-    
-        self.left_motor = self._mh.getMotor(1)
-        self.right_motor  = self._mh.getMotor(2)
 
-        LEFT_DISTANCE_ECHO = 17
-        LEFT_DISTANCE_TRIGGER = 27
-        RIGHT_DISTANCE_ECHO = 5
-        RIGHT_DISTANCE_TRIGGER = 6
-        FRONT_DISTANCE_ECHO = 22
-        FRONT_DISTANCE_TRIGGER = 23
+        # 1. Setup MotorHAT
+        #self._mh = Raspi_MotorHAT(addr=motorhat_addr)
+        #self._left_motor_obj = self._mh.getMotor(1)  # Renamed to avoid method collision
+        #self._right_motor_obj = self._mh.getMotor(2)
 
-        # Device.pin_factory = PiGPIOFactory()
-        self.left_distance_sensor = DistanceSensor(echo=LEFT_DISTANCE_ECHO, trigger=LEFT_DISTANCE_TRIGGER, queue_len=2, max_distance=1.0)
-        self.right_distance_sensor = DistanceSensor(echo=RIGHT_DISTANCE_ECHO, trigger=RIGHT_DISTANCE_TRIGGER, queue_len=2, max_distance=1.0)
-        self.front_distance_sensor = DistanceSensor(echo=FRONT_DISTANCE_ECHO, trigger=FRONT_DISTANCE_TRIGGER, queue_len=2, max_distance=1.0)
-        # Define the GPIO pins for the encoders (adjust these to your wiring)
-        LEFT_ENCODER_PIN_A = 16 # Example GPIO pin
-        LEFT_ENCODER_PIN_B = 19 # Example GPIO pin
-        RIGHT_ENCODER_PIN_A = 21 # Example GPIO pin
-        RIGHT_ENCODER_PIN_B = 20 # Example GPIO pin
-        self.right_encoder = RotaryEncoder(a=RIGHT_ENCODER_PIN_A, b=RIGHT_ENCODER_PIN_B, max_steps=0)
-        self.left_encoder = RotaryEncoder(a=LEFT_ENCODER_PIN_A, b=LEFT_ENCODER_PIN_B, max_steps=0)
+        # 2. Setup Sensors (gpiozero uses lgpio automatically now)
+        self.left_distance_sensor = DistanceSensor(echo=17, trigger=27, queue_len=2, max_distance=1.0)
+        self.right_distance_sensor = DistanceSensor(echo=5, trigger=6, queue_len=2, max_distance=1.0)
+        self.front_distance_sensor = DistanceSensor(echo=22, trigger=23, queue_len=2, max_distance=1.0)
+        
+        self.left_encoder = RotaryEncoder(a=16, b=19, max_steps=0)
+        self.right_encoder = RotaryEncoder(a=21, b=20, max_steps=0)
 
-        signal.signal(signal.SIGINT, self.cleanup)
-        signal.signal(signal.SIGTERM, self.cleanup)
-
-        # Setup the Leds
+        # 3. Setup LEDs
         self.leds = leds_led_shim.Leds()
 
-        self.logger.debug('Robot created and initialized')
-        # ensure the motors get stopped when the code exits
-        # atexit.register(self.stop_all)
+        # 4. Handle OS Signals for graceful shutdown
+        signal.signal(signal.SIGINT, self.handle_exit_signal)
+        signal.signal(signal.SIGTERM, self.handle_exit_signal)
 
-    def cleanup(sig, parm1, parm2):
-        CoreUtils.getLogger("Robot").debug('Robot cleanup')
-        devices._shutdown()
+        self.logger.debug('Robot created and initialized with lgpio backend')
 
-    def convert_speed(self, speed):
-        # Choose the running mode
-        mode = Raspi_MotorHAT.RELEASE
-        if speed > 0:
-            mode = Raspi_MotorHAT.FORWARD
-        elif speed < 0:
-            mode = Raspi_MotorHAT.BACKWARD
-
-        # Scale the speed
-        output_speed = (abs(speed) * 255) // 100
-        return mode, int(output_speed)
-
-    def set_left(self, speed):
-        mode, output_speed = self.convert_speed(speed)
-        self.logger.debug(f"Left-speed: {output_speed:.2f}")
-        self.left_motor.setSpeed(output_speed)
-        self.left_motor.run(mode)
-
-    def set_right(self, speed):
-        mode, output_speed = self.convert_speed(speed)
-        self.logger.debug(f"Right-speed: {output_speed:.2f}")
-        self.right_motor.setSpeed(output_speed)
-        self.right_motor.run(mode)
-
-    def stop_motors(self):
-        self.logger.debug('Robot-stop_motors')
-        self.left_motor.run(Raspi_MotorHAT.RELEASE)
-        self.right_motor.run(Raspi_MotorHAT.RELEASE)
-
-    def stop_motor_left(self):
-        self.logger.debug('Robot-release-left-motor')
-        self.left_motor.run(Raspi_MotorHAT.RELEASE)
-
-    def stop_motor_right(self):
-        self.logger.debug('Robot-release-right-motor')
-        self.right_motor.run(Raspi_MotorHAT.RELEASE)
-
-    def left_motor(self):
-        return self.left_motor
-
-    def right_motor(self):
-        return self.right_motor
+    def handle_exit_signal(self, signum, frame):
+        self.logger.info(f"Signal {signum} received. Cleaning up...")
+        # self.stop_all()
+        # exit(0)
 
     def stop_all(self):
-        print('Robot-stop_all')
-        self.stop_motors()
-
-        # Clear the display
+        self.logger.debug('Robot-stop_all')
         self.leds.clear()
+        Robot.safe_shutdown_devices()
 
-        # reset sensors
-        devices._shutdown()
+    @staticmethod
+    def safe_shutdown_devices():
+        global shutdown_done
+        if shutdown_done:
+            return
+        try:
+            devices._shutdown()
+        except Exception as ex:
+            CoreUtils.getLogger("Robot").debug(f"Ignoring shutdown error: {ex}")
+        finally:
+            shutdown_done = True
 
     def set_forward_direction(self):
         self.servos.set_forward_direction()
@@ -147,7 +105,6 @@ class Robot:
     @staticmethod
     def set_led_blue():
         leds_led_shim.Leds().showBlue()
-
 
     @staticmethod
     def set_green_one():

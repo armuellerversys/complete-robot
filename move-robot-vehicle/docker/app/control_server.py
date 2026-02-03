@@ -53,11 +53,13 @@ def run(mode_name):
     logger.debug(f"Response: {ret_response}")
     return ret_response
 
-@app.route("/stop", methods=['POST'])
-def stop():
-    logger.debug("stop")
-    devices._shutdown()
-    time
+@app.route("/stop_action", methods=['POST'])
+def stop_action():
+    logger.debug("stop request received")
+
+    Robot.ffffff()
+
+    Robot.safe_shutdown_devices()
     Robot.set_led_orange()
     matrixDisplay.showTemperatur()
     # Tell our system to stop the mode it's in.

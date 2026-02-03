@@ -67,6 +67,7 @@
                 {'command':'set_' + name, 'speed': speed, 'distance': distance });}
 
         function checkServerStatus() {
+            console.debug("checkServerStatus" + Date.now())
             fetch("/ping")
                 .then(response => {
                     if (!response.ok) throw new Error('Server not OK');
@@ -114,7 +115,8 @@
             setInterval(() => {
                 const video = document.getElementById("video-feed");
                 // NOTE: '{{ url_for('display') }}' is a server-side template placeholder
-                video.src = "{{ url_for('display') }}" + "?t=" + new Date().getTime();
+                // video.src = "{{ url_for('display') }}" + "?t=" + new Date().getTime();
+                video.src = "http://192.168.4.6:5000/video_feed"
             }, 2000);
 
             // -----------------------------------------------------------------

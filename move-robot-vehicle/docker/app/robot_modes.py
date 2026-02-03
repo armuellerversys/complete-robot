@@ -51,7 +51,7 @@ class RobotModes(object):
 
     def stop(self):
         """RobotModes-Stop a process"""
-        self.logger.debug("Try to stop process")
+        #self.logger.debug("Try to stop process")
         if self.is_running():
             # Sending the signal sigint is (on Linux) similar to pressing ctrl-c.
             # That causes the behavior to clean up and exit.

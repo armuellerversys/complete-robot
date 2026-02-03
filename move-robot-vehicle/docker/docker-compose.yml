@@ -7,17 +7,28 @@ services:
       dockerfile: Dockerfile.vehicle
     network_mode: host
     restart: unless-stopped
+    
+    # Privileged is often needed for direct /dev/mem and certain gpiochip operations
+    privileged: true 
+    
     devices:
       - /dev/i2c-1:/dev/i2c-1
+      # On Pi 4/5, there are multiple chips; mapping all ensures lgpio finds the right one
       - /dev/gpiochip0:/dev/gpiochip0
+      - /dev/gpiochip1:/dev/gpiochip1
+      - /dev/gpiochip2:/dev/gpiochip2
       - /dev/mem:/dev/mem
 
     volumes:
       - /sys:/sys:ro
+      # Added for modern GPIO/I2C character device support
+      - /run/udev:/run/udev:ro 
     
     environment:
       - OVOS_BUS_HOST=127.0.0.1
       - OVOS_BUS_PORT=8181
+      # Force gpiozero to use the backend we installed via apt
+      - GPIOZERO_PIN_FACTORY=lgpio
 
     tty: true
     stdin_open: true

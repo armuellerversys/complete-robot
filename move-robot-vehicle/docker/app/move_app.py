@@ -4,7 +4,6 @@ from robot import Robot
 import requests
 import json
 from matrix_display import MatrixDisplay
-from image_app_core import put_output_image
 from move_motor import Move_motor
 from core_utils import CoreUtils
 from image_app_core import clear_queue

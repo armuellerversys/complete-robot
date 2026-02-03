@@ -12,12 +12,12 @@ class MatrixDisplay:
     def __init__(self):
       self.matrix11x7 = Matrix11x7(None, 0x77)
       self.matrix11x7.set_brightness(0.5)
-      self.logger = CoreUtils.getLogger("matrix_display")
+      #self.logger = CoreUtils.getLogger("matrix_display")
       self.imu = RobotImu()
 
     def showTemperatur(self):
         temperature = self.imu.read_temperature()
-        self.logger.debug("Temperature {}".format(round(temperature)))
+        #self.logger.debug("Temperature {}".format(round(temperature)))
         self.showString(str(round(temperature)))
 
     def showMagnetometerAngle(self):
@@ -32,7 +32,7 @@ class MatrixDisplay:
        # return stop_event
      
     #def showClock_thread(self, stop_event):
-        self.logger.debug('[showClock]::Started')
+        #self.logger.debug('[showClock]::Started')
         # Avoid retina-searage!
         self.matrix11x7.set_brightness(0.5)
 
@@ -64,12 +64,12 @@ class MatrixDisplay:
         #    x=0,
         #    y=12,
         #    font=font5x7)
-        self.logger.debug("Show clock")
+        #self.logger.debug("Show clock")
         self.matrix11x7.show()
         time.sleep(0.5)
 
     def showString(self, text):
-        self.logger.debug(f"Show String: {text}")
+        #self.logger.debug(f"Show String: {text}")
         self.matrix11x7.clear()
         self.matrix11x7.write_string(text)
         # Show the buffer

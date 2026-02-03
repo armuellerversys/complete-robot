@@ -1,7 +1,7 @@
 import time
 import math
 from Raspi_MotorHAT import Raspi_MotorHAT
-from image_app_core import get_control_instruction
+from gpiozero import devices
 from matrix_display import MatrixDisplay
 from core_utils import CoreUtils
 from move_app import Move_app
@@ -32,13 +32,10 @@ MAX_SPEED = 200
 class DriveController:
     def __init__(self, move_app):
         print("Initializing Drive Controller...")
-        MOTOR_ADDR = 0x64
-        LEFT_MOTOR_PORT = 1
-        RIGHT_MOTOR_PORT = 2
-        # --- Motor Setup ---
-        self.mh = Raspi_MotorHAT(MOTOR_ADDR)
-        self.left_motor = self.mh.getMotor(LEFT_MOTOR_PORT)
-        self.right_motor = self.mh.getMotor(RIGHT_MOTOR_PORT)
+     
+        move_app.stopMotors()
+        self.left_motor , self.right_moto = self.move_app.move_motor.getMotors(self)
+
         self.logger = CoreUtils.getLogger("Move_encoder")
         self.sensorRobotCar = SensorRobotCar(move_app, self.left_motor, self.right_motor, 150)
         # --- PID State Variables ---
@@ -244,8 +241,8 @@ class DriveController:
             finish = True
             time_say = time.time()
             # Lock current heading as the 'North' we want to follow
-            moveApp.target_heading = moveApp.get_calibrated_heading()
-            moveApp.current_heading = moveApp.target_heading
+            robot_drive.target_heading = robot_drive.get_calibrated_heading()
+            robot_drive.current_heading = robot_drive.target_heading
             while finish:
                 robot_drive.matrixDisplay.showMagnetometerAngle()
                 ## move_straight_pid_control(self, speed_target, distance_target):
@@ -261,6 +258,10 @@ class DriveController:
         finally:
             robot_drive.release_motors()
             robot_drive.logger.debug("Program finished.")
+
+    @staticmethod
+    def stop(moveApp):
+        time.sleep(DT) 
 
 
 ## ▶️ Main Execution

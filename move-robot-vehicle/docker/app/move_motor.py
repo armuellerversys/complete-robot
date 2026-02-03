@@ -9,12 +9,16 @@ rm = mh.getMotor(2)
 logger = CoreUtils.getLogger("Move_motor")
 
 class Move_motor:
-     
+    def getMotors(self):
+        return lm, rm
+    
     def turn_off_motors(self):
+        logger.debug("turn_off_motors")
         lm.setSpeed(0)
         rm.setSpeed(0)
         lm.run(Raspi_MotorHAT.FORWARD)
         rm.run(Raspi_MotorHAT.FORWARD)
+
     def run_forward(self, speed):
         try:
             logger.debug(f"run_forward: {speed}")
@@ -24,6 +28,7 @@ class Move_motor:
             rm.run(Raspi_MotorHAT.FORWARD)
         except Exception:
             print(traceback.format_exc())
+
     def run_backward(self, speed):
         try:
             logger.debug(f"run_backward: {speed}")
@@ -33,6 +38,7 @@ class Move_motor:
             rm.run(Raspi_MotorHAT.BACKWARD)
         except Exception:
             print(traceback.format_exc())
+
     def left_forward(self, speed):
         try:
             if speed >= 0:
@@ -45,6 +51,7 @@ class Move_motor:
                 lm.run(Raspi_MotorHAT.BACKWARD)
         except Exception:
             print(traceback.format_exc())
+
     def right_forward(self, speed):
         try:
             if speed >= 0:
@@ -57,6 +64,7 @@ class Move_motor:
                 rm.run(Raspi_MotorHAT.BACKWARD)
         except Exception:
             print(traceback.format_exc())
+
     def run_left(self, speed):
         try:
             logger.debug(f"run_left: {speed}")
@@ -68,6 +76,7 @@ class Move_motor:
             self.turn_off_motors()
         except Exception:
             print(traceback.format_exc())
+            
     def run_right(self, speed):
         try:
             logger.debug(f"run_right: {speed}")

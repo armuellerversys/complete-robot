@@ -1,8 +1,10 @@
 FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
+# Force gpiozero to use the lgpio pin factory
+ENV GPIOZERO_PIN_FACTORY=lgpio
 
-# 1. Setup Raspberry Pi Repos + Install gnupg for key handling
+# 1. Setup Raspberry Pi Repos (Bypassing SHA-1 validation)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
@@ -27,15 +29,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iputils-ping \
  && rm -rf /var/lib/apt/lists/*
 
-# 2. Install Python Packages
+# 2. Install Python Packages (Removed RPi.GPIO)
 RUN python3 -m pip install --no-cache-dir --break-system-packages \
     opencv-python-headless \
     flask \
     debugpy \
     ovos-bus-client \
     ledshim \
-    RPi.GPIO \
-    gpiozero \
     icm20948 \
     vpython \
     matrix11x7 \

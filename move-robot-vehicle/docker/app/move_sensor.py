@@ -1,5 +1,4 @@
 import time
-from gpiozero import DistanceSensor # Use the dedicated class for HC-SR04
 from Raspi_MotorHAT import Raspi_MotorHAT
 from core_utils import CoreUtils
 from move_app import Move_app
@@ -8,7 +7,6 @@ from move_app import Move_app
 # --- Configuration Constants ---
 
 COLLISION_DISTANCE_M = 20 # Collision Threshold in meters (25 cm)
-MH_ADDR = 0x64 # Default I2C address for the Motor HAT
 TURN_STEPS = 600
 
 class SensorRobotCar:
@@ -16,10 +14,8 @@ class SensorRobotCar:
     
     def __init__(self, move_app, motor_left, motor_right, speed):
         self.logger = CoreUtils.getLogger("Move_sensor")
-        # 1. Initialize Motor HAT
-        self.mh = Raspi_MotorHAT(addr=MH_ADDR)
-        self.motor_left = motor_left
-        self.motor_right = motor_right
+    
+        self.left_motor , self.right_moto = self.move_app.move_motor.getMotors(self)
         self.speed = speed
         self.set_speed(speed)
         self.move_app = move_app
