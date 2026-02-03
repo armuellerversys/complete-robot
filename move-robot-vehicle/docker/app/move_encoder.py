@@ -1,12 +1,13 @@
 import time
+import math
 from Raspi_MotorHAT import Raspi_MotorHAT
 from image_app_core import get_control_instruction
 from matrix_display import MatrixDisplay
 from core_utils import CoreUtils
 from move_app import Move_app
 from move_sensor import SensorRobotCar
-import debugpy
-debugpy.listen(('0.0.0.0', 5678))
+from icm20948 import ICM20948
+
 
 # print("CWD:", os.getcwd())
 # input('Hello! Start testing move_encoder:\n')
@@ -51,7 +52,63 @@ class DriveController:
 
         self.matrixDisplay = MatrixDisplay()
         
+        # --- IMU Setup ---
+        # Assuming you use a standard library for the ICM20948
+        self.imu = ICM20948()
+        # 1. Calibration Data (Replace with results from your script)
+        # OFFSETS: [-24.224999999999998, 36.224999999999994, 6.1499999999999995]
+        # SCALES: [0.7663551401869159, 1.1549295774647887, 1.2058823529411764]
+        self.mag_offsets = [-24.225, 36.225, 6.15] 
+        self.mag_scales = [0.766, 1.155, 1.206]
+        
+        # 2. Filter & PID State
+        self.alpha = 0.98            # Trust 98% Gyro, 2% Magnetometer
+        self.current_heading = 0.0
+        self.target_heading = 0.0
+        self.last_time = time.time()
+        
+        # PID Gains (Start small, tune KP first)
+        self.kp_gyro = 4.0 
+        self.ki_gyro = 0.01
+        self.kd_gyro = 0.1
+        
+        self.gyro_integral = 0
+        self.prev_gyro_error = 0
+
         self.logger.debug("move encoder: exit init forward behavior")
+
+    def get_calibrated_heading(self):
+        """Reads Magnetometer and applies offsets for a true heading."""
+        raw_mag = self.imu.read_magnetometer_data() 
+        #raw_mag = [0, 0, 0] # Placeholder
+        
+        # Apply Calibration
+        mx = (raw_mag[0] - self.mag_offsets[0]) * self.mag_scales[0]
+        my = (raw_mag[1] - self.mag_offsets[1]) * self.mag_scales[1]
+        
+        heading = math.degrees(math.atan2(my, mx))
+        return heading % 360
+    
+    def update_fused_heading(self):
+        """Combines Gyro and Mag into one stable value."""
+        now = time.time()
+        dt = now - self.last_time
+        self.last_time = now
+        
+        # Get Gyro rate (degrees per second)
+        gyro_z = self.imu.read_accelerometer_gyro_data()[2]
+        # gyro_z = 0 # Placeholder
+        
+        # Get absolute Mag heading
+        mag_h = self.get_calibrated_heading()
+        
+        # Complementary Filter
+        # We use 'angle_difference' to prevent the filter from breaking at the 360/0 flip
+        delta_gyro = gyro_z * dt
+        self.current_heading = self.alpha * (self.current_heading + delta_gyro) + \
+                               (1 - self.alpha) * mag_h
+        
+        return self.current_heading
 
     # --- Motor Control Helpers ---
     def set_motor_speed(self, motor_type, direction, speed):
@@ -88,46 +145,45 @@ class DriveController:
        return abs(self.right_encoder.steps) 
     
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
-    def move_straight_pid_control(self, speed_target, distance_target):
-
+    def move_straight_gyro_assisted(self, speed_target, distance_target):
+        """The main loop replacing the old encoder-only PID."""
         left_counts = self.abs_left_encoder()
         right_counts = self.abs_right_encoder()
         distance = (left_counts + right_counts) / 2
-        self.logger.debug(f"left_counts: {left_counts} |right_counts: {right_counts} | speed_target: {speed_target} | distance_target: {distance_target}")
+
         if distance < distance_target:
-            current_error = left_counts - right_counts 
-
-            p_term = KP * current_error
-
-            self.integral_error += current_error * DT
-            i_term = KI * self.integral_error
+            # 1. Update Heading
+            curr_h = self.update_fused_heading()
             
-            derivative = (current_error - self.previous_error) / DT
-            d_term = KD * derivative
+            # 2. Calculate Angular Error
+            # How far are we from our locked target direction?
+            error = self.target_heading - curr_h
             
-            adjustment = (p_term + i_term + d_term) / 30
+            # Handle the 360-degree wrap-around error
+            if error > 180: error -= 360
+            if error < -180: error += 360
 
-            self.logger.debug(f"adjustment: {adjustment:4.1f} | p_term: {p_term:4.1f} | i_term: {i_term:4.1f} | d_term: {d_term:4.1f}")
+            # 3. Heading PID
+            p_term = self.kp_gyro * error
+            self.gyro_integral += error * DT
+            d_term = self.kd_gyro * ((error - self.prev_gyro_error) / DT)
+            
+            adjustment = p_term + (self.ki_gyro * self.gyro_integral) + d_term
 
+            # 4. Motor Output
+            # If error is positive (veered left), adjustment increases R speed and decreases L speed
             left_speed = speed_target - adjustment
             right_speed = speed_target + adjustment
 
             self.set_motor_speed("L", FORWARD, int(left_speed))
             self.set_motor_speed("R", FORWARD, int(right_speed))
 
-            self.previous_error = current_error
-
-            self.logger.debug(f"L-counts: {left_counts} | R-counts: {right_counts} | E: {current_error} | LM: {left_speed:4.1f}  | RM: {right_speed:4.1f}")
-
-            self.sensorRobotCar.run_avoidance_check(speed_target)
+            self.prev_gyro_error = error
             
-            if (self.move_app.is_stop_type(get_control_instruction())):
-                self.logger.debug("move encoder stopped")
-                self.release_motors()
-                return False
+            # Check for obstacles and stop signals
+            self.sensorRobotCar.run_avoidance_check(speed_target)
             return True
         else:
-            self.logger.debug("move encoder finish")
             self.release_motors()
             return False
     
@@ -187,10 +243,13 @@ class DriveController:
             # Access the control method through the instance
             finish = True
             time_say = time.time()
+            # Lock current heading as the 'North' we want to follow
+            moveApp.target_heading = moveApp.get_calibrated_heading()
+            moveApp.current_heading = moveApp.target_heading
             while finish:
                 robot_drive.matrixDisplay.showMagnetometerAngle()
                 ## move_straight_pid_control(self, speed_target, distance_target):
-                finish = robot_drive.move_straight_pid_control(moveApp.forward_speed, 20000)
+                finish = robot_drive.move_straight_gyro_assisted(moveApp.forward_speed, 20000)
                 if (time.time() > (time_say + SAY_TIME)):
                     time_say = time.time()
                     moveApp.sayText(ACTIVE_TEXT)

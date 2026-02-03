@@ -2,17 +2,16 @@ FROM debian:trixie-slim
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-# 1. Setup Raspberry Pi Repos
+# 1. Setup Raspberry Pi Repos + Install gnupg for key handling
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl gnupg \
+    ca-certificates \
+    curl \
+    gnupg \
  && curl -fsSL https://archive.raspberrypi.com/debian/raspberrypi.gpg.key \
     | gpg --dearmor -o /usr/share/keyrings/raspberrypi.gpg \
- && echo "deb [signed-by=/usr/share/keyrings/raspberrypi.gpg] \
-    https://archive.raspberrypi.com/debian/ trixie main" \
-    > /etc/apt/sources.list.d/raspberrypi.list
-
-# 2. Install System Dependencies + Pre-compiled Math Libraries
-RUN apt-get update && apt-get install -y --no-install-recommends \
+ && echo "deb [signed-by=/usr/share/keyrings/raspberrypi.gpg trusted=yes] https://archive.raspberrypi.com/debian/ trixie main" \
+    > /etc/apt/sources.list.d/raspberrypi.list \
+ && apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-dev \
@@ -28,8 +27,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     iputils-ping \
  && rm -rf /var/lib/apt/lists/*
 
-# 3. Install remaining Python Packages
-# We remove numpy and scipy from here because they are already installed via apt above
+# 2. Install Python Packages
 RUN python3 -m pip install --no-cache-dir --break-system-packages \
     opencv-python-headless \
     flask \
@@ -40,21 +38,18 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
     gpiozero \
     icm20948 \
     vpython \
-    matrix11x7
-
-RUN python3 -m pip install --no-cache-dir --break-system-packages \
+    matrix11x7 \
     git+https://github.com/orionrobots/Raspi_MotorHAT
 
+# Ensure directory exists for ARM-specific libraries if needed
 RUN mkdir -p /usr/lib/aarch64-linux-gnu
 
 ENV PATH="/root/.local/bin:/usr/bin:${PATH}"
 
-COPY test/ /app/
-
 WORKDIR /app
+COPY test/ /app/test/
 COPY app/ /app/
 
 EXPOSE 5000 5678
 
 CMD ["python3", "control_server.py"]
-# CMD ["python3", "test.py"]
