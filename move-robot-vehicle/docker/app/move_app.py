@@ -35,13 +35,16 @@ class Move_app:
         self.forward_speed = 0
         self.forward_distance = 0
         self.last_time = time.time()
-       
+
         self.sensor_front = self.robot.front_distance_sensor
         self.sensor_left = self.robot.left_distance_sensor
         self.sensor_right = self.robot.right_distance_sensor
 
         self.logger.debug("Move_app:Move-app init completed")         
 
+    def setDriveController(self, driveController):
+        self.driveController = driveController
+        
     def exit_server(self, server):
         if server and server.is_alive():
             self.logger.debug(f"Move_app:Sending SIGINT to PID {server.pid}...")

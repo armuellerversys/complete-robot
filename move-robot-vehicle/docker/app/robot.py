@@ -17,32 +17,33 @@ class Robot:
     wheel_distance_mm = 132.0
 
     def __init__(self, motorhat_addr=MOTOR_ADDRESS_I2C):
-        self.logger = CoreUtils.getLogger("Robot")
-        
-        # Clean shutdown of any previous GPIO sessions
-        devices._shutdown()
+        try:
+            self.logger = CoreUtils.getLogger("Robot")
+            
+            # Clean shutdown of any previous GPIO sessions
+            devices._shutdown()
 
-        # 1. Setup MotorHAT
-        #self._mh = Raspi_MotorHAT(addr=motorhat_addr)
-        #self._left_motor_obj = self._mh.getMotor(1)  # Renamed to avoid method collision
-        #self._right_motor_obj = self._mh.getMotor(2)
+            # 2. Setup Sensors (gpiozero uses lgpio automatically now)
+            self.left_distance_sensor = DistanceSensor(echo=17, trigger=27, queue_len=2, max_distance=1.0)
+            self.right_distance_sensor = DistanceSensor(echo=5, trigger=6, queue_len=2, max_distance=1.0)
+            self.front_distance_sensor = DistanceSensor(echo=22, trigger=23, queue_len=2, max_distance=1.0)
+            
+            self.left_encoder = RotaryEncoder(a=16, b=19, max_steps=0)
+            self.right_encoder = RotaryEncoder(a=21, b=20, max_steps=0)
 
-        # 2. Setup Sensors (gpiozero uses lgpio automatically now)
-        self.left_distance_sensor = DistanceSensor(echo=17, trigger=27, queue_len=2, max_distance=1.0)
-        self.right_distance_sensor = DistanceSensor(echo=5, trigger=6, queue_len=2, max_distance=1.0)
-        self.front_distance_sensor = DistanceSensor(echo=22, trigger=23, queue_len=2, max_distance=1.0)
-        
-        self.left_encoder = RotaryEncoder(a=16, b=19, max_steps=0)
-        self.right_encoder = RotaryEncoder(a=21, b=20, max_steps=0)
+            # 3. Setup LEDs
+            self.leds = leds_led_shim.Leds()
 
-        # 3. Setup LEDs
-        self.leds = leds_led_shim.Leds()
+            # 4. Handle OS Signals for graceful shutdown
+            signal.signal(signal.SIGINT, self.handle_exit_signal)
+            signal.signal(signal.SIGTERM, self.handle_exit_signal)
 
-        # 4. Handle OS Signals for graceful shutdown
-        signal.signal(signal.SIGINT, self.handle_exit_signal)
-        signal.signal(signal.SIGTERM, self.handle_exit_signal)
-
-        self.logger.debug('Robot created and initialized with lgpio backend')
+            self.logger.info('Robot created and initialized with lgpio backend')
+        except Exception as e:
+            self.logger.info(f"Error initializing sensors: {e}")
+            # Optional: force a close if they exist
+            if hasattr(self, 'left_distance_sensor'):
+                self.left_distance_sensor.close()
 
     def handle_exit_signal(self, signum, frame):
         self.logger.info(f"Signal {signum} received. Cleaning up...")

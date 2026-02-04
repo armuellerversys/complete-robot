@@ -1,5 +1,6 @@
 import time
-
+import signal
+import sys
 from image_app_core import start_server_process, get_control_instruction, put_output_image
 from move_app import Move_app
 from move_encoder import DriveController
@@ -30,12 +31,13 @@ class Move_behavior():
       self.found = False
       self.distance = False
       self.forwardRun = False
-      # start camera
-      self.logger.debug("move behavior: try to setup camera")
+   
       self.move_app = Move_app()
       # indicate init done
       self.move_app.set_led_blue()
-      
+      self.move_app.stopMotors()
+      self.driveController = DriveController.getInstance(self)
+      self.move_app.setDriveController(self.driveController)
       self.logger.debug("move behavior: exit init forward behavior")
 
    def process_control(self):
@@ -80,11 +82,12 @@ class Move_behavior():
             self.move_app.set_led_blue()
 
             if (self.forwardRun == True):
-               DriveController.run(self.move_app)
+               self.logger.info("Start forward drive controller")
+               self.driveController.run()
                self.forwardRun = False
             if (self.execute and time.time() > self.last_time + TIMEOUT_IN):
                self.move_app.set_led_yellow()
-               self.logger.debug("move behavior:move timeout")
+               self.logger.info("move behavior:move timeout")
                self.move_app.stopMotors()
                self.execute = False
             if not self.found and (time.time() > (time_pan + 2)):
@@ -96,6 +99,35 @@ class Move_behavior():
             self.logger.debug("move behavior:close all")
             self.move_app.stopMotors()
 
-CoreUtils.getLogger("Move_behavior").debug("move behavior:Starting move Behavior")
+def setup_signal_handlers(behavior):
+    def handle_exit(sig, frame):
+        CoreUtils.getLogger("Move_behavior").info(f"\nDocker signal {sig} received. Cleaning up...")
+        # 1. Stop the motors immediately
+        behavior.move_app.stopMotors()
+        
+        # 2. Explicitly close gpiozero sensors
+        # This is the key to fixing the 'GPIO busy' error
+        try:
+            behavior.move_app.robot.left_distance_sensor.close()
+            behavior.move_app.robot.right_distance_sensor.close()
+            behavior.move_app.robot.mid_distance_sensor.close()
+            behavior.left_encoder.close()
+            behavior.right_encoder.close()
+        except:
+            pass
+            
+        CoreUtils.getLogger("Move_behavior").error("GPIO pins released. Exiting safely.")
+        sys.exit(0)
+
+    # Catch SIGTERM (Docker stop) and SIGINT (Ctrl+C)
+    signal.signal(signal.SIGTERM, handle_exit)
+    signal.signal(signal.SIGINT, handle_exit)
+
+CoreUtils.getLogger("Move_behavior").info("move behavior:Starting move Behavior")
 behavior = Move_behavior()
-behavior.process()
+# Register the cleanup handler
+setup_signal_handlers(behavior)
+try:
+   behavior.process()
+except Exception as e:
+   CoreUtils.getLogger("Move_behavior").error(f"Fatal error: {e}")

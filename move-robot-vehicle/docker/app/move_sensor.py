@@ -12,20 +12,22 @@ TURN_STEPS = 600
 class SensorRobotCar:
     """Class to encapsulate motor control and sensor reading for the vehicle."""
     
-    def __init__(self, move_app, motor_left, motor_right, speed):
+    def __init__(self, behavior, speed):
         self.logger = CoreUtils.getLogger("Move_sensor")
     
-        self.left_motor , self.right_moto = self.move_app.move_motor.getMotors(self)
+        self.behavior = behavior
+        self.move_app = behavior.move_app
+
+        self.motor_left, self.motor_right = self.move_app.move_motor.getMotors()
         self.speed = speed
         self.set_speed(speed)
-        self.move_app = move_app
-        
-        self.sensor_front = move_app.sensor_front
-        self.sensor_left = move_app.sensor_left
-        self.sensor_right = move_app.sensor_right
 
-        self.right_encoder = move_app.robot.right_encoder
-        self.left_encoder = move_app.robot.left_encoder
+        self.sensor_front = self.move_app.sensor_front
+        self.sensor_left = self.move_app.sensor_left
+        self.sensor_right = self.move_app.sensor_right
+
+        self.right_encoder = self.move_app.robot.right_encoder
+        self.left_encoder = self.move_app.robot.left_encoder
 
     def set_speed(self, speed):
         self.motor_left.setSpeed(speed)
@@ -75,6 +77,11 @@ class SensorRobotCar:
                 self.motor_right.run(Raspi_MotorHAT.RELEASE)
                 right_ok = True
             if left_ok and right_ok:
+                self.stop()
+                break
+            type = self.behavior.process_control()
+            self.logger.info(f"Command received: {type}")
+            if (self.move_app.isStop(type)):
                 self.stop()
                 break
             time.sleep(0.1)
@@ -177,7 +184,7 @@ if __name__ == '__main__':
     MOTOR_RIGHT_ID = 2 # Assuming right motor is connected to M2
     MOTOR_SPEED = 100  # Max speed is 255
 
-    mh = Raspi_MotorHAT(addr=MH_ADDR)
+    mh = Raspi_MotorHAT(addr=0x64)
     motor_left = mh.getMotor(MOTOR_LEFT_ID)
     motor_right = mh.getMotor(MOTOR_RIGHT_ID)
     move_app = Move_app()

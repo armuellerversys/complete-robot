@@ -30,22 +30,24 @@ ROTATE_SPEED = 200
 MAX_SPEED = 200
 
 class DriveController:
-    def __init__(self, move_app):
-        print("Initializing Drive Controller...")
-     
-        move_app.stopMotors()
-        self.left_motor , self.right_moto = self.move_app.move_motor.getMotors(self)
+    def __init__(self, behavior):
 
         self.logger = CoreUtils.getLogger("Move_encoder")
-        self.sensorRobotCar = SensorRobotCar(move_app, self.left_motor, self.right_motor, 150)
+        self.logger.info("Initializing Drive Controller...")
+        self.behavior = behavior
+        self.move_app = behavior.move_app
+        self.move_app.stopMotors()
+        self.left_motor, self.right_motor = self.move_app.move_motor.getMotors()
+
+        self.sensorRobotCar = SensorRobotCar(behavior, 150)
         # --- PID State Variables ---
         self.integral_error = 0
         self.previous_error = 0
-        self.move_app = move_app
+       
         # Initialize the RotaryEncoder for the encoders
         # The Hall encoder generates pulses (counts) as the wheel turns.
-        self.right_encoder = move_app.robot.right_encoder
-        self.left_encoder = move_app.robot.left_encoder
+        self.right_encoder = self.move_app.robot.right_encoder
+        self.left_encoder = self.move_app.robot.left_encoder
 
         self.matrixDisplay = MatrixDisplay()
         
@@ -72,7 +74,9 @@ class DriveController:
         self.gyro_integral = 0
         self.prev_gyro_error = 0
 
-        self.logger.debug("move encoder: exit init forward behavior")
+        self.stop_vehicle = False
+
+        self.logger.info("move encoder: exit init forward behavior")
 
     def get_calibrated_heading(self):
         """Reads Magnetometer and applies offsets for a true heading."""
@@ -148,6 +152,8 @@ class DriveController:
         right_counts = self.abs_right_encoder()
         distance = (left_counts + right_counts) / 2
 
+        if self.stop_vehicle: return False
+
         if distance < distance_target:
             # 1. Update Heading
             curr_h = self.update_fused_heading()
@@ -185,14 +191,14 @@ class DriveController:
             return False
     
     def run_backward(self):
-        self.logger.debug("run backward")
+        self.logger.info("run backward")
         
         self.right_motor.setSpeed(ROTATE_SPEED)
         self.right_motor.run(Raspi_MotorHAT.BACKWARD)
         self.left_motor.setSpeed(ROTATE_SPEED)
         self.left_motor.run(Raspi_MotorHAT.BACKWARD)
         back_encoder_steps = self.right_encoder.steps
-        self.logger.debug(f"Running right motor {TURN_STEPS} steps...")
+        self.logger.info(f"Running right motor {TURN_STEPS} steps...")
         while True:
             if ((self.right_encoder.steps - back_encoder_steps)  > TURN_STEPS):
                  break
@@ -228,41 +234,50 @@ class DriveController:
     def isCriticalDistance(self):
         return self.move_app.isLeftDistance() or self.move_app.isRightDistance() or self.move_app.isMidDistance()
 
-    ## run
     @staticmethod
-    def run(moveApp):
-        DT = 0.01
+    def getInstance(behavior):
+        return DriveController(behavior)
+    
+    def run(self):
+        DT = 0.5
         SAY_TIME = 20
-        robot_drive = DriveController(moveApp)
         try:
-            robot_drive.reset(moveApp.forward_speed)
-            robot_drive.logger.debug(f"Starting movement... {moveApp.forward_speed}")
+            self.logger.info(f"Move_encoder: Starting movement... {self.move_app.forward_speed}")
+
+            self.reset(self.move_app.forward_speed)
+          
             # Access the control method through the instance
             finish = True
             time_say = time.time()
             # Lock current heading as the 'North' we want to follow
-            robot_drive.target_heading = robot_drive.get_calibrated_heading()
-            robot_drive.current_heading = robot_drive.target_heading
+            self.target_heading = self.get_calibrated_heading()
+            self.current_heading = self.target_heading
             while finish:
-                robot_drive.matrixDisplay.showMagnetometerAngle()
-                ## move_straight_pid_control(self, speed_target, distance_target):
-                finish = robot_drive.move_straight_gyro_assisted(moveApp.forward_speed, 20000)
+                self.matrixDisplay.showMagnetometerAngle()
+                
+                finish = self.move_straight_gyro_assisted(self.move_app.forward_speed, 20000)
                 if (time.time() > (time_say + SAY_TIME)):
                     time_say = time.time()
-                    moveApp.sayText(ACTIVE_TEXT)
+                    self.move_app.sayText(ACTIVE_TEXT)
+
+                type = self.behavior.process_control()
+                self.logger.info(f"Command received: {type}")
+                if (self.move_app.isStop(type)):
+                    self.release_motors()
+                    return False
 
                 time.sleep(DT)
-            
+
+            self.move_app.stopMotors()
+
         except Exception as e:
-            robot_drive.logger.debug(f"An error occurred: {e}")
+            self.logger.error(f"An error occurred: {e}")
         finally:
-            robot_drive.release_motors()
-            robot_drive.logger.debug("Program finished.")
+            self.release_motors()
+            self.logger.error("Program finished.")
 
-    @staticmethod
-    def stop(moveApp):
-        time.sleep(DT) 
-
+    def stop_vehicle(self):
+        self.stop_vehicle = True
 
 ## ▶️ Main Execution
 if __name__ == '__main__':

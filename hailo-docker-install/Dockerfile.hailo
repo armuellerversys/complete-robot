@@ -3,13 +3,15 @@ FROM debian:trixie-slim
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 1. Setup Raspberry Pi Repos
+# 1. Setup Raspberry Pi Repos (Bypassing SHA-1 validation)
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates curl gnupg \
+    ca-certificates \
+    curl \
+    gnupg \
  && curl -fsSL https://archive.raspberrypi.com/debian/raspberrypi.gpg.key \
     | gpg --dearmor -o /usr/share/keyrings/raspberrypi.gpg \
- && echo "deb [signed-by=/usr/share/keyrings/raspberrypi.gpg] \
-    https://archive.raspberrypi.com/debian/ trixie main" \
-    > /etc/apt/sources.list.d/raspberrypi.list
+ && echo "deb [signed-by=/usr/share/keyrings/raspberrypi.gpg trusted=yes] https://archive.raspberrypi.com/debian/ trixie main" \
+    > /etc/apt/sources.list.d/raspberrypi.list 
 
 # 2. Install System Dependencies + Pre-compiled Math Libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -27,6 +29,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libstdc++6 \
     build-essential \
     git \
+    iputils-ping \
  && rm -rf /var/lib/apt/lists/*
 
 # 3. Install remaining Python Packages

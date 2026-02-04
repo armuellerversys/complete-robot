@@ -21,7 +21,7 @@ RGB_BLUE = (0, 0, 255)
 RGB_RED = (0, 255, 0)
 RGB_WHITE = (255, 255, 255)
 
-URL = "http://192.168.4.8:5000"
+URL = "http://192.168.4.8:5001"
 
 # The headers specify that you are sending JSON data
 headers = {
@@ -94,7 +94,8 @@ class PersonTracker:
         self.persistence = 0
         self.fps = 0
         self.prev_time = 0
-        self.last_snapshot_time = 0 
+        self.last_snapshot_time = 0
+        self.send_vehi_stop = True
         self.snapshot_cooldown = 5  # Seconds between snapshots
         self.servos = ServoController(pan_channel=0, tilt_channel=1)
 
@@ -133,7 +134,7 @@ class PersonTracker:
             output_params = OutputVStreamParams.make_from_network_group(network_group)
             input_info = hef.get_input_vstream_infos()[0]
             h, w = input_info.shape[0], input_info.shape[1]
-            
+           
             with InferVStreams(network_group, input_params, output_params) as pipeline:
                 with network_group.activate():
                     frame_count = 0
@@ -168,7 +169,9 @@ class PersonTracker:
                                     if len(valid) > 0:
                                         # Snapshot Logic
                                         self.say_text("I have detected a person.")
-                                        self.stop_vehicle()
+                                        if self.send_vehi_stop:
+                                            self.stop_vehicle()
+                                            self.send_vehi_stop = False
                                         # Box Smoothing
                                         det = valid[0]
                                         new_box = np.array([det[1], det[0], det[3], det[2]])
@@ -220,14 +223,16 @@ class PersonTracker:
             self.servos.scan()
             self.smooth_box = None
             hw.set_led_color(RGB_BLUE)
+            self.send_vehi_stop = True
 
     def stop_vehicle(self):
         # #curl -X POST http://192.168.4.8:5000/stop -H "Content-Type: application/json"
         try:
         
             # Send a POST request to the server with the JSON data
-            logger.debug(f"Sending request stop to {URL}...")
-            response = requests.post(URL + "/stop", headers=headers)
+            logger.info(f"Sending request stop to {URL}...")
+            parms =  {'command':'set_stop', 'speed': "100", 'distance': "3000" }
+            response = requests.post(URL + "/control", json = parms, headers=headers)
 
             # Check if the request was successful
             if response.status_code == 200:
