@@ -2,8 +2,7 @@
 import logging
 from time import sleep
 import traceback
-from gpiozero import devices
-from gpiozero import RotaryEncoder
+from gpiozero import devices, RotaryEncoder
 from leds_led_shim import Leds
 from core_utils import CoreUtils
 

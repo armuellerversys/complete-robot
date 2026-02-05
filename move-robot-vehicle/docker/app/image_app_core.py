@@ -1,6 +1,6 @@
 import time
 from multiprocessing import Process, Queue
-from robot import Robot
+from robot_gpio import Robot
 from flask import Flask, render_template, Response, request
 from core_utils import CoreUtils
 # import debugpy
@@ -11,7 +11,7 @@ logger = CoreUtils.getLogger('image_app_core')
 control_queue = Queue()
 display_queue = Queue(maxsize=2)
 display_template = 'image_server.html'
-logger.debug("Image_app_core: Start image app core")
+logger.info("Image_app_core: Start image app core")
 
 
 @app.after_request
@@ -21,12 +21,12 @@ def add_header(response):
 
 @app.route('/')
 def index():
-    logger.debug("image_app_core: index")
+    logger.info("image_app_core: index")
     return render_template(display_template)
 
 @app.route('/start')
 def start():
-    logger.debug("image_app_core: start")
+    logger.info("image_app_core: start")
     return start_server_process('move.html')
 
 def frame_generator():
@@ -37,13 +37,13 @@ def frame_generator():
 
 @app.route('/display')
 def display():
-    logger.debug("image_app_core: display")
+    logger.info("image_app_core: display")
     return Response(frame_generator(),
         mimetype='multipart/x-mixed-replace; boundary=frame')
 
 @app.route('/control', methods=['POST'])
 def control():
-    logger.debug("image_app_core: route")
+    logger.info("image_app_core: route")
     Robot.set_led_orange()
     control_queue.put(request.form)
     return Response('queued')
@@ -55,11 +55,11 @@ def ping():
 
 def start_server_process(template_name):
     global display_template
-    logger.debug("image_app_core: start_server_process")
+    logger.info("image_app_core: start_server_process")
     display_template = template_name
     server = Process(target=app.run, kwargs={"host": "0.0.0.0", "port": 5001})
     server.start()
-    logger.debug(f"Process-PID: {server.pid}")
+    logger.info(f"Process-PID: {server.pid}")
     
     return server
 

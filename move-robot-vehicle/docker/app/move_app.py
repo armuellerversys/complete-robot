@@ -1,6 +1,6 @@
 import time
 import os, signal
-from robot import Robot
+from robot_gpio import Robot
 import requests
 import json
 from matrix_display import MatrixDisplay
@@ -36,18 +36,30 @@ class Move_app:
         self.forward_distance = 0
         self.last_time = time.time()
 
-        self.sensor_front = self.robot.front_distance_sensor
-        self.sensor_left = self.robot.left_distance_sensor
-        self.sensor_right = self.robot.right_distance_sensor
+        self._sensor_front = self.robot.front_distance_sensor
+        self._sensor_left = self.robot.left_distance_sensor
+        self._sensor_right = self.robot.right_distance_sensor
 
-        self.logger.debug("Move_app:Move-app init completed")         
+        self.logger.info("Move_app:Move-app init completed")
+
+    @property
+    def sensor_front(self):
+        return self._sensor_front
+
+    @property
+    def sensor_left(self):
+        return self._sensor_left  
+
+    @property
+    def sensor_right(self):
+        return self._sensor_right   
 
     def setDriveController(self, driveController):
         self.driveController = driveController
         
     def exit_server(self, server):
         if server and server.is_alive():
-            self.logger.debug(f"Move_app:Sending SIGINT to PID {server.pid}...")
+            self.logger.info(f"Move_app:Sending SIGINT to PID {server.pid}...")
             os.kill(server.pid, signal.SIGINT)  # graceful shutdown
             server.join(timeout=3)
 
@@ -57,14 +69,14 @@ class Move_app:
                 server.terminate()
                 server.join()
             self.matrixDisplay.showTemperatur()
-            self.logger.debug("Server stopped cleanly.")
+            self.logger.info("Server stopped cleanly.")
         else:
             self.logger.debug("Server not running.")
 
     def is_stop_type(self, instruction):
         if instruction is not None:
             command = instruction['command']
-            self.logger.debug(f"Command: {command}")
+            self.logger.info(f"Command: {command}")
             if command == "set_stop":
                 return True
             if command == "exit":
@@ -73,57 +85,57 @@ class Move_app:
 
     def handle_instruction(self, instruction, process):
       command = instruction['command']
-      self.logger.debug(f"Command: {command}")
+      self.logger.info(f"Command: {command}")
       type = "-"
       if command == "set_left":
         type = "L"
         left_speed = int(instruction['speed'])
         self.move_motor.run_left(left_speed)
         self.robot.set_led_red()
-        self.logger.debug(f"Move_app:Left-speed: {left_speed:.2f}")
+        self.logger.info(f"Move_app:Left-speed: {left_speed:.2f}")
       elif command == "set_right":
         type = "R"
         right_speed = int(instruction['speed'])
         self.move_motor.run_right(right_speed)
         self.robot.set_led_red()
-        self.logger.debug(f"Move_app:Right-speed: {right_speed:.2f}")
+        self.logger.info(f"Move_app:Right-speed: {right_speed:.2f}")
       elif command == "set_backward":
          type = "B"
          backward_speed = int(instruction['speed'])
          self.move_motor.run_backward(backward_speed)
          self.robot.set_led_red()
-         self.logger.debug(f"Move_app:Backward-speed: {backward_speed:.2f}")
+         self.logger.info(f"Move_app:Backward-speed: {backward_speed:.2f}")
       elif command == "set_forward":
          type = "F"
          self.forward_speed = int(instruction['speed'])
          self.forward_distance = int(instruction['distance'])
          self.robot.set_led_red()
-         self.logger.debug(f"Move_app forward: speed: {self.forward_speed:.2f} | distance: {self.forward_distance:.2f}")
+         self.logger.info(f"Move_app forward: speed: {self.forward_speed:.2f} | distance: {self.forward_distance:.2f}")
       elif command == "set_forward_left":
          type = "M"
          left_forward_speed = int(instruction['speed'])
          self.move_motor.left_forward(left_forward_speed)
          self.robot.set_led_red()
-         self.logger.debug(f"Move_app:forward_left-speed: {left_forward_speed:.2f}")
+         self.logger.info(f"Move_app:forward_left-speed: {left_forward_speed:.2f}")
       elif command == "set_forward_right":
          type = "R"
          right_forward_speed = int(instruction['speed'])
          self.move_motor.right_forward(right_forward_speed)
          self.robot.set_led_red()
-         self.logger.debug(f"Move_app:forward_right-speed: {right_forward_speed:.2f}")
+         self.logger.info(f"Move_app:forward_right-speed: {right_forward_speed:.2f}")
       elif command == "set_stop":
          print("stopping")
          type = "X"
          self.move_motor.turn_off_motors()
          clear_queue()
          self.robot.set_led_blue()
-         self.logger.debug("Move_app:Stop-run")
+         self.logger.info("Move_app:Stop-run")
       elif command == "exit":
          print("Move_app:exiting")
          type = "-"
          self.move_motor.turn_off_motors()
          self.robot.set_led_blue()
-         self.logger.debug("Move_app:Exit-run")
+         self.logger.info("Move_app:Exit-run")
          self.exit_server(process)
          exit()
       else:
@@ -138,24 +150,24 @@ class Move_app:
             payload = {"utterance": text}
 
             # Send a POST request to the server with the JSON data
-            self.logger.debug(f"Sending request to {URL}...")
+            self.logger.info(f"Sending request to {URL}...")
             response = requests.post(URL, data=json.dumps(payload), headers=headers)
 
             # Check if the request was successful
             if response.status_code == 200:
-                self.logger.debug("Success! The voice server received the request.")
-                self.logger.debug("Voice Server response:", response.json())
+                self.logger.info("Success! The voice server received the request.")
+                self.logger.info("Voice Server response:", response.json())
             else:
-                self.logger.debug(f"Voice Server Error! Status code: {response.status_code}")
-                self.logger.debug("Voice Server response:", response.text)
+                self.logger.error(f"Voice Server Error! Status code: {response.status_code}")
+                self.logger.error("Voice Server response:", response.text)
 
         except requests.exceptions.ConnectionError as e:
-            self.logger.debug(f"Failed to connect to the Voice Server at {URL}.")
-            self.logger.debug("Please ensure the voice Voice Server is running and accessible.")
-            self.logger.debug(f"Error details: {e}")      
+            self.logger.error(f"Failed to connect to the Voice Server at {URL}.")
+            self.logger.error("Please ensure the voice Voice Server is running and accessible.")
+            self.logger.error(f"Error details: {e}")      
     
     def stopMotors(self):
-        self.logger.debug("move_app-stopMotors")
+        self.logger.info("move_app-stopMotors")
         self.move_motor.turn_off_motors()
 
     def run_forward(self, speed):
@@ -168,7 +180,7 @@ class Move_app:
         front_distance = self.sensor_front.distance
         ##print("Left: {l:.2f}, Right: {r:.2f}".format(l=left_distance, r=right_distance))
         if left_distance < MINIMUM_DIST or right_distance < MINIMUM_DIST or front_distance < MINIMUM_DIST:
-            self.logger.debug("move_app:critical distance, Left: {0:.2f} cm, Right: {1:.2f} cm, Mid: {1:.2f} cm".format(
+            self.logger.info("move_app:critical distance, Left: {0:.2f} cm, Right: {1:.2f} cm, Mid: {1:.2f} cm".format(
                   left_distance * 100, right_distance * 100, front_distance * 100))
             return True
         else:

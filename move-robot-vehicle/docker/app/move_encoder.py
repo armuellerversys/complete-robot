@@ -1,7 +1,6 @@
 import time
 import math
 from Raspi_MotorHAT import Raspi_MotorHAT
-from gpiozero import devices
 from matrix_display import MatrixDisplay
 from core_utils import CoreUtils
 from move_app import Move_app
@@ -184,8 +183,7 @@ class DriveController:
             self.prev_gyro_error = error
             
             # Check for obstacles and stop signals
-            self.sensorRobotCar.run_avoidance_check(speed_target)
-            return True
+            return self.sensorRobotCar.run_avoidance_check(speed_target)
         else:
             self.release_motors()
             return False
@@ -242,7 +240,7 @@ class DriveController:
         DT = 0.5
         SAY_TIME = 20
         try:
-            self.logger.info(f"Move_encoder: Starting movement... {self.move_app.forward_speed}")
+            self.logger.info(f"Move_encoder: Starting movement with speed: {self.move_app.forward_speed} distance: {self.move_app.forward_distance }")
 
             self.reset(self.move_app.forward_speed)
           
@@ -255,7 +253,8 @@ class DriveController:
             while finish:
                 self.matrixDisplay.showMagnetometerAngle()
                 
-                finish = self.move_straight_gyro_assisted(self.move_app.forward_speed, 20000)
+                finish = self.move_straight_gyro_assisted(self.move_app.forward_speed, self.move_app.forward_distance)
+                self.logger.info(f"Finish received: {finish}")
                 if (time.time() > (time_say + SAY_TIME)):
                     time_say = time.time()
                     self.move_app.sayText(ACTIVE_TEXT)
@@ -263,13 +262,14 @@ class DriveController:
                 type = self.behavior.process_control()
                 self.logger.info(f"Command received: {type}")
                 if (self.move_app.isStop(type)):
+                    self.logger.info("Program stop received.")
                     self.release_motors()
                     return False
 
                 time.sleep(DT)
 
             self.move_app.stopMotors()
-
+            return True
         except Exception as e:
             self.logger.error(f"An error occurred: {e}")
         finally:

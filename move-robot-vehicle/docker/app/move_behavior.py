@@ -1,7 +1,7 @@
 import time
 import signal
 import sys
-from image_app_core import start_server_process, get_control_instruction, put_output_image
+from image_app_core import start_server_process, get_control_instruction
 from move_app import Move_app
 from move_encoder import DriveController
 import traceback
@@ -16,7 +16,7 @@ from core_utils import CoreUtils
 HI_TEXT = "Hello albrecht, my name is K6"
 IMAGE_TEXT = "Hello who are you?"
 DT = 0.01
-TIMEOUT_IN = 10
+TIMEOUT_IN = 100
 
 # The headers specify that you are sending JSON data
 headers = {
@@ -38,7 +38,7 @@ class Move_behavior():
       self.move_app.stopMotors()
       self.driveController = DriveController.getInstance(self)
       self.move_app.setDriveController(self.driveController)
-      self.logger.debug("move behavior: exit init forward behavior")
+      self.logger.info("move behavior: exit init forward behavior")
 
    def process_control(self):
       instruction = get_control_instruction()

@@ -1,9 +1,11 @@
 from Raspi_MotorHAT import Raspi_MotorHAT
-from robot import Robot
+from robot_gpio import Robot
 from time import sleep
 import atexit
 import traceback
+from core_utils import CoreUtils
 
+logger = CoreUtils.getLogger("control_server")
 mh = Raspi_MotorHAT(addr=0x64)
 lm = mh.getMotor(1)
 rm = mh.getMotor(2)
@@ -14,6 +16,8 @@ def turn_off_motors():
 
 atexit.register(turn_off_motors)
 try:
+  logger.info("test motors")
+
   Robot.set_led_orange()
  
   lm.setSpeed(100)
@@ -23,7 +27,7 @@ try:
   rm.run(Raspi_MotorHAT.FORWARD)
   sleep(1)
 except Exception:
-  print(traceback.format_exc())
-  print("close all")
+  logger.info(traceback.format_exc())
+  logger.info("close all")
 finally:
   turn_off_motors()

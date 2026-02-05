@@ -1,7 +1,6 @@
 from flask import Flask, render_template, render_template_string, jsonify, request
 from robot_modes import RobotModes
-from robot import Robot
-from gpiozero import devices
+from robot_gpio import Robot
 from matrix_display import MatrixDisplay
 import socket
 import time
@@ -18,12 +17,13 @@ app = Flask(__name__)
 mode_manager = RobotModes()
 
 Robot.set_green_one()
+logger = CoreUtils.getLogger("control_server")
 
-print("Show matrix")
+logger.info("Show matrix")
 matrixDisplay = MatrixDisplay()
 # stop_event = matrixDisplay.showClock()
 matrixDisplay.showTemperatur()
-logger = CoreUtils.getLogger("control_server")
+
 
 @app.after_request
 def add_header(response):
@@ -32,13 +32,13 @@ def add_header(response):
 
 @app.route("/")
 def index():
-    logger.debug("index")
+    logger.info("index")
     matrixDisplay.showTemperatur()
     return render_template('menu.html', menu=mode_manager.menu_config)
 
 @app.route("/run/<mode_name>", methods=['POST'])
 def run(mode_name):
-    logger.debug("route run/" + mode_name)
+    logger.info("route run/" + mode_name)
     Robot.set_led_white()
  
     # Use our robot app to run something with this mode_name
@@ -50,12 +50,12 @@ def run(mode_name):
         response['redirect'] = False
         
     ret_response = jsonify(response)
-    logger.debug(f"Response: {ret_response}")
+    logger.info(f"Response: {ret_response}")
     return ret_response
 
 @app.route("/stop_action", methods=['POST'])
 def stop_action():
-    logger.debug("stop request received")
+    logger.info("stop request received")
 
     Robot.ffffff()
 
@@ -64,19 +64,19 @@ def stop_action():
     matrixDisplay.showTemperatur()
     # Tell our system to stop the mode it's in.
     mode_manager.stop()
-    logger.debug(f"Stop executed")
+    logger.info(f"Stop executed")
     return jsonify({'message': "Stopped"})
 
 @app.route("/state", strict_slashes=False)
 def state():
-    logger.debug("state request received")
+    logger.info("state request received")
     Robot.set_led_orange()
     time.sleep(1)
     Robot.set_led_white()
     time.sleep(1)
     Robot.set_led_blue()
     matrixDisplay.showTemperatur()
-    logger.debug("state request response send")
+    logger.info("state request response send")
     return jsonify({'state': "Vehicle OK"})
 
 @app.route('/dead_page')
@@ -110,7 +110,7 @@ def get_lan_ip():
         s.close()
     return ip
 
-print("REGISTERED ROUTES:")
-print(app.url_map)
-logger.debug("Start control server: " + get_lan_ip())
+logger.info("REGISTERED ROUTES:")
+logger.info(app.url_map)
+logger.info("Start control server: " + get_lan_ip())
 app.run(host='0.0.0.0', port=5000, use_reloader=False)

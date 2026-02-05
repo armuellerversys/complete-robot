@@ -1,5 +1,4 @@
 from time import sleep
-from robot import Robot
 import leds_led_shim
 import colorsys
 import traceback

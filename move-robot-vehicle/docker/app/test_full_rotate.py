@@ -1,8 +1,7 @@
 
 from time import sleep
 import traceback
-from gpiozero import devices
-from gpiozero import RotaryEncoder
+from gpiozero import devices, RotaryEncoder
 from Raspi_MotorHAT import Raspi_MotorHAT
 from leds_led_shim import Leds
 from core_utils import CoreUtils
@@ -39,12 +38,12 @@ rm = mh.getMotor(2)
 
 leds.showGreen()
 try:
-    logger.debug("rotate once right")
+    logger.info("rotate once right")
     # rotate right motor
     rm.setSpeed(ROTATE_SPEED)
     rm.run(Raspi_MotorHAT.FORWARD)
 
-    logger.debug(f"Running right motor {ROTATE_STEPS} steps...")
+    logger.info(f"Running right motor {ROTATE_STEPS} steps...")
     while True:
         leds.showBlue()
         if (right_encoder.steps > ROTATE_STEPS):
@@ -54,12 +53,12 @@ try:
     leds.showGreen()
     sleep(900/1000)
 
-    logger.debug("rotate once left")
+    logger.info("rotate once left")
     # rotate left motor
     lm.setSpeed(ROTATE_SPEED)
     lm.run(Raspi_MotorHAT.FORWARD)
 
-    logger.debug(f"Running left motor {ROTATE_STEPS} steps...")
+    logger.info(f"Running left motor {ROTATE_STEPS} steps...")
     while True:
         leds.showRed()
         if (left_encoder.steps > ROTATE_STEPS):
@@ -68,8 +67,8 @@ try:
     leds.showGreen()
 
 except Exception:
-    logger.debug(traceback.format_exc())
+    logger.error(traceback.format_exc())
 finally:
-    logger.debug("close all")
+    logger.info("close all")
     leds.clear()
     devices._shutdown()

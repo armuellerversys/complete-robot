@@ -78,12 +78,13 @@ class SensorRobotCar:
                 right_ok = True
             if left_ok and right_ok:
                 self.stop()
-                break
+                return True
             type = self.behavior.process_control()
             self.logger.info(f"Command received: {type}")
             if (self.move_app.isStop(type)):
+                self.logger.info("Program stop received.")
                 self.stop()
-                break
+                return False
             time.sleep(0.1)
 
     def abs_left_encoder(self):
@@ -129,49 +130,52 @@ class SensorRobotCar:
         """The main collision avoidance logic."""
         try:
             while self.isCriticalDistance():
-                self.logger.debug("Starting collision avoidance loop")
+                self.logger.info("Starting collision avoidance loop")
                 # Get distances (in cm)
                 dist_front, dist_left, dist_right = self.get_distances_cm()
                 
                 # Check for collision in front
                 if dist_front < COLLISION_DISTANCE_M:
-                    self.logger.debug("!!! OBSTACLE DETECTED IN FRONT !!!")
+                    self.logger.info("!!! OBSTACLE DETECTED IN FRONT !!!")
                     self.stop()
-                    self.reverse_by_encoder()
-                    
+                    if not self.reverse_by_encoder():
+                        self.logger.info("reverse_by_encoder finish received")
+                        return False
                     # Decide turn direction based on clearest path
                     if dist_left > COLLISION_DISTANCE_M and dist_left >= dist_right:
-                        self.logger.debug("Path clear on left, executing turn left.")
+                        self.logger.info("Path clear on left, executing turn left.")
                         self.turn_left()
                     elif dist_right > COLLISION_DISTANCE_M:
-                        self.logger.debug("Path clear on right, executing turn right.")
+                        self.logger.info("Path clear on right, executing turn right.")
                         self.turn_right()
                     else:
                         # Fallback: Both sides blocked or left is slightly better but too close
-                        self.logger.debug("Both sides restricted, executing default turn right.")
+                        self.logger.info("Both sides restricted, executing default turn right.")
                         self.turn_right()
                 elif dist_left < COLLISION_DISTANCE_M:
-                    self.logger.debug("!!! OBSTACLE DETECTED on left side !!!")
+                    self.logger.info("!!! OBSTACLE DETECTED on left side !!!")
                     self.stop()
                     self.reverse_by_encoder()
                     self.turn_right()
                 elif dist_right < COLLISION_DISTANCE_M:
-                    self.logger.debug("!!! OBSTACLE DETECTED on right side !!!")
+                    self.logger.info("!!! OBSTACLE DETECTED on right side !!!")
                     self.stop()
                     self.reverse_by_encoder()
                     self.turn_left()
                 # Normal Movement
                 else:
-                    self.logger.debug("!!! inconsisten  distance found!!!")
+                    self.logger.info("!!! inconsistent distance found!!!")
                     self.forward()
                 
                 # Small delay for loop stability
                 time.sleep(0.1)
                 self.forward()
+                
+            return True
         except KeyboardInterrupt:
-            self.logger.debug("\nProgram stopped by user.")
+            self.logger.error("\nProgram stopped by user.")
             self.move_app.stopMotors()
-    
+            return False
 
 # --- Run the Program ---
 if __name__ == '__main__':
