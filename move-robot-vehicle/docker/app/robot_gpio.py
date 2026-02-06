@@ -24,9 +24,9 @@ class Robot:
             devices._shutdown()
 
             # 2. Setup Sensors (gpiozero uses lgpio automatically now)
-            self.left_distance_sensor = DistanceSensor(echo=17, trigger=27, queue_len=2, max_distance=1.0)
-            self.right_distance_sensor = DistanceSensor(echo=5, trigger=6, queue_len=2, max_distance=1.0)
-            self.front_distance_sensor = DistanceSensor(echo=22, trigger=23, queue_len=2, max_distance=1.0)
+            self._left_distance_sensor = DistanceSensor(echo=17, trigger=27, queue_len=2, max_distance=1.0)
+            self._right_distance_sensor = DistanceSensor(echo=5, trigger=6, queue_len=2, max_distance=1.0)
+            self._front_distance_sensor = DistanceSensor(echo=22, trigger=23, queue_len=2, max_distance=1.0)
             
             self.left_encoder = RotaryEncoder(a=16, b=19, max_steps=0)
             self.right_encoder = RotaryEncoder(a=21, b=20, max_steps=0)
@@ -44,6 +44,18 @@ class Robot:
             # Optional: force a close if they exist
             if hasattr(self, 'left_distance_sensor'):
                 self.left_distance_sensor.close()
+
+    @property
+    def left_distance_sensor(self):
+        return self._left_distance_sensor
+
+    @property
+    def right_distance_sensor(self):
+        return self._right_distance_sensor
+
+    @property
+    def front_distance_sensor(self):
+        return self._front_distance_sensor
 
     def handle_exit_signal(self, signum, frame):
         self.logger.info(f"Signal {signum} received. Cleaning up...")
