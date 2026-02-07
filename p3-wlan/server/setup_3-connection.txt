@@ -1,0 +1,247 @@
+# Set the regulatory domain first (Critical for Germany)
+sudo iw reg set DE
+
+# Connect wlan1 to your home Wi-Fi
+sudo nmcli device wifi rescan
+sudo nmcli device wifi connect "MueFritz2022" password "Hotz_Plotz_2026!" ifname wlan1 name "Backup-USB"
+
+# Set a lower priority (higher metric) for the USB so it only kicks in if Ethernet fails
+sudo nmcli connection modify "Backup-USB" ipv4.route-metric 200
+
+sudo nmcli connection add \
+  type wifi \
+  ifname wlan0 \
+  con-name "Onboard-AP" \
+  autoconnect yes \
+  ssid "Pi4_AccessPoint" \
+  mode ap \
+  802-11-wireless.band bg \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk "Robot2025" \
+  ipv4.method shared \
+  ipv4.addresses 192.168.4.1/24
+
+
+# 1. Enable kernel routing
+sudo sysctl -w net.ipv4.ip_forward=1
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+
+# 2. Configure the firewall (nftables is the Trixie default)
+sudo nft add table ip nat
+sudo nft add chain ip nat postrouting { type nat hook postrouting priority 100 \; }
+sudo nft add rule ip nat postrouting oifname "eth0" masquerade
+sudo nft add rule ip nat postrouting oifname "wlan1" masquerade
+
+# 3. Save the rules so they persist after reboot
+sudo apt install nftables -y
+sudo systemctl enable nftables
+sudo nft list ruleset | sudo tee /etc/nftables.conf
+
+# 1. Enable IP Forwarding (The routing brain)
+sudo sysctl -w net.ipv4.ip_forward=1
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+
+# 2. Configure the NAT Passthru for BOTH exits
+# We use nftables (the modern standard in Trixie)
+sudo nft add table ip nat
+sudo nft add chain ip nat postrouting { type nat hook postrouting priority 100 \; }
+sudo nft add rule ip nat postrouting oifname "eth0" masquerade
+sudo nft add rule ip nat postrouting oifname "wlan1" masquerade
+
+# 3. Save the configuration so it survives a reboot
+sudo apt update && sudo apt install nftables -y
+sudo systemctl enable nftables
+sudo nft list ruleset | sudo tee /etc/nftables.conf
+
+# Allow SSH traffic from the Hotspot network (192.168.4.0/24)
+sudo nft add rule ip filter input iifname "wlan0" tcp dport 22 accept
+
+# Save the change
+sudo nft list ruleset | sudo tee /etc/nftables.conf
+
+1. Allow the Pi 4 to accept SSH/requests FROM the robots (Input)
+# We add this to the standard INPUT chain (which usually exists)
+sudo nft add table ip filter
+sudo nft add chain ip filter input { type filter hook input priority 0 \; }
+sudo nft add rule ip filter input iifname "wlan0" tcp dport 22 accept
+
+# 2. Fix the Forwarding (so robots can talk to each other and the internet)
+# We insert the "accept" rules at the TOP so they hit before the "reject" at the bottom
+sudo nft insert rule ip nm-shared-wlan0 filter_forward iifname "wlan0" oifname "wlan0" accept
+sudo nft insert rule ip nm-shared-wlan0 filter_forward iifname "wlan0" accept
+
+# Check if it's on (0 means off, 1 means on)
+cat /proc/sys/net/ipv4/ip_forward
+
+# Turn it on immediately
+sudo sysctl -w net.ipv4.ip_forward=1
+
+# Make it permanent
+echo "net.ipv4.ip_forward=1" | sudo tee -a /etc/sysctl.conf
+
+# Force the AP to allow all packets through the bridge
+sudo nmcli connection modify "Onboard-AP" 802-11-wireless-security.proto rsn
+sudo nmcli connection modify "Onboard-AP" 802-11-wireless-security.group ccmp
+sudo nmcli connection modify "Onboard-AP" 802-11-wireless-security.pairwise ccmp
+
+# Reactivate to apply
+sudo nmcli connection up "Onboard-AP"
+
+# 1. Clear the restrictive forwarding rules for the Hotspot
+sudo nft flush chain ip nm-shared-wlan0 filter_forward
+
+# 2. Allow all traffic to/from the robots
+sudo nft add rule ip nm-shared-wlan0 filter_forward accept
+
+# 3. Ensure the Pi 4 itself can accept SSH/Pings from the robots
+# Create a standard filter table if it doesn't exist
+sudo nft add table ip filter
+sudo nft add chain ip filter input { type filter hook input priority 0 \; policy accept \; }
+sudo nft add rule ip filter input iifname "wlan0" accept
+
+# Clear the old (if any) and set the new static targets
+sudo nmcli connection modify "Onboard-AP" ipv4.dhcp-static-targets "88:a2:9e:00:63:ec 192.168.4.8, 2c:cf:67:ef:2f:c6 192.168.4.6"
+
+# Restart the AP
+sudo nmcli connection up "Onboard-AP"
+
+# Set the static mappings for both robots
+sudo nmcli connection modify "Onboard-AP" ipv4.dhcp-static-targets "88:a2:9e:00:63:ec 192.168.4.8, 2c:cf:67:ef:2f:c6 192.168.4.6"
+
+# Apply the static IP targets to the Onboard-AP connection
+sudo nmcli connection modify "Onboard-AP" ipv4.dhcp-static-targets "88:a2:9e:00:63:ec 192.168.4.8, 2c:cf:67:ef:2f:c6 192.168.4.6"
+
+# Apply the static targets (Note the space/comma formatting)
+sudo nmcli connection modify "Onboard-AP" ipv4.dhcp-static-targets "88:a2:9e:00:63:ec 192.168.4.8, 2c:cf:67:ef:2f:c6 192.168.4.6"
+
+# Reactivate the connection to push the new config to the internal dnsmasq
+sudo nmcli connection up "Onboard-AP"
+
+# Restart the Access Point to load the new rules
+sudo nmcli connection up "Onboard-AP"
+
+# Apply the configuration
+sudo nmcli connection up "Onboard-AP"
+
+# 1. Create a directory for custom NetworkManager-dnsmasq configs
+sudo mkdir -p /etc/NetworkManager/dnsmasq-shared.d/
+
+# 2. Create a file to lock the MAC addresses to IPs
+sudo nano /etc/NetworkManager/dnsmasq-shared.d/robot-ips.conf
+dhcp-host=88:a2:9e:00:63:ec,192.168.4.8
+dhcp-host=2c:cf:67:ef:2f:c6,192.168.4.6
+
+sudo nano /etc/NetworkManager/NetworkManager.conf
+[main]
+dns=dnsmasq
+
+# 1. Stop the AP
+sudo nmcli connection down "Onboard-AP"
+
+# 2. Wipe the old lease "memory"
+sudo rm /var/lib/NetworkManager/dnsmasq-wlan0.leases
+
+# 3. Restart NetworkManager
+sudo systemctl restart NetworkManager
+
+# 4. Start the AP
+sudo nmcli connection up "Onboard-AP"
+
+########################################################################################
+cat /var/lib/NetworkManager/dnsmasq-wlan0.leases
+sudo journalctl -f -u NetworkManager
+
+
+########################################################################
+sudo nmcli device wifi connect "MueFritz2022" password "MuellerWlan22!" ifname wlan-sta0
+
+sudo nmcli device wifi connect "MueFritz2022" password "xxxxxxx" ifname wlan-sta0
+Error: 802-11-wireless-security.key-mgmt: property is missing.
+
+
+sudo nmcli device wifi connect "MueFritz2022" \
+  password "MuellerWlan22!" \
+  ifname wlan-sta0 \
+  name "Backup-WLAN" \
+  802-11-wireless-security.key-mgmt wpa-psk
+  
+  
+  sudo nmcli device wifi connect "MueFritz2022" \
+  password "xxxx" \
+  ifname wlan-sta0 \
+  name "Backup-WLAN" \
+  802-11-wireless-security.key-mgmt wpa-psk
+Error: invalid extra argument '802-11-wireless-security.key-mgmt'.
+
+sudo nmcli connection add \
+  type wifi \
+  con-name "Backup-WLAN" \
+  ifname wlan-sta0 \
+  ssid "MueFritz2022!" \
+  -- \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk "MuellerWlan22" \
+  ipv4.method auto \
+  ipv4.route-metric 200
+  
+  
+  sudo nmcli connection add \
+  type wifi \
+  con-name "Backup-WLAN" \
+  ifname wlan-sta0 \
+  ssid "xxxx" \
+  -- \
+  wifi-sec.key-mgmt wpa-psk \
+  wifi-sec.psk "MuellerWlan22" \
+  ipv4.method auto \
+  ipv4.route-metric 200
+Warning: There is another connection with the name 'Backup-WLAN'. Reference the connection by its uuid 'a516ba55-77f8-4484-bcc4-c573dfa5702e'
+Connection 'Backup-WLAN' (a516ba55-77f8-4484-bcc4-c573dfa5702e) successfully added.
+
+user@raspberrypi-4:/etc/netplan $ sudo nmcli connection up "Backup-WLAN"
+Push of the WPS button on the router or a password is required to access the wireless network 'MueFritz2022'.
+Warning: password for '802-11-wireless-security.psk' not given in 'passwd-file' and nmcli cannot ask without '--ask' option.
+Error: Connection activation failed: Secrets were required, but not provided
+Hint: use 'journalctl -xe NM_CONNECTION=add10a2b-5029-41a1-acd7-3e4573ec2ec7 + NM_DEVICE=wlan-sta0' to get more details.
+
+Hotz_Plotz_2026!
+
+# 1. Manually set the password in the profile
+sudo nmcli connection modify "Backup-WLAN" wifi-sec.psk "Hotz_Plotz_2026!"
+
+# 2. Tell NetworkManager to store the secret as 'System' (not User)
+sudo nmcli connection modify "Backup-WLAN" wifi-sec.psk-flags 0
+
+# 3. Try to bring the connection up again
+sudo nmcli connection up "Backup-WLAN"
+
+. Verify the Triple-Link Status
+nmcli connection show --active
+
+#add the backup NAT rule:
+sudo nft add rule ip nat POSTROUTING oifname "wlan-sta0" counter masquerade
+
+sudo sysctl -p
+
+sudo nmcli connection up wlan0-ap
+
+# TP-Link adapter and run:
+lsusb
+# Look for TP-Link or Realtek
+ip link
+
+sudo nmcli device wifi rescan
+sudo nmcli device wifi connect "MueFritz2022" password "Hotz_Plotz_2026!" ifname wlan1 name "Backup-USB"
+
+# Set it to be a lower priority than Ethernet
+sudo nmcli connection modify "Backup-USB" ipv4.route-metric 200
+
+
+# 1. Lock the AP profile to the specific onboard hardware
+sudo nmcli connection modify "Onboard-AP" 802-11-wireless.mac-address dc:a6:32:22:e4:2d
+
+# 2. Set the device to managed (just in case)
+sudo nmcli device set wlan0 managed yes
+
+# 3. Force it up using the specific interface
+sudo nmcli connection up "Onboard-AP" ifname wlan0
