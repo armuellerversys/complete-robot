@@ -57,8 +57,6 @@ def run(mode_name):
 def stop_action():
     logger.info("stop request received")
 
-    Robot.ffffff()
-
     Robot.safe_shutdown_devices()
     Robot.set_led_orange()
     matrixDisplay.showTemperatur()

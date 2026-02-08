@@ -110,3 +110,17 @@ sudo systemctl restart NetworkManager
 
 ## NAT configuration
 sudo nft list ruleset
+
+# connect to Mueller WLAN
+iw list
+
+rfkill list
+
+sudo iw dev wlan0 scan | grep SSID
+
+nmcli -f IN-USE,SSID,CHAN,BARS device wifi list
+
+sudo nmcli connection down wlan0-ap (or sudo systemctl stop hostapd)
+
+sudo rfkill unblock wifi
+sudo ip link set wlan0 up
