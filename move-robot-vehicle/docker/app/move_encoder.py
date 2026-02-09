@@ -97,11 +97,12 @@ class DriveController:
         
         # Get Gyro rate (degrees per second)
         gyro_z = self.imu.read_accelerometer_gyro_data()[2]
-        # gyro_z = 0 # Placeholder
+        self.logger.info(f"accelerometer-gyro_z {gyro_z}")
         
         # Get absolute Mag heading
         mag_h = self.get_calibrated_heading()
-        
+        self.logger.info(f"magnetometer-mag_h {mag_h}")
+
         # Complementary Filter
         # We use 'angle_difference' to prevent the filter from breaking at the 360/0 flip
         delta_gyro = gyro_z * dt
@@ -154,13 +155,24 @@ class DriveController:
         if self.stop_vehicle: return False
 
         if distance < distance_target:
+
+            current_error = left_counts - right_counts 
+            p_term = KP * current_error
+            self.integral_error += current_error * DT
+            i_term = KI * self.integral_error
+            derivative = (current_error - self.previous_error) / DT
+            d_term = KD * derivative
+            adjust_encoder = (p_term + i_term + d_term) / 30
+            self.logger.debug(f"adjustment: {adjust_encoder:4.1f} | p_term: {p_term:4.1f} | i_term: {i_term:4.1f} | d_term: {d_term:4.1f}")
+
             # 1. Update Heading
             curr_h = self.update_fused_heading()
-            
+            self.logger.info(f"fused curr_h {curr_h}")
             # 2. Calculate Angular Error
             # How far are we from our locked target direction?
             error = self.target_heading - curr_h
-            
+            self.logger.info(f"Update fused  {error}")
+
             # Handle the 360-degree wrap-around error
             if error > 180: error -= 360
             if error < -180: error += 360
@@ -170,10 +182,12 @@ class DriveController:
             self.gyro_integral += error * DT
             d_term = self.kd_gyro * ((error - self.prev_gyro_error) / DT)
             
-            adjustment = p_term + (self.ki_gyro * self.gyro_integral) + d_term
-
+            adjust_imu = p_term + (self.ki_gyro * self.gyro_integral) + d_term
+            self.logger.info(f"Speed adjustment imu  {adjust_imu}")
             # 4. Motor Output
             # If error is positive (veered left), adjustment increases R speed and decreases L speed
+            adjustment = adjust_encoder + adjust_imu * 0.1
+            self.logger.info(f"Speed adjustment  {adjustment}")
             left_speed = speed_target - adjustment
             right_speed = speed_target + adjustment
 
@@ -204,13 +218,13 @@ class DriveController:
 
 
     def rotate_left(self, target_steps):
-        self.logger.debug("rotate_left")
+        self.logger.info("rotate_left")
     
         # rotate right motor
         self.right_motor.setSpeed(ROTATE_SPEED)
         self.right_motor.run(Raspi_MotorHAT.FORWARD)
         right_encoder_steps = self.right_encoder.steps
-        self.logger.debug(f"Running right motor {target_steps} steps...")
+        self.logger.info(f"Running right motor {target_steps} steps...")
         while True:
             if ((self.right_encoder.steps - right_encoder_steps)  > target_steps):
                  break
