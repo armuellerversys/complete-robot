@@ -96,6 +96,7 @@ class PersonTracker:
         self.prev_time = 0
         self.last_snapshot_time = 0
         self.send_vehi_stop = True
+        self.say_once = True
         self.snapshot_cooldown = 5  # Seconds between snapshots
         self.servos = ServoController(pan_channel=0, tilt_channel=1)
 
@@ -139,7 +140,7 @@ class PersonTracker:
                 with network_group.activate():
                     frame_count = 0
                     current_temp = hw.get_hailo_temp()
-                    
+                    self.say_once = True
                     while True:
                         frame = hw.picam2.capture_array()
                         if frame is None: break
@@ -168,7 +169,9 @@ class PersonTracker:
                                     
                                     if len(valid) > 0:
                                         # Snapshot Logic
-                                        self.say_text("I have detected a person.")
+                                        if self.say_once:
+                                            self.say_text("I have detected a person.")
+                                            self.say_once = False
                                         if self.send_vehi_stop:
                                             self.stop_vehicle()
                                             self.send_vehi_stop = False
@@ -224,6 +227,7 @@ class PersonTracker:
             self.smooth_box = None
             hw.set_led_color(RGB_BLUE)
             self.send_vehi_stop = True
+            self.say_once = True
 
     def stop_vehicle(self):
         # #curl -X POST http://192.168.4.8:5000/stop -H "Content-Type: application/json"

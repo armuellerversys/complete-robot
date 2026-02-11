@@ -74,7 +74,7 @@ class DriveController:
         self.prev_gyro_error = 0
 
         self.stop_vehicle = False
-
+        self.logger.info(f"Target Heading:  {self.target_heading}")
         self.logger.info("move encoder: exit init forward behavior")
 
     def get_calibrated_heading(self):
@@ -101,7 +101,7 @@ class DriveController:
         
         # Get absolute Mag heading
         mag_h = self.get_calibrated_heading()
-        self.logger.info(f"magnetometer-mag_h {mag_h}")
+        self.logger.info(f"**************** Current heading {mag_h} *******************")
 
         # Complementary Filter
         # We use 'angle_difference' to prevent the filter from breaking at the 360/0 flip
@@ -110,6 +110,12 @@ class DriveController:
                                (1 - self.alpha) * mag_h
         
         return self.current_heading
+    
+    def get_mag_bearing(self):
+        """Returns the absolute heading in degrees from the Magnetometer."""
+        mag_x, mag_y, _ = self.imu.read_magnetometer_data()
+        bearing = math.degrees(math.atan2(mag_y, mag_x))
+        return bearing
 
     # --- Motor Control Helpers ---
     def set_motor_speed(self, motor_type, direction, speed):
@@ -135,6 +141,7 @@ class DriveController:
         self.previous_error = 0
         self.left_encoder.steps = 0 
         self.right_encoder.steps = 0  
+        self.target_heading = self.get_mag_bearing()
         self.set_motor_speed("L", FORWARD, speed)
         self.set_motor_speed("R", FORWARD, speed)
         self.logger.debug("move-encoder:reset")
@@ -147,9 +154,11 @@ class DriveController:
     
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
     def move_straight_gyro_assisted(self, speed_target, distance_target):
-        """The main loop replacing the old encoder-only PID."""
+        self.logger.info(f"******************* Target Heading: {self.target_heading} *******************")
+        "The main loop replacing the old encoder-only PID."
         left_counts = self.abs_left_encoder()
         right_counts = self.abs_right_encoder()
+        self.logger.info(f"Left counts: {left_counts} | Right counts: {right_counts}")
         distance = (left_counts + right_counts) / 2
 
         if self.stop_vehicle: return False
@@ -163,36 +172,37 @@ class DriveController:
             derivative = (current_error - self.previous_error) / DT
             d_term = KD * derivative
             adjust_encoder = (p_term + i_term + d_term) / 30
-            self.logger.debug(f"adjustment: {adjust_encoder:4.1f} | p_term: {p_term:4.1f} | i_term: {i_term:4.1f} | d_term: {d_term:4.1f}")
+            self.logger.debug(f"Adjustment: {adjust_encoder:4.1f} | p_term: {p_term:4.1f} | i_term: {i_term:4.1f} | d_term: {d_term:4.1f}")
 
             # 1. Update Heading
             curr_h = self.update_fused_heading()
-            self.logger.info(f"fused curr_h {curr_h}")
+            self.logger.info(f"Fused curr_h {curr_h}")
             # 2. Calculate Angular Error
             # How far are we from our locked target direction?
             error = self.target_heading - curr_h
-            self.logger.info(f"Update fused  {error}")
+            self.logger.info(f"Update fused {error}")
 
             # Handle the 360-degree wrap-around error
             if error > 180: error -= 360
             if error < -180: error += 360
 
             # 3. Heading PID
-            p_term = self.kp_gyro * error
+            p_term_imu = self.kp_gyro * error
             self.gyro_integral += error * DT
-            d_term = self.kd_gyro * ((error - self.prev_gyro_error) / DT)
+            d_term_imu = self.kd_gyro * ((error - self.prev_gyro_error) / DT)
             
-            adjust_imu = p_term + (self.ki_gyro * self.gyro_integral) + d_term
-            self.logger.info(f"Speed adjustment imu  {adjust_imu}")
+            adjust_imu = p_term_imu + (self.ki_gyro * self.gyro_integral) + d_term_imu
+            self.logger.info(f"Speed adjustment encode {adjust_encoder} | imu {adjust_imu}")
             # 4. Motor Output
             # If error is positive (veered left), adjustment increases R speed and decreases L speed
-            adjustment = adjust_encoder + adjust_imu * 0.1
-            self.logger.info(f"Speed adjustment  {adjustment}")
+            adjustment = adjust_encoder + adjust_imu * 0.01
+            self.logger.info(f"Speed target: {speed_target} - Speed adjustment {adjustment}")
             left_speed = speed_target - adjustment
             right_speed = speed_target + adjustment
 
             self.set_motor_speed("L", FORWARD, int(left_speed))
             self.set_motor_speed("R", FORWARD, int(right_speed))
+            self.logger.info(f"Speed left: {left_speed} - Speed right: {right_speed}")
 
             self.prev_gyro_error = error
             

@@ -10,7 +10,6 @@ class RobotModes(object):
         "test_rainbow": {"script": "test_rainbow.py"},
         "test_distance_sensors": {"script": "test_distance_sensors.py"},
         "test_motors": {"script": "test_motors.py"},
-        "test_rotate": {"script": "test_full_rotate.py"},
         "test_encoders": {"script": "test_encoders.py"},
         "test_voice_server": {"script": "test_voice_server.py"}
     }
@@ -20,7 +19,6 @@ class RobotModes(object):
         {"mode_name": "test_rainbow", "text": "LED Rainbow"},
         {"mode_name": "test_distance_sensors", "text": "Test Distance Sensor"},
         {"mode_name": "test_motors", "text": "Test Motors"},
-        {"mode_name": "test_rotate", "text": "Test Rotate"},
         {"mode_name": "test_encoders", "text": "Test Encoder"},
         {"mode_name": "test_voice_server", "text": "Test Voice Server"}
     ]
