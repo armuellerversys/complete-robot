@@ -17,16 +17,16 @@ logger = CoreUtils.getLogger("test rainbow")
 leds = leds_led_shim.Leds()
 try:
     while True:
-        logger.debug("LED on")
+        logger.info("LED on")
         show_rainbow(leds)
         leds.show()
         sleep(0.5)
-        logger.debug("off")
+        logger.info("off")
         leds.clear()
         leds.show()
         sleep(0.5)
 except KeyboardInterrupt:
-     logger.debug(traceback.format_exc())
+     logger.error(traceback.format_exc())
 finally:
-      logger.debug("close all")
+      logger.info("close all")
       leds.clear()

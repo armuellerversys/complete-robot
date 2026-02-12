@@ -114,14 +114,14 @@ class PersonTracker:
             hw.set_led_color(255, 255, 255)
 
     def say_text(self, text):
-        """Saves current frame to disk with timestamp"""
+        logger.info("Enter say text")
         now = time.time()
         if now - self.last_snapshot_time > self.snapshot_cooldown:
+            logger.info("Execute say text")
              # Create a message to speak the text
             message = Message("speak", data={"utterance": text})
             # Send the message to the bus
             client.emit(message)
-            logger.info(f"📸 OVOS saved: {text}")
             self.last_snapshot_time = now
             # Brief LED flash to indicate photo taken
             hw.set_led_color(RGB_WHITE)
@@ -219,9 +219,11 @@ class PersonTracker:
                         yield (b'--frame\r\nContent-Type: image/jpeg\r\n\r\n' + buffer.tobytes() + b'\r\n')
 
     def handle_loss(self):
+        logger.info(f"Enter handle person lost: {self.persistence} - {self.say_once}")
         if self.persistence > 0: 
             self.persistence -= 1
         else:
+            logger.info(f"Handle person lost, say once flag: {self.say_once}")
             # No person seen and persistence expired: Start Scanning
             self.servos.scan()
             self.smooth_box = None

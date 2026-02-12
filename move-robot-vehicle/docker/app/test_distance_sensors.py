@@ -11,7 +11,7 @@ from core_utils import CoreUtils
 #input('Hello! Start testing Distance-Sensor\n')
 
 logger = CoreUtils.getLogger("test_distance_sensor")
-logger.debug("start test_distance_sensors")
+logger.info("start test_distance_sensors")
 
 leds = Leds()
 
@@ -31,7 +31,7 @@ try:
         l_distance = sensor_l.distance
         r_distance = sensor_r.distance
         m_distance = sensor_m.distance
-        logger.debug(f"Left: {l_distance*100:.2f} cm, Right: {r_distance*100:.2f} cm, Middle: {m_distance*100:.2f} cm")
+        logger.info(f"Left: {l_distance*100:.2f} cm, Right: {r_distance*100:.2f} cm, Middle: {m_distance*100:.2f} cm")
         if (l_distance > l_distance_old):
             leds.showPurple()
         elif(r_distance > r_distance_old):
@@ -44,8 +44,8 @@ try:
         sleep(500/1000)
         leds.showGreen()
 except Exception:
-    logger.debug(traceback.format_exc())
+    logger.error(traceback.format_exc())
 finally:
-    logger.debug("close all")
+    logger.info("close all")
     leds.clear()
     devices._shutdown()
