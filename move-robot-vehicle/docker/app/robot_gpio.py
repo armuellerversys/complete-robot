@@ -40,10 +40,11 @@ class Robot:
 
             self.logger.info('Robot created and initialized with lgpio backend')
         except Exception as e:
-            self.logger.info(f"Error initializing sensors: {e}")
+            self.logger.error(f"Error initializing sensors: {e}", exc_info=True)
             # Optional: force a close if they exist
-            if hasattr(self, 'left_distance_sensor'):
+            if hasattr(self, '_left_distance_sensor'):
                 self.left_distance_sensor.close()
+            raise RuntimeError("Front distance sensor not initialized!")
 
     @property
     def left_distance_sensor(self):

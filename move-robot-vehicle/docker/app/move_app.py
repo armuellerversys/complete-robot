@@ -187,13 +187,13 @@ class Move_app:
             return False
         
     def isLeftDistance(self):
-        return abs(self.sensor_left.distance.distance) < MINIMUM_DIST
+        return abs(self.sensor_left.distance) < MINIMUM_DIST
     
     def isRightDistance(self):
-        return abs(self.sensor_right.distance.distance) < MINIMUM_DIST
+        return abs(self.sensor_right.distance) < MINIMUM_DIST
     
     def isFrontDistance(self):
-        return abs(self.robot.self.sensor_front.distance) < MINIMUM_DIST
+        return abs(self.sensor_front.distance) < MINIMUM_DIST
 
     def isCommand(self, type):
         match type:
@@ -206,8 +206,6 @@ class Move_app:
             case "B":
                 return True
             case "M":
-                return True
-            case "R":
                 return True
             case _:
                 return False
