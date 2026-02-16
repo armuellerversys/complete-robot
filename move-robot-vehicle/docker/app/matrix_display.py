@@ -15,7 +15,7 @@ class MatrixDisplay:
       #self.logger = CoreUtils.getLogger("matrix_display")
       self.imu = RobotImu()
 
-    def showTemperatur(self):
+    def showTemperature(self):
         temperature = self.imu.read_temperature()
         #self.logger.debug("Temperature {}".format(round(temperature)))
         self.showString(str(round(temperature)))

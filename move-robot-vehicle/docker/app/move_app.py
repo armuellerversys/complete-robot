@@ -36,15 +36,15 @@ class Move_app:
         self.forward_distance = 0
         self.last_time = time.time()
 
-        self._sensor_front = self.robot.front_distance_sensor
+        self._sensor_mid = self.robot.mid_distance_sensor
         self._sensor_left = self.robot.left_distance_sensor
         self._sensor_right = self.robot.right_distance_sensor
 
         self.logger.info("Move_app:Move-app init completed")
 
     @property
-    def sensor_front(self):
-        return self._sensor_front
+    def sensor_mid(self):
+        return self._sensor_mid
 
     @property
     def sensor_left(self):
@@ -151,15 +151,14 @@ class Move_app:
 
             # Send a POST request to the server with the JSON data
             self.logger.info(f"Sending request to {URL}...")
-            response = requests.post(URL, data=json.dumps(payload), headers=headers)
+            response = requests.post(URL, data=json.dumps(payload), headers=headers, timeout=1)
 
             # Check if the request was successful
             if response.status_code == 200:
                 self.logger.info("Success! The voice server received the request.")
                 self.logger.info("Voice Server response:", response.json())
             else:
-                self.logger.error(f"Voice Server Error! Status code: {response.status_code}")
-                self.logger.error("Voice Server response:", response.text)
+                self.logger.error(f"Voice Server Error! Status code: {response.status_code} - {response.text}")
 
         except requests.exceptions.ConnectionError as e:
             self.logger.error(f"Failed to connect to the Voice Server at {URL}.")
@@ -177,11 +176,11 @@ class Move_app:
         # Get the sensor readings in meters
         left_distance = self.sensor_left.distance
         right_distance = self.sensor_right.distance
-        front_distance = self.sensor_front.distance
+        mid_distance = self.sensor_mid.distance
         ##print("Left: {l:.2f}, Right: {r:.2f}".format(l=left_distance, r=right_distance))
-        if left_distance < MINIMUM_DIST or right_distance < MINIMUM_DIST or front_distance < MINIMUM_DIST:
+        if left_distance < MINIMUM_DIST or right_distance < MINIMUM_DIST or mid_distance < MINIMUM_DIST:
             self.logger.info("move_app:critical distance, Left: {0:.2f} cm, Right: {1:.2f} cm, Mid: {1:.2f} cm".format(
-                  left_distance * 100, right_distance * 100, front_distance * 100))
+                  left_distance * 100, right_distance * 100, mid_distance * 100))
             return True
         else:
             return False
@@ -192,8 +191,8 @@ class Move_app:
     def isRightDistance(self):
         return abs(self.sensor_right.distance) < MINIMUM_DIST
     
-    def isFrontDistance(self):
-        return abs(self.sensor_front.distance) < MINIMUM_DIST
+    def isMidDistance(self):
+        return abs(self.sensor_mid.distance) < MINIMUM_DIST
 
     def isCommand(self, type):
         match type:

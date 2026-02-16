@@ -5,8 +5,7 @@ from matrix_display import MatrixDisplay
 from core_utils import CoreUtils
 from move_app import Move_app
 from move_sensor import SensorRobotCar
-from icm20948 import ICM20948
-
+from robot_imu import RobotImu
 
 # print("CWD:", os.getcwd())
 # input('Hello! Start testing move_encoder:\n')
@@ -37,7 +36,7 @@ class DriveController:
         self.move_app = behavior.move_app
         self.move_app.stopMotors()
         self.left_motor, self.right_motor = self.move_app.move_motor.getMotors()
-
+        
         self.sensorRobotCar = SensorRobotCar(behavior, 150)
         # --- PID State Variables ---
         self.integral_error = 0
@@ -52,7 +51,7 @@ class DriveController:
         
         # --- IMU Setup ---
         # Assuming you use a standard library for the ICM20948
-        self.imu = ICM20948()
+        self.robot_imu = RobotImu()
         # 1. Calibration Data (Replace with results from your script)
         # OFFSETS: [-24.224999999999998, 36.224999999999994, 6.1499999999999995]
         # SCALES: [0.7663551401869159, 1.1549295774647887, 1.2058823529411764]
@@ -73,13 +72,14 @@ class DriveController:
         self.gyro_integral = 0
         self.prev_gyro_error = 0
 
-        self.stop_vehicle = False
+        self.stop_flag= False
         self.logger.info(f"Target Heading:  {self.target_heading}")
         self.logger.info("move encoder: exit init forward behavior")
 
     def get_calibrated_heading(self):
         """Reads Magnetometer and applies offsets for a true heading."""
-        raw_mag = self.imu.read_magnetometer_data() 
+        # raw_mag = self.imu.read_magnetometer_data() 
+        raw_mag = self.robot_imu.read_magnetometer()
         #raw_mag = [0, 0, 0] # Placeholder
         
         # Apply Calibration
@@ -96,7 +96,8 @@ class DriveController:
         self.last_time = now
         
         # Get Gyro rate (degrees per second)
-        gyro_z = self.imu.read_accelerometer_gyro_data()[2]
+        # gyro_z = self.imu.read_accelerometer_gyro_data()[2]
+        gyro_z = self.robot_imu.read_accelerometer()[2]
         self.logger.info(f"accelerometer-gyro_z {gyro_z}")
         
         # Get absolute Mag heading
@@ -113,7 +114,8 @@ class DriveController:
     
     def get_mag_bearing(self):
         """Returns the absolute heading in degrees from the Magnetometer."""
-        mag_x, mag_y, _ = self.imu.read_magnetometer_data()
+        ## mag_x, mag_y, _ = self.imu.read_magnetometer_data()
+        mag_x, mag_y, _ = self.robot_imu.read_magnetometer()
         bearing = math.degrees(math.atan2(mag_y, mag_x))
         return bearing
 
@@ -161,7 +163,7 @@ class DriveController:
         self.logger.info(f"Left counts: {left_counts} | Right counts: {right_counts}")
         distance = (left_counts + right_counts) / 2
 
-        if self.stop_vehicle: return False
+        if self.stop_flag: return False
 
         if distance < distance_target:
 
@@ -222,6 +224,7 @@ class DriveController:
         back_encoder_steps = self.right_encoder.steps
         self.logger.info(f"Running right motor {TURN_STEPS} steps...")
         while True:
+            time.sleep(0.001)
             if ((self.right_encoder.steps - back_encoder_steps)  > TURN_STEPS):
                  break
         self.right_motor.run(Raspi_MotorHAT.RELEASE) 
@@ -236,6 +239,7 @@ class DriveController:
         right_encoder_steps = self.right_encoder.steps
         self.logger.info(f"Running right motor {target_steps} steps...")
         while True:
+            time.sleep(0.001)
             if ((self.right_encoder.steps - right_encoder_steps)  > target_steps):
                  break
         self.right_motor.run(Raspi_MotorHAT.RELEASE) 
@@ -249,6 +253,7 @@ class DriveController:
         left_encoder_steps = self.left_encoder.steps
         self.logger.debug(f"Running left motor {target_steps} steps...")
         while True:
+            time.sleep(0.001)
             if ((self.left_encoder.steps -  left_encoder_steps)  > target_steps):
                  break
         self.left_motor.run(Raspi_MotorHAT.RELEASE) 
@@ -301,7 +306,7 @@ class DriveController:
             self.logger.error("Program finished.")
 
     def stop_vehicle(self):
-        self.stop_vehicle = True
+        self.stop_flag = True
 
 ## ▶️ Main Execution
 if __name__ == '__main__':

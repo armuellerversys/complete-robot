@@ -23,7 +23,7 @@ headers = {
 try:
     # Send a POST request to the server with the JSON data
     logger.info(f"Sending request to {URL}...")
-    response = requests.post(URL, data=json.dumps(payload), headers=headers)
+    response = requests.post(URL, data=json.dumps(payload), headers=headers, timeout=1)
 
     # Check if the request was successful
     if response.status_code == 200:

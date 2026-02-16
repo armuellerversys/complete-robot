@@ -4,6 +4,7 @@ import traceback
 from core_utils import CoreUtils
 from leds_led_shim import Leds
 from core_utils import CoreUtils
+import time
 #import debugpy
 
 #debugpy.listen(('0.0.0.0', 5678))
@@ -43,6 +44,7 @@ try:
         m_distance_old = m_distance
         sleep(500/1000)
         leds.showGreen()
+        time.sleep(0.001)
 except Exception:
     logger.error(traceback.format_exc())
 finally:

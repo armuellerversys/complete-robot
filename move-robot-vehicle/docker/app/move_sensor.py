@@ -1,10 +1,6 @@
 import time
 from Raspi_MotorHAT import Raspi_MotorHAT
 from core_utils import CoreUtils
-from move_app import Move_app
-#import debugpy
-#debugpy.listen(('0.0.0.0', 5678))
-# --- Configuration Constants ---
 
 COLLISION_DISTANCE_M = 20 # Collision Threshold in meters (25 cm)
 TURN_STEPS = 600
@@ -22,7 +18,7 @@ class SensorRobotCar:
         self.speed = speed
         self.set_speed(speed)
 
-        self.sensor_front = self.move_app.sensor_front
+        self.sensor_mid = self.move_app.sensor_mid
         self.sensor_left = self.move_app.sensor_left
         self.sensor_right = self.move_app.sensor_right
 
@@ -116,15 +112,15 @@ class SensorRobotCar:
     def get_distances_cm(self):
         """Returns distance readings in centimeters."""
         # DistanceSensor.distance property returns value in meters
-        d_front = abs(round(self.sensor_front.distance * 100, 2))
+        d_mid= abs(round(self.sensor_mid.distance * 100, 2))
         d_left = abs(round(self.sensor_left.distance * 100, 2))
         d_right = abs(round(self.sensor_right.distance * 100, 2))
-        return d_front, d_left, d_right
+        return d_mid, d_left, d_right
 
     def isCriticalDistance(self):
-        d_front, d_left, d_right = self.get_distances_cm()
-        self.logger.debug(f"Distances (cm): F={d_front}, L={d_left}, R={d_right}")
-        return d_front < COLLISION_DISTANCE_M or d_left < COLLISION_DISTANCE_M or d_right < COLLISION_DISTANCE_M
+        d_mid, d_left, d_right = self.get_distances_cm()
+        self.logger.debug(f"Distances (cm): F={d_mid}, L={d_left}, R={d_right}")
+        return d_mid < COLLISION_DISTANCE_M or d_left < COLLISION_DISTANCE_M or d_right < COLLISION_DISTANCE_M
     
     def run_avoidance_check(self, speed):
         """The main collision avoidance logic."""
@@ -132,10 +128,10 @@ class SensorRobotCar:
             while self.isCriticalDistance():
                 self.logger.info("Starting collision avoidance loop")
                 # Get distances (in cm)
-                dist_front, dist_left, dist_right = self.get_distances_cm()
+                dist_mid, dist_left, dist_right = self.get_distances_cm()
                 
                 # Check for collision in front
-                if dist_front < COLLISION_DISTANCE_M:
+                if dist_mid < COLLISION_DISTANCE_M:
                     self.logger.info("!!! OBSTACLE DETECTED IN FRONT !!!")
                     self.stop()
                     if not self.reverse_by_encoder():
@@ -191,21 +187,21 @@ if __name__ == '__main__':
     mh = Raspi_MotorHAT(addr=0x64)
     motor_left = mh.getMotor(MOTOR_LEFT_ID)
     motor_right = mh.getMotor(MOTOR_RIGHT_ID)
-    move_app = Move_app()
+  
     try:
         input('Hello! Start testing move_encoder:\n')
         # Create the controller instance
-        move_app.forward_speed = 100
-
+       
+        # move_behavior = Move_behavior()
+        # move_behavior.move_app.forward_speed = 100
         sensor_car = SensorRobotCar(
-            move_app,
-            motor_left,
-            motor_right,
+            "move_behavior",
             speed=MOTOR_SPEED
         )
         sensor_car.set_speed(MOTOR_SPEED)
         sensor_car.forward()
         while True:
+            time.sleep(0.001)
             sensor_car.run_avoidance_check(MOTOR_SPEED)
     except KeyboardInterrupt:
         print("Bye")

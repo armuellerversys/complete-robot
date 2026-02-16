@@ -8,10 +8,10 @@ from core_utils import CoreUtils
 
 ## import debugpy
 ## debugpy.listen(('0.0.0.0', 5678))
-## sudo shutdowndebugpy.wait_for_client()
 
 # A Flask App contains all its routes.
 app = Flask(__name__)
+app.config["TEMPLATES_AUTO_RELOAD"] = False
 
 # Prepare our robot modes for use
 mode_manager = RobotModes()
@@ -21,19 +21,18 @@ logger = CoreUtils.getLogger("control_server")
 
 logger.info("Show matrix")
 matrixDisplay = MatrixDisplay()
-# stop_event = matrixDisplay.showClock()
-matrixDisplay.showTemperatur()
-
 
 @app.after_request
 def add_header(response):
     response.headers['Cache-Control'] = "no-cache, no-store, must-revalidate"
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
     return response
 
 @app.route("/")
 def index():
     logger.info("index")
-    matrixDisplay.showTemperatur()
+    matrixDisplay.showTemperature()
     return render_template('menu.html', menu=mode_manager.menu_config)
 
 @app.route("/run/<mode_name>", methods=['POST'])
@@ -42,7 +41,11 @@ def run(mode_name):
     Robot.set_led_white()
  
     # Use our robot app to run something with this mode_name
-    mode_manager.run(mode_name)
+    try:
+        mode_manager.run(mode_name)
+    except Exception as e:
+        logger.exception("Mode failed")
+        return jsonify({"error": str(e)}), 400
     response = {'message': f'{mode_name} running'}
     if mode_manager.should_redirect(mode_name):
         response['redirect'] = True
@@ -50,7 +53,7 @@ def run(mode_name):
         response['redirect'] = False
         
     ret_response = jsonify(response)
-    logger.info(f"Response: {ret_response}")
+    logger.info(f"Response: {response}")
     return ret_response
 
 @app.route("/stop_action", methods=['POST'])
@@ -59,7 +62,7 @@ def stop_action():
 
     Robot.safe_shutdown_devices()
     Robot.set_led_orange()
-    matrixDisplay.showTemperatur()
+    matrixDisplay.showTemperature()
     # Tell our system to stop the mode it's in.
     mode_manager.stop()
     logger.info(f"Stop executed")
@@ -73,7 +76,7 @@ def state():
     Robot.set_led_white()
     time.sleep(1)
     Robot.set_led_blue()
-    matrixDisplay.showTemperatur()
+    matrixDisplay.showTemperature()
     logger.info("state request response send")
     return jsonify({'state': "Vehicle OK"})
 
@@ -97,18 +100,16 @@ def dead_page():
 
 def get_lan_ip():
     # Try to find LAN IP dynamically
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    try:
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
         # This IP is never actually contacted; it's just to determine the local IP
         s.connect(("8.8.8.8", 80))
         ip = s.getsockname()[0]
-    except Exception:
-        ip = "127.0.0.1"
-    finally:
-        s.close()
-    return ip
+        return ip
 
 logger.info("REGISTERED ROUTES:")
 logger.info(app.url_map)
-logger.info("Start control server: " + get_lan_ip())
-app.run(host='0.0.0.0', port=5000, use_reloader=False)
+
+if __name__ == "__main__":
+    matrixDisplay.showTemperature()
+    logger.info("Start control server: " + get_lan_ip())
+    app.run(host='0.0.0.0', port=5000, use_reloader=False)

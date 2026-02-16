@@ -45,7 +45,7 @@ class Move_behavior():
       type = "_"
       while instruction:
          # execute instruction
-         type = self.move_app.handle_instruction(instruction, self.process)
+         type = self.move_app.handle_instruction(instruction, self.server_process)
          self.logger.debug("move behavior: instruction type=" + type)
          if (self.move_app.isCommand(type)):
             self.found = False
@@ -64,7 +64,7 @@ class Move_behavior():
       return type
 
    def process(self):
-      self.process = start_server_process('move.html')
+      self.server_process = start_server_process('move.html')
       self.logger.debug("move behavior: process move behavior started")
       self.move_app.sayText(HI_TEXT)
    
@@ -76,7 +76,8 @@ class Move_behavior():
             type = self.process_control()
             if (not type):
                #self.logger.debug(f"work loop: {type} -timeout: {time.time() - time_say} -found: {self.found} - forward: {self.forwardRun}")
-            #else:
+               self.execute = True
+            else:
                # self.logger.debug(f"move behavior: work loop - idle - found: {self.found} -execute {self.execute}")
                self.execute = False
             self.move_app.set_led_blue()
@@ -111,8 +112,8 @@ def setup_signal_handlers(behavior):
             behavior.move_app.robot.left_distance_sensor.close()
             behavior.move_app.robot.right_distance_sensor.close()
             behavior.move_app.robot.mid_distance_sensor.close()
-            behavior.left_encoder.close()
-            behavior.right_encoder.close()
+            behavior.move_app.robot.left_encoder.close()
+            behavior.move_app.robot.right_encoder.close()
         except:
             pass
             

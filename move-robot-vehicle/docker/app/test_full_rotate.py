@@ -45,6 +45,7 @@ try:
 
     logger.info(f"Running right motor {ROTATE_STEPS} steps...")
     while True:
+        sleep(0.001)
         leds.showBlue()
         if (right_encoder.steps > ROTATE_STEPS):
                 break
@@ -60,6 +61,7 @@ try:
 
     logger.info(f"Running left motor {ROTATE_STEPS} steps...")
     while True:
+        sleep(0.001)
         leds.showRed()
         if (left_encoder.steps > ROTATE_STEPS):
                 break
