@@ -75,3 +75,15 @@ class MatrixDisplay:
         # Show the buffer
         self.matrix11x7.show()
 
+    def update_telemetry(self, heading, distance, status="OK"):
+        """
+        Displays a condensed version of the robot's state.
+        Example: 'H140' -> Heading 140, 'D200' -> Distance 200
+        """
+        # Create a compact string
+        # We use a leading char to identify the metric
+        if status != "OK":
+            self.show_text(f"!!{status}!!") # Flash status if avoiding
+        else:
+            # Toggle display every few seconds or just show heading
+            self.show_text(f"H{int(heading)} D{int(distance)}")

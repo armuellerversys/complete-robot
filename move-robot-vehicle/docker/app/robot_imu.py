@@ -11,25 +11,31 @@ class RobotImu:
         """Read a temperature in degrees C."""
         return self._imu.read_temperature()
 
-    def read_gyroscope(self):
+    def read_gyroscope_vector(self):
         """Return prescaled gyro data"""
         _, _, _, x, y, z = self._imu.read_accelerometer_gyro_data()
         return vector(x, y, z)
+    
+    def read_gyroscope_data(self):
+        """Return prescaled gyro data"""
+        _, _, _, x, y, z = self._imu.read_accelerometer_gyro_data()
+        return x, y, z 
 
     def read_accelerometer_vector(self):
         """Return accelerometer data"""
         accel_x, accel_y, accel_z, _, _, _ = self._imu.read_accelerometer_gyro_data()
         return vector(accel_x, accel_y, accel_z)
     
-    def read_accelerometer(self):
+    def read_accelerometer_data(self):
         """Return accelerometer data"""
-        return self._imu.read_accelerometer_gyro_data()
-
+        accel_x, accel_y, accel_z, _, _, _ = self._imu.read_accelerometer_gyro_data()
+        return accel_x, accel_y, accel_z
+    
     def read_magnetometer_vector(self):
         """Return magnetometer data"""
         mag_x, mag_y, mag_z = self._imu.read_magnetometer_data()
         return vector(mag_x, -mag_y, -mag_z)
 
-    def read_magnetometer(self):
+    def read_magnetometer_data(self):
             """Return magnetometer data"""
             return self._imu.read_magnetometer_data()

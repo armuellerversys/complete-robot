@@ -93,53 +93,21 @@ class SensorRobotCar:
        self.logger.debug(f"Reverse backward right: {right}")
        return right
        
-    def turn_gyro(self, angle_delta):
-        """
-        Rotates the robot by a specific number of degrees relative to current position.
-        angle_delta: positive for right, negative for left.
-        """
-        # 1. Capture where we are starting from
-        start_heading = self.behavior.drive_controller.get_calibrated_heading()
-        target_heading = (start_heading + angle_delta) % 360
-        
-        self.logger.info(f"Turning from {start_heading:.1f} to {target_heading:.1f}")
-        
-        # 2. Set motors to rotate (Pivot)
-        speed = 150 # Fixed rotation speed
-        if angle_delta > 0: # Right
-            self.motor_left.run(Raspi_MotorHAT.FORWARD)
-            self.motor_right.run(Raspi_MotorHAT.BACKWARD)
-        else: # Left
-            self.motor_left.run(Raspi_MotorHAT.BACKWARD)
-            self.motor_right.run(Raspi_MotorHAT.FORWARD)
-        
-        self.set_speed(speed)
-
-        # 3. Monitor the turn
-        while True:
-            current_h = self.behavior.drive_controller.get_calibrated_heading()
-            # How much further do we have to go?
-            error = self.behavior.drive_controller.calculate_heading_error(target_heading, current_h)
-            
-            # Stop if we are within 2 degrees of the target
-            if abs(error) < 2.0:
-                break
-            
-            # Safety break for Docker/Stop commands
-            if self.behavior.move_app.isStop(self.behavior.process_control()):
-                break
-                
-            time.sleep(0.01)
-
-        self.stop()
-        self.logger.info("Turn complete.")
-
-    # Update the helper methods to use the new logic:
     def turn_left(self):
-        self.turn_gyro(-90)
+        # Time-based turn (replace with encoder logic for accuracy)
+        self.logger.debug("Turning Left (Pivot)")
+        self.motor_left.run(Raspi_MotorHAT.BACKWARD)
+        self.motor_right.run(Raspi_MotorHAT.FORWARD)
+        time.sleep(0.5)
+        self.stop()
 
     def turn_right(self):
-        self.turn_gyro(90)
+        # Time-based turn (replace with encoder logic for accuracy)
+        self.logger.debug("Turning Right (Pivot)")
+        self.motor_left.run(Raspi_MotorHAT.FORWARD)
+        self.motor_right.run(Raspi_MotorHAT.BACKWARD)
+        time.sleep(0.5)
+        self.stop()
 
     def get_distances_cm(self):
         """Returns distance readings in centimeters."""
@@ -155,31 +123,54 @@ class SensorRobotCar:
         return d_mid < COLLISION_DISTANCE_M or d_left < COLLISION_DISTANCE_M or d_right < COLLISION_DISTANCE_M
     
     def run_avoidance_check(self, speed):
+        """The main collision avoidance logic."""
         try:
-            if self.isCriticalDistance():
-                self.logger.info("!!! Obstacle detected. Entering Avoidance Mode !!!")
-                self.stop()
-                
-                # 1. Back up a bit to give room for the turn
-                self.reverse_by_encoder()
-                
-                # 2. Get current distances to decide where to go
+            while self.isCriticalDistance():
+                self.logger.info("Starting collision avoidance loop")
+                # Get distances (in cm)
                 dist_mid, dist_left, dist_right = self.get_distances_cm()
                 
-                # 3. Execute the turn toward the clearest path
-                if dist_left > dist_right:
-                    self.logger.info(f"Turning Left (L:{dist_left}cm > R:{dist_right}cm)")
-                    self.turn_left()
-                else:
-                    self.logger.info(f"Turning Right (R:{dist_right}cm > L:{dist_left}cm)")
+                # Check for collision in front
+                if dist_mid < COLLISION_DISTANCE_M:
+                    self.logger.info("!!! OBSTACLE DETECTED IN FRONT !!!")
+                    self.stop()
+                    if not self.reverse_by_encoder():
+                        self.logger.info("reverse_by_encoder finish received")
+                        return False
+                    # Decide turn direction based on clearest path
+                    if dist_left > COLLISION_DISTANCE_M and dist_left >= dist_right:
+                        self.logger.info("Path clear on left, executing turn left.")
+                        self.turn_left()
+                    elif dist_right > COLLISION_DISTANCE_M:
+                        self.logger.info("Path clear on right, executing turn right.")
+                        self.turn_right()
+                    else:
+                        # Fallback: Both sides blocked or left is slightly better but too close
+                        self.logger.info("Both sides restricted, executing default turn right.")
+                        self.turn_right()
+                elif dist_left < COLLISION_DISTANCE_M:
+                    self.logger.info("!!! OBSTACLE DETECTED on left side !!!")
+                    self.stop()
+                    self.reverse_by_encoder()
                     self.turn_right()
+                elif dist_right < COLLISION_DISTANCE_M:
+                    self.logger.info("!!! OBSTACLE DETECTED on right side !!!")
+                    self.stop()
+                    self.reverse_by_encoder()
+                    self.turn_left()
+                # Normal Movement
+                else:
+                    self.logger.info("!!! inconsistent distance found!!!")
+                    self.forward()
                 
-                # 4. Success - tell the DriveController to re-lock its heading
-                return True # Signal that we handled an event
+                # Small delay for loop stability
+                time.sleep(0.1)
+                self.forward()
                 
-            return False # No obstacle found
-        except Exception as e:
-            self.logger.error(f"Avoidance error: {e}")
+            return True
+        except KeyboardInterrupt:
+            self.logger.error("\nProgram stopped by user.")
+            self.move_app.stopMotors()
             return False
 
 # --- Run the Program ---

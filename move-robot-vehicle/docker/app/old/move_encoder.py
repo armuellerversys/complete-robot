@@ -26,7 +26,6 @@ DT = 0.003
 TURN_STEPS = 900
 ROTATE_SPEED = 200
 MAX_SPEED = 200
-MIN_MOTOR_PWM = 60  # Minimum power to overcome gear friction
 
 class DriveController:
     def __init__(self, behavior):
@@ -66,9 +65,9 @@ class DriveController:
         self.last_time = time.time()
         
         # PID Gains (Start small, tune KP first)
-        self.kp_gyro = 3.5 
-        self.ki_gyro = 0.05
-        self.kd_gyro = 0.15
+        self.kp_gyro = 4.0 
+        self.ki_gyro = 0.01
+        self.kd_gyro = 0.1
         
         self.gyro_integral = 0
         self.prev_gyro_error = 0
@@ -80,7 +79,7 @@ class DriveController:
     def get_calibrated_heading(self):
         """Reads Magnetometer and applies offsets for a true heading."""
         # raw_mag = self.imu.read_magnetometer_data() 
-        raw_mag = self.robot_imu.read_magnetometer_data()
+        raw_mag = self.robot_imu.read_magnetometer()
         #raw_mag = [0, 0, 0] # Placeholder
         
         # Apply Calibration
@@ -118,25 +117,19 @@ class DriveController:
     def get_mag_bearing(self):
         """Returns the absolute heading in degrees from the Magnetometer."""
         ## mag_x, mag_y, _ = self.imu.read_magnetometer_data()
-        mag_x, mag_y, _ = self.robot_imu.read_magnetometer_data()
+        mag_x, mag_y, _ = self.robot_imu.read_magnetometer()
         bearing = math.degrees(math.atan2(mag_y, mag_x))
         return bearing
-
-    def get_gyro_rate(self):
-        """Returns the degrees per second rotation on the Z-axis."""
-        _, _, gyro_z = self.robot_imu.read_gyroscope_data()
-        return gyro_z
 
     # --- Motor Control Helpers ---
     def set_motor_speed(self, motor_type, direction, speed):
         """Sets the direction and speed of a given motor."""
-        motor = self.left_motor if motor_type == "L" else self.right_motor
-    
-        # dead-zone compensation: if speed > 0 but < MIN, bump it up
-        if 0 < speed < MIN_MOTOR_PWM:
-            speed = MIN_MOTOR_PWM
-            
-        speed = max(0, min(MAX_SPEED, speed))
+        motor = self.left_motor
+        if motor_type == "R":
+            motor = self.right_motor
+        elif motor_type == "L":
+            motor = self.left_motor
+        speed = max(50, min(MAX_SPEED, speed))
         motor.setSpeed(speed)
         motor.run(direction)
         self.logger.debug(f"set {motor_type} - Speed: {speed} - direction: {direction}")
@@ -178,71 +171,67 @@ class DriveController:
             
         return error
 
+
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
     def move_straight_gyro_assisted(self, speed_target, distance_target):
-        # 1. Calculate Distance & Check Completion
+        self.logger.info(f"******************* Target Heading: {self.target_heading} *******************")
+        "The main loop replacing the old encoder-only PID."
         left_counts = self.abs_left_encoder()
         right_counts = self.abs_right_encoder()
+        self.logger.info(f"Left counts: {left_counts} | Right counts: {right_counts}")
         distance = (left_counts + right_counts) / 2
-        
-        if distance >= distance_target or self.stop_flag:
+
+        if self.stop_flag: return False
+
+        if distance < distance_target:
+
+            current_error = left_counts - right_counts 
+            p_term = KP * current_error
+            self.integral_error += current_error * DT
+            i_term = KI * self.integral_error
+            derivative = (current_error - self.previous_error) / DT
+            d_term = KD * derivative
+            adjust_encoder = (p_term + i_term + d_term) / 30
+            self.logger.debug(f"Adjustment: {adjust_encoder:4.1f} | p_term: {p_term:4.1f} | i_term: {i_term:4.1f} | d_term: {d_term:4.1f}")
+
+            # 1. Update Heading
+            curr_h = self.update_fused_heading()
+            self.logger.info(f"Fused curr_h {curr_h}")
+
+            
+            # 2. Calculate Angular Error
+            # How far are we from our locked target direction?
+            error = self.target_heading - curr_h
+            self.logger.info(f"Update fused {error}")
+
+            # Handle the 360-degree wrap-around error
+            error = self.calculate_heading_error(self.target_heading, curr_h)
+
+            # 3. Heading PID
+            p_term_imu = self.kp_gyro * error
+            self.gyro_integral += error * DT
+            d_term_imu = self.kd_gyro * ((error - self.prev_gyro_error) / DT)
+            
+            adjust_imu = p_term_imu + (self.ki_gyro * self.gyro_integral) + d_term_imu
+            self.logger.info(f"Speed adjustment encode {adjust_encoder} | imu {adjust_imu}")
+            # 4. Motor Output
+            # If error is positive (veered left), adjustment increases R speed and decreases L speed
+            adjustment = adjust_encoder + adjust_imu * 0.01
+            self.logger.info(f"Speed target: {speed_target} - Speed adjustment {adjustment}")
+            left_speed = speed_target - adjustment
+            right_speed = speed_target + adjustment
+
+            self.set_motor_speed("L", FORWARD, int(left_speed))
+            self.set_motor_speed("R", FORWARD, int(right_speed))
+            self.logger.info(f"Speed left: {left_speed} - Speed right: {right_speed}")
+
+            self.prev_gyro_error = error
+            
+            # Check for obstacles and stop signals
+            return self.sensorRobotCar.run_avoidance_check(speed_target)
+        else:
             self.release_motors()
             return False
-
-        # 2. Timing for the Filter
-        now = time.time()
-        dt = now - self.last_time
-        if dt < 0.001: dt = 0.001 # Prevent division by zero
-        self.last_time = now
-
-        # 3. Get Fused Heading
-        curr_h = self.update_fused_heading() # This now uses the wrap-aware logic
-        
-        # 4. Calculate Errors
-        # Encoder Error (Speed sync)
-        encoder_error = left_counts - right_counts 
-        
-        # IMU Error (Heading sync)
-        imu_error = self.calculate_heading_error(self.target_heading, curr_h)
-
-        # 5. Combined PID Logic
-        # We apply a 'Weight' to each. Usually, IMU is more trusted for 'Straight'
-        # than just matching encoder clicks.
-        
-        # Encoder Contribution
-        adj_enc = (KP * encoder_error) + (KI * self.integral_error) 
-        self.integral_error += encoder_error * dt
-        
-        # IMU Contribution (Stronger KP)
-        adj_imu = (self.kp_gyro * imu_error) + (self.kd_gyro * (imu_error - self.prev_gyro_error) / dt)
-        self.prev_gyro_error = imu_error
-
-        # Total Adjustment
-        # Note: We scale the IMU adjustment to match the motor speed scale (0-255)
-        total_adjustment = (adj_enc * 0.4) + (adj_imu * 1.2)
-
-        # 6. Motor Output with Safeguards
-        left_speed = int(speed_target - total_adjustment)
-        right_speed = int(speed_target + total_adjustment)
-        
-        self.set_motor_speed("L", FORWARD, left_speed)
-        self.set_motor_speed("R", FORWARD, right_speed)
-
-        # 7. Safety Check (Ultrasonic)
-        # If an obstacle is detected, run_avoidance_check will handle reversing/turning.
-        # We MUST re-lock the heading after avoidance finishes.
-        if self.sensorRobotCar.isCriticalDistance():
-            self.logger.info("Obstacle! Diverting to Avoidance Mode...")
-            self.sensorRobotCar.run_avoidance_check(speed_target)
-            
-            # CRITICAL: Re-lock heading to whatever direction we are facing now
-            # otherwise the robot will attempt a violent turn to its old heading.
-            self.target_heading = self.get_calibrated_heading()
-            self.current_heading = self.target_heading
-            self.left_encoder.steps = 0 # Optional: Reset distance after avoidance
-            self.right_encoder.steps = 0
-
-        return True
     
     def run_backward(self):
         self.logger.info("run backward")
@@ -258,6 +247,8 @@ class DriveController:
             if ((self.right_encoder.steps - back_encoder_steps)  > TURN_STEPS):
                  break
         self.right_motor.run(Raspi_MotorHAT.RELEASE) 
+
+
 
     def rotate_left(self, target_steps):
         self.logger.info("rotate_left")
@@ -289,53 +280,50 @@ class DriveController:
 
     def isCriticalDistance(self):
         return self.move_app.isLeftDistance() or self.move_app.isRightDistance() or self.move_app.isMidDistance()
-    
-    def show_text(self, text):
-        self.matrixDisplay.showString(text)
 
     @staticmethod
     def getInstance(behavior):
         return DriveController(behavior)
-
     
     def run(self):
-        LOOP_DELAY = 0.01 
-        display_update_time = time.time()
-        
+        DT = 0.5
+        SAY_TIME = 20
         try:
+            self.logger.info(f"Move_encoder: Starting movement with speed: {self.move_app.forward_speed} distance: {self.move_app.forward_distance }")
+
             self.reset(self.move_app.forward_speed)
+          
+            # Access the control method through the instance
+            finish = True
+            time_say = time.time()
+            # Lock current heading as the 'North' we want to follow
             self.target_heading = self.get_calibrated_heading()
             self.current_heading = self.target_heading
-            
-            while not self.stop_flag:
-                # 1. Logic Execution
-                finish = self.move_straight_gyro_assisted(
-                    self.move_app.forward_speed, 
-                    self.move_app.forward_distance
-                )
+            while finish:
+                self.matrixDisplay.showMagnetometerAngle()
                 
-                # 2. Matrix Display Update (Every 0.5 seconds to keep it readable)
-                if time.time() - display_update_time > 0.5:
-                    dist = (self.abs_left_encoder() + self.abs_right_encoder()) / 2
-                    
-                    # Check if we are currently in an avoidance state
-                    status_str = "AVOID" if self.sensorRobotCar.isCriticalDistance() else "OK"
-                    
-                    self.matrixDisplay.update_telemetry(
-                        heading=self.current_heading,
-                        distance=dist,
-                        status=status_str
-                    )
-                    display_update_time = time.time()
+                finish = self.move_straight_gyro_assisted(self.move_app.forward_speed, self.move_app.forward_distance)
+                self.logger.info(f"Finish received: {finish}")
+                if (time.time() > (time_say + SAY_TIME)):
+                    time_say = time.time()
+                    self.move_app.sayText(ACTIVE_TEXT)
 
-                if not finish:
-                    break
-                    
-                time.sleep(LOOP_DELAY)
+                type = self.behavior.process_control()
+                self.logger.info(f"Command received: {type}")
+                if (self.move_app.isStop(type)):
+                    self.logger.info("Program stop received.")
+                    self.release_motors()
+                    return False
 
+                time.sleep(DT)
+
+            self.move_app.stopMotors()
+            return True
+        except Exception as e:
+            self.logger.error(f"An error occurred: {e}")
         finally:
-            self.show_text("STOP")
             self.release_motors()
+            self.logger.error("Program finished.")
 
     def stop_vehicle(self):
         self.stop_flag = True
