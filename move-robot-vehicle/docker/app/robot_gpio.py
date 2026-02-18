@@ -12,7 +12,7 @@ shutdown_done = False
 
 class Robot:
     _instance = None
-    MOTOR_ADDRESS_I2C = 0x64
+
     wheel_diameter_mm = 60.0
     ticks_per_revolution = 624
     wheel_distance_mm = 132.0
@@ -25,7 +25,7 @@ class Robot:
             cls._instance._initialized = False
         return cls._instance
 
-    def __init__(self, motorhat_addr=MOTOR_ADDRESS_I2C):
+    def __init__(self):
       
         # Prevent re-initialization if Robot() is called again
         if self._initialized:

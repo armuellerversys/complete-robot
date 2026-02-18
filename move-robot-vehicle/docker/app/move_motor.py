@@ -6,8 +6,21 @@ import time
 logger = CoreUtils.getLogger("Move_motor")
 
 class Move_motor:
+    _instance = None
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            # Create the object only if it doesn't exist
+            cls._instance = super(Move_motor, cls).__new__(cls)
+            # Flag to ensure __init__ only runs once
+            cls._instance._initialized = False
+        return cls._instance
 
     def __init__(self):
+        # Prevent re-initialization if Robot() is called again
+        if self._initialized:
+            return
+        
         mh = Raspi_MotorHAT(addr=0x64)
         self.lm = mh.getMotor(1)
         self.rm = mh.getMotor(2)

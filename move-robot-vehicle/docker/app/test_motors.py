@@ -1,4 +1,5 @@
 from Raspi_MotorHAT import Raspi_MotorHAT
+from gpiozero import devices
 from robot_gpio import Robot
 from time import sleep
 import atexit
@@ -31,3 +32,4 @@ except Exception:
   logger.info("close all")
 finally:
   turn_off_motors()
+  devices._shutdown()

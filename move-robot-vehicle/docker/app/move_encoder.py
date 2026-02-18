@@ -161,6 +161,7 @@ class DriveController:
         self.left_encoder.steps = 0 
         self.right_encoder.steps = 0  
         self.target_heading = self.get_mag_bearing()
+        self.stop_flag = False
         self.set_motor_speed("L", FORWARD, speed)
         self.set_motor_speed("R", FORWARD, speed)
         self.logger.debug("move-encoder:reset")
@@ -188,6 +189,7 @@ class DriveController:
 
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
     def move_straight_gyro_assisted(self, speed_target, distance_target):
+        self.logger.info("move straight gyro assisted")
         # Call this at the very top of your loop
         self.check_for_stop()
 
@@ -197,6 +199,7 @@ class DriveController:
         distance = (left_counts + right_counts) / 2
         
         if distance >= distance_target or self.stop_flag:
+            self.logger.info(f"move straight distance target reached {distance_target}")
             self.release_motors()
             return False
 
@@ -286,13 +289,13 @@ class DriveController:
         self.right_motor.run(Raspi_MotorHAT.RELEASE) 
     
     def rotate_right(self, target_steps):
-        self.logger.debug("rotate_right")
+        self.logger.info("rotate_right")
        
         # test left motor
         self.left_motor.setSpeed(ROTATE_SPEED)
         self.left_motor.run(Raspi_MotorHAT.FORWARD)
         left_encoder_steps = self.left_encoder.steps
-        self.logger.debug(f"Running left motor {target_steps} steps...")
+        self.logger.info(f"Running left motor {target_steps} steps...")
         while True:
             time.sleep(0.001)
             if ((self.left_encoder.steps -  left_encoder_steps)  > target_steps):

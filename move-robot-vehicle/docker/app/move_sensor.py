@@ -173,38 +173,3 @@ class SensorRobotCar:
         except RobotStopException:
             # Re-raise to be caught by the main run() loop
             raise
-
-# --- Run the Program ---
-if __name__ == '__main__':
-    # !!! IMPORTANT: You must use a voltage divider on the HC-SR04 ECHO pin !!!
-    # This protects your Raspberry Pi 5 GPIO pins from the sensor's 5V output.
-    # 
-    # Initialize and run the car
-    
-    MOTOR_LEFT_ID = 1  # Assuming left motor is connected to M1
-    MOTOR_RIGHT_ID = 2 # Assuming right motor is connected to M2
-    MOTOR_SPEED = 100  # Max speed is 255
-
-    mh = Raspi_MotorHAT(addr=0x64)
-    motor_left = mh.getMotor(MOTOR_LEFT_ID)
-    motor_right = mh.getMotor(MOTOR_RIGHT_ID)
-  
-    try:
-        input('Hello! Start testing move_encoder:\n')
-        # Create the controller instance
-       
-        # move_behavior = Move_behavior()
-        # move_behavior.move_app.forward_speed = 100
-        sensor_car = SensorRobotCar(
-            "move_behavior",
-            speed=MOTOR_SPEED
-        )
-        sensor_car.set_speed(MOTOR_SPEED)
-        sensor_car.forward()
-        while True:
-            time.sleep(0.001)
-            sensor_car.run_avoidance_check(MOTOR_SPEED)
-    except KeyboardInterrupt:
-        print("Bye")
-    finally:
-         move_app.stopMotors()
