@@ -11,12 +11,26 @@ if 'GPIOZERO_PIN_FACTORY' not in os.environ:
 shutdown_done = False
 
 class Robot:
+    _instance = None
     MOTOR_ADDRESS_I2C = 0x64
     wheel_diameter_mm = 60.0
     ticks_per_revolution = 624
     wheel_distance_mm = 132.0
 
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            # Create the object only if it doesn't exist
+            cls._instance = super(Robot, cls).__new__(cls)
+            # Flag to ensure __init__ only runs once
+            cls._instance._initialized = False
+        return cls._instance
+
     def __init__(self, motorhat_addr=MOTOR_ADDRESS_I2C):
+      
+        # Prevent re-initialization if Robot() is called again
+        if self._initialized:
+            return
+        
         try:
             self.logger = CoreUtils.getLogger("Robot")
             
@@ -37,7 +51,7 @@ class Robot:
             # 4. Handle OS Signals for graceful shutdown
             signal.signal(signal.SIGINT, self.handle_exit_signal)
             signal.signal(signal.SIGTERM, self.handle_exit_signal)
-
+            self._initialized = True
             self.logger.info('Robot created and initialized with lgpio backend')
         except Exception as e:
             self.logger.error(f"Error initializing sensors: {e}", exc_info=True)
@@ -45,6 +59,8 @@ class Robot:
             if hasattr(self, '_left_distance_sensor'):
                 self.left_distance_sensor.close()
             raise RuntimeError("Front distance sensor not initialized!")
+        
+    
 
     @property
     def left_distance_sensor(self):

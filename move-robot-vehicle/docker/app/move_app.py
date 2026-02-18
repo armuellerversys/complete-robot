@@ -54,8 +54,8 @@ class Move_app:
     def sensor_right(self):
         return self._sensor_right   
 
-    def setDriveController(self, driveController):
-        self.driveController = driveController
+    def setDriveController(self, drive_controller):
+        self.drive_controller = drive_controller
         
     def exit_server(self, server):
         if server and server.is_alive():
@@ -68,7 +68,7 @@ class Move_app:
                 self.logger.debug("Move_app:SIGINT failed, force terminating...")
                 server.terminate()
                 server.join()
-            self.matrixDisplay.showTemperatur()
+            self.matrixDisplay.showTemperature()
             self.logger.info("Server stopped cleanly.")
         else:
             self.logger.debug("Server not running.")

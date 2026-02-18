@@ -27,17 +27,20 @@ class Move_behavior():
    def __init__(self):
       self.last_time = time.time()
       self.logger = CoreUtils.getLogger("Move_behavior")
+      self.logger.info("move behavior: __init__")
       self.execute = True
       self.found = False
       self.distance = False
       self.forwardRun = False
    
       self.move_app = Move_app()
+      self.logger.info("move behavior: move app created")
       # indicate init done
       self.move_app.set_led_blue()
       self.move_app.stopMotors()
-      self.driveController = DriveController.getInstance(self)
-      self.move_app.setDriveController(self.driveController)
+      self.logger.info("move behavior: motor stopped")
+      self.drive_controller = DriveController.getInstance(self)
+      self.move_app.setDriveController(self.drive_controller)
       self.logger.info("move behavior: exit init forward behavior")
 
    def process_control(self):
@@ -84,7 +87,7 @@ class Move_behavior():
 
             if (self.forwardRun == True):
                self.logger.info("Start forward drive controller")
-               self.driveController.run()
+               self.drive_controller.run()
                self.forwardRun = False
             if (self.execute and time.time() > self.last_time + TIMEOUT_IN):
                self.move_app.set_led_yellow()

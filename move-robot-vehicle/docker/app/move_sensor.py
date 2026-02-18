@@ -1,6 +1,6 @@
 import time
 from Raspi_MotorHAT import Raspi_MotorHAT
-from core_utils import CoreUtils
+from core_utils import CoreUtils, RobotStopException
 
 COLLISION_DISTANCE_M = 20 # Collision Threshold in meters (25 cm)
 TURN_STEPS = 600
@@ -75,12 +75,7 @@ class SensorRobotCar:
             if left_ok and right_ok:
                 self.stop()
                 return True
-            type = self.behavior.process_control()
-            self.logger.info(f"Command received: {type}")
-            if (self.move_app.isStop(type)):
-                self.logger.info("Program stop received.")
-                self.stop()
-                return False
+            self.behavior.drive_controller.check_for_stop()
             time.sleep(0.1)
 
     def abs_left_encoder(self):
@@ -117,6 +112,8 @@ class SensorRobotCar:
 
         # 3. Monitor the turn
         while True:
+            self.behavior.drive_controller.check_for_stop()
+
             current_h = self.behavior.drive_controller.get_calibrated_heading()
             # How much further do we have to go?
             error = self.behavior.drive_controller.calculate_heading_error(target_heading, current_h)
@@ -125,10 +122,6 @@ class SensorRobotCar:
             if abs(error) < 2.0:
                 break
             
-            # Safety break for Docker/Stop commands
-            if self.behavior.move_app.isStop(self.behavior.process_control()):
-                break
-                
             time.sleep(0.01)
 
         self.stop()
@@ -155,32 +148,31 @@ class SensorRobotCar:
         return d_mid < COLLISION_DISTANCE_M or d_left < COLLISION_DISTANCE_M or d_right < COLLISION_DISTANCE_M
     
     def run_avoidance_check(self, speed):
+        """The main collision avoidance logic, now interruptible."""
         try:
             if self.isCriticalDistance():
                 self.logger.info("!!! Obstacle detected. Entering Avoidance Mode !!!")
                 self.stop()
                 
-                # 1. Back up a bit to give room for the turn
-                self.reverse_by_encoder()
+                # 1. Back up (Now checks for stop during the reverse loop)
+                if not self.reverse_by_encoder():
+                    return False # Stop received during reverse
                 
-                # 2. Get current distances to decide where to go
+                # Check stop again before turning
+                self.behavior.drive_controller.check_for_stop()
+                
                 dist_mid, dist_left, dist_right = self.get_distances_cm()
                 
-                # 3. Execute the turn toward the clearest path
                 if dist_left > dist_right:
-                    self.logger.info(f"Turning Left (L:{dist_left}cm > R:{dist_right}cm)")
-                    self.turn_left()
+                    self.turn_left() # turn_gyro now includes check_for_stop
                 else:
-                    self.logger.info(f"Turning Right (R:{dist_right}cm > L:{dist_left}cm)")
                     self.turn_right()
                 
-                # 4. Success - tell the DriveController to re-lock its heading
-                return True # Signal that we handled an event
-                
-            return False # No obstacle found
-        except Exception as e:
-            self.logger.error(f"Avoidance error: {e}")
+                return True 
             return False
+        except RobotStopException:
+            # Re-raise to be caught by the main run() loop
+            raise
 
 # --- Run the Program ---
 if __name__ == '__main__':

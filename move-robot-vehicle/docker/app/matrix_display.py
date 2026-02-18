@@ -12,8 +12,12 @@ class MatrixDisplay:
     def __init__(self):
       self.matrix11x7 = Matrix11x7(None, 0x77)
       self.matrix11x7.set_brightness(0.5)
-      #self.logger = CoreUtils.getLogger("matrix_display")
+      self.logger = CoreUtils.getLogger("matrix_display")
       self.imu = RobotImu()
+
+      # Track the current display thread to prevent overlapping
+      self.display_thread = None
+      self._stop_event = threading.Event()
 
     def showTemperature(self):
         temperature = self.imu.read_temperature()
@@ -69,11 +73,44 @@ class MatrixDisplay:
         time.sleep(0.5)
 
     def showString(self, text):
-        #self.logger.debug(f"Show String: {text}")
+        """The actual workhorse method"""
+        self.logger.debug(f"Show String: {text}")
         self.matrix11x7.clear()
-        self.matrix11x7.write_string(text)
-        # Show the buffer
-        self.matrix11x7.show()
+        # Optional: Stop any existing scrolling thread before starting a new one
+        self._stop_event.set() 
+        # If the text is long, use the library's scroll function
+        if len(text) > 2:
+            # Note: ensure your library's scroll_text doesn't block forever
+            # or wrap it in a loop that checks self._stop_event
+            self.showString_async(text)
+        else:
+            self.matrix11x7.write_string(text)
+            self.matrix11x7.show()
+
+    def showString_async(self, text):
+        """Launches showString in a background thread"""
+        self._stop_event = threading.Event()
+        self.display_thread = threading.Thread(
+            target=self.scroll_message, 
+            args=(text,), 
+            daemon=True # Daemon ensures thread dies if main program exits
+        )
+        self.display_thread.start()
+
+    def scroll_message(self, message):
+        self.matrix11x7.clear()                         # Clear the display and reset scrolling to (0, 0)
+        length = self.matrix11x7.write_string(message)  # Write out your message
+        self.matrix11x7.show()                          # Show the result
+        time.sleep(0.5)                              # Initial delay before scrolling
+
+        length -= self.matrix11x7.width
+
+        # Now for the scrolling loop...
+        while length > 0:
+            self.matrix11x7.scroll(1)                   # Scroll the buffer one place to the left
+            self.matrix11x7.show()                      # Show the result
+            length -= 1
+            time.sleep(1)                         # Delay for each scrolling step  
 
     def update_telemetry(self, heading, distance, status="OK"):
         """
@@ -83,7 +120,7 @@ class MatrixDisplay:
         # Create a compact string
         # We use a leading char to identify the metric
         if status != "OK":
-            self.show_text(f"!!{status}!!") # Flash status if avoiding
+            self.showString_async(f"!!{status}!!") # Flash status if avoiding
         else:
             # Toggle display every few seconds or just show heading
-            self.show_text(f"H{int(heading)} D{int(distance)}")
+            self.showString_async(f"H{int(heading)} D{int(distance)}")

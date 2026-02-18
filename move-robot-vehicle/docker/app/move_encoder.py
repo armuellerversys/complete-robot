@@ -2,7 +2,7 @@ import time
 import math
 from Raspi_MotorHAT import Raspi_MotorHAT
 from matrix_display import MatrixDisplay
-from core_utils import CoreUtils
+from core_utils import CoreUtils, RobotStopException
 from move_app import Move_app
 from move_sensor import SensorRobotCar
 from robot_imu import RobotImu
@@ -76,6 +76,14 @@ class DriveController:
         self.stop_flag= False
         self.logger.info(f"Target Heading:  {self.target_heading}")
         self.logger.info("move encoder: exit init forward behavior")
+
+    def check_for_stop(self):
+        """Centralized check for stop commands."""
+        cmd_type = self.behavior.process_control()
+        if self.move_app.isStop(cmd_type) or self.stop_flag:
+            self.stop_flag = True
+            self.logger.info("STOP command detected! Raising Exception.")
+            raise RobotStopException("User requested stop")
 
     def get_calibrated_heading(self):
         """Reads Magnetometer and applies offsets for a true heading."""
@@ -180,6 +188,9 @@ class DriveController:
 
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
     def move_straight_gyro_assisted(self, speed_target, distance_target):
+        # Call this at the very top of your loop
+        self.check_for_stop()
+
         # 1. Calculate Distance & Check Completion
         left_counts = self.abs_left_encoder()
         right_counts = self.abs_right_encoder()
@@ -233,8 +244,9 @@ class DriveController:
         # We MUST re-lock the heading after avoidance finishes.
         if self.sensorRobotCar.isCriticalDistance():
             self.logger.info("Obstacle! Diverting to Avoidance Mode...")
-            self.sensorRobotCar.run_avoidance_check(speed_target)
-            
+            self.stop_flag = self.sensorRobotCar.run_avoidance_check(speed_target)
+            # Re-check after avoidance finishes
+            self.check_for_stop()
             # CRITICAL: Re-lock heading to whatever direction we are facing now
             # otherwise the robot will attempt a violent turn to its old heading.
             self.target_heading = self.get_calibrated_heading()
@@ -332,10 +344,15 @@ class DriveController:
                     break
                     
                 time.sleep(LOOP_DELAY)
-
+        except RobotStopException:
+            self.logger.info("Behavior interrupted by HTTP Stop Request.")
+        except Exception as e:
+            self.logger.error(f"Unexpected error: {e}")
         finally:
             self.show_text("STOP")
             self.release_motors()
+            self.logger.info("Motors released, returning to main program.")
+            return # Returns control to the move_behavior / main app
 
     def stop_vehicle(self):
         self.stop_flag = True
