@@ -53,6 +53,18 @@ def ping():
     ##print("ping")
     return "pong"
 
+@app.route('/telemetry', methods=['GET'])
+def get_telemetry():
+    # Accessing the global drive_controller instance
+    # drive_ctrl = DriveController.getInstance()
+    drive_ctrl = "get telemetry"
+    return {
+        "heading": drive_ctrl.current_heading,
+        "target": drive_ctrl.target_heading,
+        "error": drive_ctrl.prev_gyro_error,
+        "distance": (drive_ctrl.abs_left_encoder() + drive_ctrl.abs_right_encoder()) / 2
+    }
+
 def start_server_process(template_name):
     global display_template
     logger.info("image_app_core: start_server_process")

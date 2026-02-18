@@ -178,13 +178,8 @@ class DriveController:
         Result is between -180 and +180.
         """
         error = target - current
-        
-        # If error is > 180, it's shorter to turn the other way
-        while error > 180:
-            error -= 360
-        while error < -180:
-            error += 360
-            
+        if error > 180: error -= 360
+        if error < -180: error += 360
         return error
 
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
@@ -269,6 +264,7 @@ class DriveController:
         back_encoder_steps = self.right_encoder.steps
         self.logger.info(f"Running right motor {TURN_STEPS} steps...")
         while True:
+            self.behavior.drive_controller.check_for_stop()
             time.sleep(0.001)
             if ((self.right_encoder.steps - back_encoder_steps)  > TURN_STEPS):
                  break
@@ -281,8 +277,9 @@ class DriveController:
         self.right_motor.setSpeed(ROTATE_SPEED)
         self.right_motor.run(Raspi_MotorHAT.FORWARD)
         right_encoder_steps = self.right_encoder.steps
-        self.logger.info(f"Running right motor {target_steps} steps...")
+        self.logger.info(f"Running left motor {target_steps} steps...")
         while True:
+            self.behavior.drive_controller.check_for_stop()
             time.sleep(0.001)
             if ((self.right_encoder.steps - right_encoder_steps)  > target_steps):
                  break
@@ -295,8 +292,9 @@ class DriveController:
         self.left_motor.setSpeed(ROTATE_SPEED)
         self.left_motor.run(Raspi_MotorHAT.FORWARD)
         left_encoder_steps = self.left_encoder.steps
-        self.logger.info(f"Running left motor {target_steps} steps...")
+        self.logger.info(f"Running right motor {target_steps} steps...")
         while True:
+            self.behavior.drive_controller.check_for_stop()
             time.sleep(0.001)
             if ((self.left_encoder.steps -  left_encoder_steps)  > target_steps):
                  break
@@ -312,7 +310,6 @@ class DriveController:
     def getInstance(behavior):
         return DriveController(behavior)
 
-    
     def run(self):
         LOOP_DELAY = 0.01 
         display_update_time = time.time()
@@ -371,5 +368,3 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         print("Bye")
         move_app.stopMotors()
-
-       
