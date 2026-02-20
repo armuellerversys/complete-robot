@@ -90,7 +90,6 @@ class DriveController:
         """Reads Magnetometer and applies offsets for a true heading."""
         # raw_mag = self.imu.read_magnetometer_data() 
         raw_mag = self.robot_imu.read_magnetometer_data()
-        #raw_mag = [0, 0, 0] # Placeholder
         
         # Apply Calibration
         mx = (raw_mag[0] - self.mag_offsets[0]) * self.mag_scales[0]
@@ -109,7 +108,7 @@ class DriveController:
         mag_heading = self.get_calibrated_heading() # 0-360
 
         # Inside move_straight_gyro_assisted
-        if abs(mag_heading) > 45: # If we are off by more than 45 degrees
+        if abs(mag_heading - self.current_heading) > 45: # If we are off by more than 45 degrees
             if not hasattr(self, 'error_start_time'):
                 self.error_start_time = time.time()
             elif time.time() - self.error_start_time > 2.0: # 2 seconds of huge error
@@ -293,9 +292,8 @@ class DriveController:
             # otherwise the robot will attempt a violent turn to its old heading.
             self.target_heading = self.get_calibrated_heading()
             self.current_heading = self.target_heading
-            self.left_encoder.steps = 0 # Optional: Reset distance after avoidance
-            self.right_encoder.steps = 0
-
+            self.reset_encoders()
+            self.logger.info(f"Post-Avoidance Heading Re-locked to: {self.target_heading:.1f}")
         return True
     
     def run_backward(self):

@@ -39,7 +39,7 @@ class SensorRobotCar:
         self.motor_right.run(Raspi_MotorHAT.RELEASE)
 
     def reverse_slightly_timer(self):
-        self.logger.debug("Reversing Slightly")
+        self.logger.info("Reversing Slightly")
         self.motor_left.run(Raspi_MotorHAT.BACKWARD)
         self.motor_right.run(Raspi_MotorHAT.BACKWARD)
         time.sleep(0.5)
@@ -47,7 +47,7 @@ class SensorRobotCar:
 
     def reverse_by_encoder(self):
 
-        self.logger.debug("run backward by encoder")
+        self.logger.info("run backward by encoder")
         drive_controller = self.behavior.drive_controller
         
         self.motor_left.setSpeed(self.speed)
@@ -55,13 +55,13 @@ class SensorRobotCar:
         self.motor_left.run(Raspi_MotorHAT.BACKWARD)
         self.motor_right.run(Raspi_MotorHAT.BACKWARD)
         
-        self.logger.debug(f"Run backward {TURN_STEPS} steps...")
+        self.logger.info(f"Run backward {TURN_STEPS} steps...")
         left_ok = False
         right_ok = False
         while True:
             left_currentSteps = drive_controller.abs_left_encoder()
             right_currentSteps = drive_controller.abs_right_encoder()
-            self.logger.debug(f"Reverse backward left-org: {left_currentSteps} -right-org: {right_currentSteps}")
+            self.logger.info(f"Reverse backward left-org: {left_currentSteps} -right-org: {right_currentSteps}")
             if (left_currentSteps > TURN_STEPS):
                 self.motor_left.run(Raspi_MotorHAT.RELEASE)
                 left_ok = True
@@ -76,12 +76,12 @@ class SensorRobotCar:
 
     def abs_left_encoder(self):
        left = abs(self.left_encoder.steps)
-       self.logger.debug(f"Reverse backward left: {left}")
+       self.logger.info(f"Reverse backward left: {left}")
        return left
     
     def abs_right_encoder(self):
        right = abs(self.right_encoder.steps)
-       self.logger.debug(f"Reverse backward right: {right}")
+       self.logger.info(f"Reverse backward right: {right}")
        return right
        
     def turn_gyro(self, angle_delta):
@@ -105,7 +105,7 @@ class SensorRobotCar:
             self.motor_right.run(Raspi_MotorHAT.FORWARD)
         
         self.set_speed(speed)
-
+        start_loop = time.time()
         # 3. Monitor the turn
         while True:
             self.behavior.drive_controller.check_for_stop()
@@ -115,20 +115,23 @@ class SensorRobotCar:
             error = self.behavior.drive_controller.calculate_heading_error(target_heading, current_h)
             self.logger.info(f"Current Heading: {current_h:.1f}, Target: {target_heading:.1f}, Error: {error:.1f}")
             # Stop if we are within 2 degrees of the target
-            if abs(error) < 2.0:
+            if error < 2.0:
                 break
-            
+            if time.time() - start_loop > 5.0:
+                self.logger.warning(f"Turn timed out due to excessive error. {start_loop:.1f} seconds elapsed.")
+                break
             time.sleep(0.01)
 
         self.stop()
-        self.logger.info("Turn complete.")
+        self.logger.info(f"Turn complete, new heading {current_h:.1f} degrees reached.")
 
+    ANGLE_TURN_THRESHOLD = 15 # Degrees of error to trigger a turn during avoidance
     # Update the helper methods to use the new logic:
     def turn_left(self):
-        self.turn_gyro(-90)
+        self.turn_gyro(-(90-self.ANGLE_TURN_THRESHOLD))
 
     def turn_right(self):
-        self.turn_gyro(90)
+        self.turn_gyro(90-self.ANGLE_TURN_THRESHOLD)
 
     def get_distances_cm(self):
         """Returns distance readings in centimeters."""
@@ -145,7 +148,7 @@ class SensorRobotCar:
 
     def isCriticalDistance(self):
         d_mid, d_left, d_right = self.get_distances_cm()
-        self.logger.debug(f"Distances (cm): F={d_mid}, L={d_left}, R={d_right}")
+        self.logger.info(f"Distances (cm): F={d_mid}, L={d_left}, R={d_right}")
         return d_mid < COLLISION_DISTANCE_M or d_left < COLLISION_DISTANCE_M or d_right < COLLISION_DISTANCE_M
     
     def run_avoidance_check(self, speed):

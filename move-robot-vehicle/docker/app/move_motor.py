@@ -27,7 +27,7 @@ class Move_motor:
         logger.info("Move_motor init")
       
     def getMotors(self):
-        logger.info("Move_motor: het motors")
+        # logger.info("Move_motor: get motors")
         return self.lm, self.rm
     
     def turn_off_motors(self):
