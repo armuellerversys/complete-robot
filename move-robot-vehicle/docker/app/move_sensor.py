@@ -30,13 +30,11 @@ class SensorRobotCar:
         self.motor_right.setSpeed(speed)
 
     def forward(self):
-        # print("Moving Forward")
         self.set_speed(self.speed)
         self.motor_left.run(Raspi_MotorHAT.FORWARD)
         self.motor_right.run(Raspi_MotorHAT.FORWARD)
 
     def stop(self):
-        # print("Stopping")
         self.motor_left.run(Raspi_MotorHAT.RELEASE)
         self.motor_right.run(Raspi_MotorHAT.RELEASE)
 
@@ -48,11 +46,10 @@ class SensorRobotCar:
         self.stop()
 
     def reverse_by_encoder(self):
+
         self.logger.debug("run backward by encoder")
+        drive_controller = self.behavior.drive_controller
         
-        right_back_encoder_steps = self.abs_right_encoder()
-        left_back_encoder_steps = self.abs_left_encoder()
-        self.logger.debug(f"Reverse backward state: {left_back_encoder_steps} -right: {right_back_encoder_steps}")
         self.motor_left.setSpeed(self.speed)
         self.motor_right.setSpeed(self.speed)
         self.motor_left.run(Raspi_MotorHAT.BACKWARD)
@@ -62,10 +59,9 @@ class SensorRobotCar:
         left_ok = False
         right_ok = False
         while True:
-            left_currentSteps = left_back_encoder_steps - self.abs_left_encoder() 
-            right_currentSteps = right_back_encoder_steps - self.abs_right_encoder() 
-            self.logger.debug(f"Reverse backward left-org: {left_back_encoder_steps} -right-org: {right_back_encoder_steps}")
-            self.logger.debug(f"Reverse backward left: {left_currentSteps} -right: {right_currentSteps}")
+            left_currentSteps = drive_controller.abs_left_encoder()
+            right_currentSteps = drive_controller.abs_right_encoder()
+            self.logger.debug(f"Reverse backward left-org: {left_currentSteps} -right-org: {right_currentSteps}")
             if (left_currentSteps > TURN_STEPS):
                 self.motor_left.run(Raspi_MotorHAT.RELEASE)
                 left_ok = True
@@ -101,7 +97,7 @@ class SensorRobotCar:
         
         # 2. Set motors to rotate (Pivot)
         speed = 150 # Fixed rotation speed
-        if angle_delta > 0: # Right
+        if angle_delta < 0: # Right
             self.motor_left.run(Raspi_MotorHAT.FORWARD)
             self.motor_right.run(Raspi_MotorHAT.BACKWARD)
         else: # Left
@@ -117,7 +113,7 @@ class SensorRobotCar:
             current_h = self.behavior.drive_controller.get_calibrated_heading()
             # How much further do we have to go?
             error = self.behavior.drive_controller.calculate_heading_error(target_heading, current_h)
-            
+            self.logger.info(f"Current Heading: {current_h:.1f}, Target: {target_heading:.1f}, Error: {error:.1f}")
             # Stop if we are within 2 degrees of the target
             if abs(error) < 2.0:
                 break
@@ -137,9 +133,14 @@ class SensorRobotCar:
     def get_distances_cm(self):
         """Returns distance readings in centimeters."""
         # DistanceSensor.distance property returns value in meters
+        # If sensor returns 0, it usually means 'out of range' or 'error'
+        # Treat 0 as a large distance (e.g., 200cm) to prevent infinite avoidance loops
         d_mid= abs(round(self.sensor_mid.distance * 100, 2))
+        if d_mid <= 0: d_mid = 200
         d_left = abs(round(self.sensor_left.distance * 100, 2))
+        if d_left <= 0: d_left = 200
         d_right = abs(round(self.sensor_right.distance * 100, 2))
+        if d_right <= 0: d_right = 200
         return d_mid, d_left, d_right
 
     def isCriticalDistance(self):

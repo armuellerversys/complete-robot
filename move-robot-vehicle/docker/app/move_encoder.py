@@ -19,7 +19,7 @@ BASE_SPEED = 50
 #KP = 0.5
 KP = 0.7
 KI = 0.005
-KD = 0.05
+KD = 0.1
 #KD = 0.1
 DT = 0.003
 
@@ -73,6 +73,7 @@ class DriveController:
         self.gyro_integral = 0
         self.prev_gyro_error = 0
 
+        self.error_start_time = time.time()
         self.stop_flag= False
         self.logger.info(f"Target Heading:  {self.target_heading}")
         self.logger.info("move encoder: exit init forward behavior")
@@ -106,6 +107,16 @@ class DriveController:
         # 1. Get raw inputs
         gyro_rate = self.get_gyro_rate()  # deg/s
         mag_heading = self.get_calibrated_heading() # 0-360
+
+        # Inside move_straight_gyro_assisted
+        if abs(mag_heading) > 45: # If we are off by more than 45 degrees
+            if not hasattr(self, 'error_start_time'):
+                self.error_start_time = time.time()
+            elif time.time() - self.error_start_time > 2.0: # 2 seconds of huge error
+                self.logger.error(f"Safety Trip: Continuous spinning detected. {abs(mag_heading)}")
+                raise RobotStopException("Infinite spin detected")
+        else:
+            self.error_start_time = time.time() # Reset if error is small
         
         # 2. Predict heading using Gyro
         predicted_heading = self.current_heading + (gyro_rate * dt)
@@ -166,6 +177,10 @@ class DriveController:
         self.set_motor_speed("R", FORWARD, speed)
         self.logger.debug("move-encoder:reset")
 
+    def reset_encoders(self):
+        self.left_encoder.steps = 0 
+        self.right_encoder.steps = 0  
+
     def abs_left_encoder(self):
        return abs(self.left_encoder.steps)
     
@@ -182,9 +197,37 @@ class DriveController:
         if error < -180: error += 360
         return error
 
+    def apply_pid_corrections(self, speed_target, adjustment):
+        """
+        Applies the PID adjustment to the motors with safety limits.
+        adjustment: Positive means we need to turn Right (speed up Left).
+        """
+        # 1. Calculate raw speeds
+        # If adjustment is +, left speeds up and right slows down -> turns Right
+        left_raw = speed_target + adjustment
+        right_raw = speed_target - adjustment
+
+        # 2. Prevent "Spinning in Place" during straight travel
+        # We want to ensure motors don't reverse unless specifically told to turn
+        left_speed = max(0, min(MAX_SPEED, left_raw))
+        right_speed = max(0, min(MAX_SPEED, right_raw))
+
+        # 3. Handle the "Dead Zone" 
+        # Gear motors won't move below a certain PWM (usually ~50-60)
+        MIN_PWM = 60
+        if 0 < left_speed < MIN_PWM: left_speed = MIN_PWM
+        if 0 < right_speed < MIN_PWM: right_speed = MIN_PWM
+
+        # 4. Final Execution
+        self.set_motor_speed("L", FORWARD, int(left_speed))
+        self.set_motor_speed("R", FORWARD, int(right_speed))
+        
+        self.logger.debug(f"Target: {speed_target} | Adj: {adjustment:.1f} | L: {int(left_speed)} R: {int(right_speed)}")
+
+
     # --- PID Control Logic (Migrated and uses 'self.' variables) ---
     def move_straight_gyro_assisted(self, speed_target, distance_target):
-        self.logger.info("move straight gyro assisted")
+        self.logger.info("*********************** move straight gyro assisted ***********************")
         # Call this at the very top of your loop
         self.check_for_stop()
 
@@ -192,50 +235,51 @@ class DriveController:
         left_counts = self.abs_left_encoder()
         right_counts = self.abs_right_encoder()
         distance = (left_counts + right_counts) / 2
-        
+        self.logger.info(f"Encoder Left: {left_counts} Right: {right_counts} Distance: {distance:.1f} / {distance_target}")
+        # 4. Calculate Errors
+        # Encoder Error (Speed sync)
+        encoder_error = right_counts - left_counts
+        # Encoder Contribution
+        now = time.time()
+        dt = now - self.last_time
+        adj_enc = (KP * encoder_error) + (KI * self.integral_error) 
+        self.integral_error += encoder_error * dt
         if distance >= distance_target or self.stop_flag:
             self.logger.info(f"move straight distance target reached {distance_target}")
             self.release_motors()
             return False
 
         # 2. Timing for the Filter
-        now = time.time()
-        dt = now - self.last_time
+       
         if dt < 0.001: dt = 0.001 # Prevent division by zero
         self.last_time = now
 
         # 3. Get Fused Heading
         curr_h = self.update_fused_heading() # This now uses the wrap-aware logic
-        
-        # 4. Calculate Errors
-        # Encoder Error (Speed sync)
-        encoder_error = left_counts - right_counts 
-        
+        self.logger.info(f"Current Heading: {curr_h:.1f} Target Heading: {self.target_heading:.1f}")
+
         # IMU Error (Heading sync)
         imu_error = self.calculate_heading_error(self.target_heading, curr_h)
 
-        # 5. Combined PID Logic
-        # We apply a 'Weight' to each. Usually, IMU is more trusted for 'Straight'
-        # than just matching encoder clicks.
-        
-        # Encoder Contribution
-        adj_enc = (KP * encoder_error) + (KI * self.integral_error) 
-        self.integral_error += encoder_error * dt
-        
         # IMU Contribution (Stronger KP)
-        adj_imu = (self.kp_gyro * imu_error) + (self.kd_gyro * (imu_error - self.prev_gyro_error) / dt)
+        # adj_imu = (self.kp_gyro * imu_error) + (self.kd_gyro * (imu_error - self.prev_gyro_error) / dt)
+        # 2. PID Calculation
+        p_term = self.kp_gyro * imu_error
+        self.gyro_integral = max(-100, min(100, self.gyro_integral + (imu_error * dt))) # Anti-windup
+        i_term = self.ki_gyro * self.gyro_integral
+        d_term = self.kd_gyro * ((imu_error - self.prev_gyro_error) / dt)
+        adj_imu = p_term + i_term + d_term
+        self.logger.info(f"PID Terms => P: {p_term:.2f} I: {i_term:.2f} D: {d_term:.2f} | Total IMU Adj: {adj_imu:.2f}")
+
         self.prev_gyro_error = imu_error
 
         # Total Adjustment
         # Note: We scale the IMU adjustment to match the motor speed scale (0-255)
-        total_adjustment = (adj_enc * 0.4) + (adj_imu * 1.2)
+        total_adjustment = adj_enc - adj_imu
+        self.logger.info(f"Total Adjustment: {total_adjustment:.1f} (Encoder Adj: {adj_enc:.1f}, IMU Adj: {adj_imu:.1f})")
 
         # 6. Motor Output with Safeguards
-        left_speed = int(speed_target - total_adjustment)
-        right_speed = int(speed_target + total_adjustment)
-        
-        self.set_motor_speed("L", FORWARD, left_speed)
-        self.set_motor_speed("R", FORWARD, right_speed)
+        self.apply_pid_corrections(speed_target, total_adjustment)
 
         # 7. Safety Check (Ultrasonic)
         # If an obstacle is detected, run_avoidance_check will handle reversing/turning.
@@ -318,6 +362,7 @@ class DriveController:
             self.reset(self.move_app.forward_speed)
             self.target_heading = self.get_calibrated_heading()
             self.current_heading = self.target_heading
+            self.error_start_time = time.time() 
             
             while not self.stop_flag:
                 # 1. Logic Execution
