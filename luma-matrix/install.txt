@@ -1,0 +1,9 @@
+sudo apt update
+sudo apt install python3-pip python3-dev libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff6 -y
+sudo apt install libtiff-dev -y
+sudo pip3 install --break-system-packages  --upgrade luma.led_matrix
+
+sudo usermod -a -G spi,gpio $USER
+
+pip3 install --break-system-packages  --upgrade luma.led_matrix psutil
+sudo pip install --break-system-packages flask
