@@ -24,10 +24,19 @@ else:
     app = Flask(__name__)
 
 @app.route('/showText', methods=['POST'])
-def show_text(new_msg):
+def show_text():
     global current_message
+    new_msg = request.json.get('message', 'No Message')
     current_message = new_msg
+    logger.info(f"Updated message to: {new_msg}")
+    print(f"Updated message to: {new_msg}")
     return {"status": "success", "updated_to": new_msg}, 200
+
+@app.route('/resetText', methods=['POST'])
+def reset_text():
+    global current_message
+    current_message = None
+    return {"status": "success", "updated_to": "message cleared"}, 200
    
 def get_ip():
     try:
@@ -54,6 +63,7 @@ def scroll_message(device, text, speed=0.5):
     x = device.width
     while x > -w:
         with canvas(device) as draw:
+            logger.info(f"Scrolling message: {text}")
             draw.text((x, 0), text, font=font, fill="white")
         x -= 1
         time.sleep(speed)
@@ -61,7 +71,7 @@ def scroll_message(device, text, speed=0.5):
 def show_status():
     global current_message
     while True:
-        if current_message:
+        if current_message is not None:
             full_msg = current_message
         else:
             ip = get_ip()

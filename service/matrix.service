@@ -3,10 +3,10 @@ Description=LED Matrix Monitor
 After=multi-user.target
 
 [Service]
-ExecStart=/usr/bin/python3 /home/user/python/matrix/matrix_monitor.py
-WorkingDirectory=/home/pi
+ExecStart=/usr/bin/python3 /home/user/python/matrix/matrix_server.py
+WorkingDirectory=/home/user/python/matrix
 Restart=always
-User=pi
+User=user
 
 [Install]
 WantedBy=multi-user.target
