@@ -49,6 +49,7 @@ while True:
         msg,
         fill="white",
         font=proportional(LCD_FONT),
-        scroll_delay=0.05
+        scroll_delay=0.05,
+        y_offset=2
     )
     time.sleep(1)

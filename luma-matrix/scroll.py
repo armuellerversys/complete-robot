@@ -17,7 +17,7 @@ def scroll_text(display_device, text, speed=0.05):
     # Calculate text width to know when to stop scrolling
     # We create a dummy canvas to measure
     with canvas(display_device) as draw:
-        w, h = draw.textbbox((0, 0), text, font=font)[2:]
+        w, h = draw.textbbox((0, 0), text, font=font, y_offset=2)[2:]
     
     # Start position (off-screen to the right)
     x = display_device.width
@@ -25,7 +25,7 @@ def scroll_text(display_device, text, speed=0.05):
     # Loop until the end of the text passes the left edge
     while x > -w:
         with canvas(display_device) as draw:
-            draw.text((x, 0), text, font=font, fill="white")
+            draw.text((x, 0), text, font=font, fill="white", y_offset=2)
         
         x -= 1
         time.sleep(speed)
@@ -34,6 +34,6 @@ print("Starting Scroll... Press Ctrl+C to stop.")
 
 try:
     while True:
-        scroll_text(device, "SYSTEM ONLINE - PI 4 BLUE MATRIX", speed=0.03)
+        scroll_text(device, "SYSTEM ONLINE - PI 4 BLUE MATRIX", speed=0.03, y_offset=2)
 except KeyboardInterrupt:
     device.clear()

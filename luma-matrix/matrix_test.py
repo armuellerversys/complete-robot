@@ -13,7 +13,7 @@ print("Matrix initialized.")
 try:
     with canvas(device) as draw:
         print("Drawing on matrix")
-        draw.text((0, 0), "HELLO", fill="white")
+        draw.text((0, -2), "HELLO", fill="white")
     sleep(5)
 except Exception as e:
     # Handle any other exceptions

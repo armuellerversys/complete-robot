@@ -58,13 +58,13 @@ def get_temp():
 def scroll_message(device, text, speed=0.5):
     font = ImageFont.load_default()
     with canvas(device) as draw:
-        w, h = draw.textbbox((0, 0), text, font=font)[2:]
+        w, h = draw.textbbox((0, -2), text, font=font)[2:]
     
     x = device.width
     while x > -w:
         with canvas(device) as draw:
             logger.info(f"Scrolling message: {text}")
-            draw.text((x, 0), text, font=font, fill="white")
+            draw.text((x, -2), text, font=font, fill="white")
         x -= 1
         time.sleep(speed)
 
