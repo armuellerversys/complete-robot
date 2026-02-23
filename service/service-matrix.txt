@@ -4,6 +4,7 @@ sudo systemctl daemon-reload
 sudo systemctl enable matrix.service
 sudo systemctl disable matrix.service
 sudo systemctl start matrix.service
+sudo systemctl restart matrix.service
 systemctl status matrix.service
 
 journalctl -u matrix.service -f

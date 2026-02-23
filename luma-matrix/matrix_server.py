@@ -15,6 +15,7 @@ serial = spi(port=0, device=0, gpio=noop())
 device = max7219(serial, cascaded=4, block_orientation=-90, rotate=0)
 device.contrast(40) # Keep it dim for 24/7 use
 current_message = None
+server_requ = False
 
 # This is required for the Flask server to run properly in a separate process
 # from the OVOS bus client
@@ -25,17 +26,19 @@ else:
 
 @app.route('/showText', methods=['POST'])
 def show_text():
-    global current_message
+    global current_message, server_requ
     new_msg = request.json.get('message', 'No Message')
     current_message = new_msg
+    server_requ = True
     logger.info(f"Updated message to: {new_msg}")
     print(f"Updated message to: {new_msg}")
     return {"status": "success", "updated_to": new_msg}, 200
 
 @app.route('/resetText', methods=['POST'])
 def reset_text():
-    global current_message
+    global current_message, server_requ
     current_message = None
+    server_requ = False
     return {"status": "success", "updated_to": "message cleared"}, 200
    
 def get_ip():
@@ -55,31 +58,39 @@ def get_temp():
     except:
         return "0.0C"
 
-def scroll_message(device, text, speed=0.5):
+def scroll_message(device, text, speed=0.2):
+    global current_message, server_requ
+
     font = ImageFont.load_default()
+
     with canvas(device) as draw:
         w, h = draw.textbbox((0, -2), text, font=font)[2:]
-    
+
     x = device.width
+
     while x > -w:
+        # stop scrolling if a new server message arrives
+        if server_requ and text != current_message:
+            return
+
         with canvas(device) as draw:
-            logger.info(f"Scrolling message: {text}")
             draw.text((x, -2), text, font=font, fill="white")
+
         x -= 1
         time.sleep(speed)
 
 def show_status():
-    global current_message
+    global current_message, server_requ
+
     while True:
-        if current_message is not None:
-            full_msg = current_message
+        if server_requ and current_message:
+            msg = current_message
         else:
             ip = get_ip()
             temp = get_temp()
-            full_msg = f"IP: {ip} | T: {temp}"
-       
-        scroll_message(device, full_msg)
-        time.sleep(4) # Short pause between scrolls
+            msg = f"IP:{ip} T:{temp}"
+
+        scroll_message(device, msg)
 
 def run_flask():
     # We set use_reloader=False because the reloader creates 

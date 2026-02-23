@@ -1,5 +1,7 @@
+import json
 import time
 import math
+import requests
 from Raspi_MotorHAT import Raspi_MotorHAT
 from matrix_display import MatrixDisplay
 from core_utils import CoreUtils, RobotStopException
@@ -27,6 +29,11 @@ TURN_STEPS = 900
 ROTATE_SPEED = 200
 MAX_SPEED = 200
 MIN_MOTOR_PWM = 60  # Minimum power to overcome gear friction
+URL = "http://192.168.4.1:5000/showText"
+# The headers specify that you are sending JSON data
+headers = {
+    "Content-Type": "application/json"
+}
 
 class DriveController:
     def __init__(self, behavior):
@@ -346,7 +353,26 @@ class DriveController:
         return self.move_app.isLeftDistance() or self.move_app.isRightDistance() or self.move_app.isMidDistance()
     
     def show_text(self, text):
-        self.matrixDisplay.showString(text)
+        ## self.matrixDisplay.showString(text)
+        #curl -X POST http://192.168.4.1:5000/showText -H "Content-Type: application/json" \-d '{"message": "This is a test"}'
+        try:
+            # Create the data payload as a dictionary
+            payload = {"message": text}
+
+            # Send a POST request to the server with the JSON data
+            self.logger.info(f"Sending request to {URL}...")
+            response = requests.post(URL, data=json.dumps(payload), headers=headers, timeout=1)
+
+            # Check if the request was successful
+            if response.status_code == 200:
+                self.logger.info("Success! The matrix server received the request.")
+                self.logger.info("Matrix Server response:", response.json())
+            else:
+                self.logger.error(f"Matrix Server Error! Status code: {response.status_code} - {response.text}")
+
+        except requests.exceptions.ConnectionError as e:
+            self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
+            self.logger.error(f"Error details: {e}")
 
     @staticmethod
     def getInstance(behavior):
