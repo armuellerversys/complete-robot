@@ -9,9 +9,6 @@ from move_app import Move_app
 from move_sensor import SensorRobotCar
 from robot_imu import RobotImu
 
-# print("CWD:", os.getcwd())
-# input('Hello! Start testing move_encoder:\n')
-
 # --- Constants (Keep outside the class for easy modification) ---
 FORWARD = Raspi_MotorHAT.FORWARD
 RELEASE = Raspi_MotorHAT.RELEASE
@@ -29,6 +26,7 @@ TURN_STEPS = 900
 ROTATE_SPEED = 200
 MAX_SPEED = 200
 MIN_MOTOR_PWM = 60  # Minimum power to overcome gear friction
+
 URL = "http://192.168.4.1:5000/showText"
 # The headers specify that you are sending JSON data
 headers = {
@@ -113,6 +111,7 @@ class DriveController:
         # 1. Get raw inputs
         gyro_rate = self.get_gyro_rate()  # deg/s
         mag_heading = self.get_calibrated_heading() # 0-360
+        self.show_text("H: {:.1f}".format(mag_heading))
 
         # Inside move_straight_gyro_assisted
         if abs(mag_heading - self.current_heading) > 45: # If we are off by more than 45 degrees
