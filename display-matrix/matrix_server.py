@@ -4,6 +4,8 @@ import time
 import subprocess
 import os
 import logging
+from matrix11x7 import Matrix11x7
+from matrix11x7.fonts import font5x7 as font5x7
 from luma.led_matrix.device import max7219
 from luma.core.interface.serial import spi, noop
 from luma.core.render import canvas
@@ -16,6 +18,9 @@ device = max7219(serial, cascaded=4, block_orientation=-90, rotate=0)
 device.contrast(40) # Keep it dim for 24/7 use
 current_message = None
 server_requ = False
+matrix11x7 = Matrix11x7(None, 0x77)
+matrix11x7.set_brightness(0.5)
+
 
 # This is required for the Flask server to run properly in a separate process
 # from the OVOS bus client
@@ -34,11 +39,24 @@ def show_text():
     print(f"Updated message to: {new_msg}")
     return {"status": "success", "updated_to": new_msg}, 200
 
-@app.route('/resetText', methods=['POST'])
-def reset_text():
+@app.route('/showChar', methods=['POST'])
+def show_Char():
+    global current_message, server_requ
+    new_msg = request.json.get('message', 'No Message')
+    matrix11x7.clear()  
+    matrix11x7.write_string(new_msg)
+    # Show the buffer
+    matrix11x7.show()
+    logger.info(f"Updated message to: {new_msg}")
+    return {"status": "success", "updated_to": new_msg}, 200
+
+@app.route('/resetDisplay', methods=['POST'])
+def reset_display():
     global current_message, server_requ
     current_message = None
     server_requ = False
+    matrix11x7.clear()
+    matrix11x7.show()
     return {"status": "success", "updated_to": "message cleared"}, 200
    
 def get_ip():

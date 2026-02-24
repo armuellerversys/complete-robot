@@ -38,7 +38,6 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
     ledshim \
     icm20948 \
     vpython \
-    matrix11x7 \
     git+https://github.com/orionrobots/Raspi_MotorHAT
 
 # Ensure directory exists for ARM-specific libraries if needed
