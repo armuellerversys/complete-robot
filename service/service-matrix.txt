@@ -1,10 +1,11 @@
 sudo nano /etc/systemd/system/matrix.service
 
-sudo systemctl daemon-reload
+
 sudo systemctl enable matrix.service
 sudo systemctl disable matrix.service
 sudo systemctl start matrix.service
 sudo systemctl restart matrix.service
+sudo systemctl daemon-reload
 systemctl status matrix.service
 
 journalctl -u matrix.service -f
