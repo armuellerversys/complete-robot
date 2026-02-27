@@ -14,3 +14,10 @@ sudo apt-get install i2c-tools
 i2cdetect -y 1  ## 077x address
 sudo apt-get install python3-smbus
 sudo pip3 install --break-system-packages  matrix11x7
+
+
+
+sudo systemctl restart matrix.service
+sudo systemctl stop matrix.service
+sudo systemctl daemon-reload
+systemctl status matrix.service

@@ -3,6 +3,7 @@ Description=LED Matrix Monitor
 After=network.target
 
 [Service]
+Environment=PYTHONUNBUFFERED=1
 Type=simple
 ExecStart=/usr/bin/python3 /home/user/python/matrix/matrix_server.py
 WorkingDirectory=/home/user/python/matrix

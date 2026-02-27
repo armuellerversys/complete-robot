@@ -1,5 +1,6 @@
 sudo nano /etc/systemd/system/matrix.service
 
+sudo usermod -a -G spi,gpio user
 
 sudo systemctl enable matrix.service
 sudo systemctl disable matrix.service
