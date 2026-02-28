@@ -209,7 +209,7 @@ def show_status():
         elif display_mode == "scroll":
             with canvas(virtual) as draw:
                 # Use the font object here
-                draw.text((0, -1), current_message, fill="white", font=pixel_font)
+                draw.text((0, 0), current_message, fill="white", font=pixel_font)
             
             # Get the actual pixel width of the rendered text
             if pixel_font:

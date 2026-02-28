@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-numpy \
     python3-gpiozero \
     python3-lgpio \
+    python3-setuptools \
     i2c-tools \
     python3-smbus \
     libglib2.0-0 \
@@ -37,6 +38,7 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
     ovos-bus-client \
     ledshim \
     icm20948 \
+    setuptools \
     vpython \
     git+https://github.com/orionrobots/Raspi_MotorHAT
 

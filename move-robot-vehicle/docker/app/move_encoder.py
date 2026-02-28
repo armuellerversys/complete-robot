@@ -111,7 +111,7 @@ class DriveController:
         # 1. Get raw inputs
         gyro_rate = self.get_gyro_rate()  # deg/s
         mag_heading = self.get_calibrated_heading() # 0-360
-        self.show_text("H: {:.1f}".format(mag_heading))
+        self.show_text(f"H:{round(mag_heading)}")
 
         # Inside move_straight_gyro_assisted
         if abs(mag_heading - self.current_heading) > 45: # If we are off by more than 45 degrees
@@ -290,6 +290,7 @@ class DriveController:
         # If an obstacle is detected, run_avoidance_check will handle reversing/turning.
         # We MUST re-lock the heading after avoidance finishes.
         if self.sensorRobotCar.isCriticalDistance():
+            self.show_text("Dist Alert!")
             self.logger.info("Obstacle! Diverting to Avoidance Mode...")
             self.stop_flag = self.sensorRobotCar.run_avoidance_check(speed_target)
             # Re-check after avoidance finishes
@@ -361,14 +362,9 @@ class DriveController:
             # Send a POST request to the server with the JSON data
             self.logger.info(f"Sending request to {URL}...")
             response = requests.post(URL, data=json.dumps(payload), headers=headers, timeout=1)
-
             # Check if the request was successful
-            if response.status_code == 200:
-                self.logger.info("Success! The matrix server received the request.")
-                self.logger.info("Matrix Server response:", response.json())
-            else:
+            if response.status_code != 200:
                 self.logger.error(f"Matrix Server Error! Status code: {response.status_code} - {response.text}")
-
         except requests.exceptions.ConnectionError as e:
             self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
             self.logger.error(f"Error details: {e}")
@@ -417,7 +413,7 @@ class DriveController:
         except Exception as e:
             self.logger.error(f"Unexpected error: {e}")
         finally:
-            self.show_text("STOP")
+            # self.show_text("STOP")
             self.release_motors()
             self.logger.info("Motors released, returning to main program.")
             return # Returns control to the move_behavior / main app
