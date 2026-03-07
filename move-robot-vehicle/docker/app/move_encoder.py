@@ -1,13 +1,16 @@
 import json
+import queue
 import time
 import math
 import requests
+import threading
 from Raspi_MotorHAT import Raspi_MotorHAT
 from matrix_display import MatrixDisplay
 from core_utils import CoreUtils, RobotStopException
 from move_app import Move_app
 from move_sensor import SensorRobotCar
 from robot_imu import RobotImu
+from matrix_text import Matrix
 
 # --- Constants (Keep outside the class for easy modification) ---
 FORWARD = Raspi_MotorHAT.FORWARD
@@ -52,8 +55,6 @@ class DriveController:
         # The Hall encoder generates pulses (counts) as the wheel turns.
         self.right_encoder = self.move_app.robot.right_encoder
         self.left_encoder = self.move_app.robot.left_encoder
-
-        self.matrixDisplay = MatrixDisplay()
         
         # --- IMU Setup ---
         # Assuming you use a standard library for the ICM20948
@@ -80,6 +81,15 @@ class DriveController:
 
         self.error_start_time = time.time()
         self.stop_flag= False
+
+        self.matrix = Matrix()
+        self.matrixDisplay = MatrixDisplay()
+
+        # New: Setup for background display updates
+        self.display_queue = queue.Queue(maxsize=1) # Only keep the latest message
+        self.display_thread = threading.Thread(target=self._display_worker, daemon=True)
+        self.display_thread.start()
+
         self.logger.info(f"Target Heading:  {self.target_heading}")
         self.logger.info("move encoder: exit init forward behavior")
 
@@ -352,22 +362,44 @@ class DriveController:
     def isCriticalDistance(self):
         return self.move_app.isLeftDistance() or self.move_app.isRightDistance() or self.move_app.isMidDistance()
     
+    def _display_worker(self):
+        """Background thread that handles slow network requests."""
+        while True:
+            try:
+                # This blocks here until a message is put in the queue
+                text = self.display_queue.get()
+                self.logger.info("Display worker {text}")
+                payload = {"message": text}
+                # Increased timeout to 3 seconds so it doesn't crash easily
+                response = requests.post(URL, json=payload, headers=headers, timeout=3)
+                
+                if response.status_code != 200:
+                    self.logger.error(f"Matrix Error: {response.status_code}")
+                
+                # Tell the queue we are done
+                self.display_queue.task_done()
+            except requests.exceptions.RequestException:
+                # We don't want the background thread to crash the whole program
+                self.logger.warning("Matrix server unreachable or timed out.")
+            except Exception as e:
+                self.logger.error(f"Display worker error: {e}")
+    
+    
     def show_text(self, text):
+        self.logger.info(f"Show text: {text}")
+        self.matrix.show_text(text)
         ## self.matrixDisplay.showString(text)
         #curl -X POST http://192.168.4.1:5000/showText -H "Content-Type: application/json" \-d '{"message": "This is a test"}'
-        try:
-            # Create the data payload as a dictionary
-            payload = {"message": text}
-
-            # Send a POST request to the server with the JSON data
-            self.logger.info(f"Sending request to {URL}...")
-            response = requests.post(URL, data=json.dumps(payload), headers=headers, timeout=1)
-            # Check if the request was successful
-            if response.status_code != 200:
-                self.logger.error(f"Matrix Server Error! Status code: {response.status_code} - {response.text}")
-        except requests.exceptions.ConnectionError as e:
-            self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
-            self.logger.error(f"Error details: {e}")
+        #try:
+         #   self.logger.info(f"Show text: {text}")
+         #   # use block=False so the PID loop NEVER waits for the queue
+         #   self.display_queue.put_nowait(text)
+        #except queue.Full:
+          #  # If the background thread is busy, skip this update to keep loop speed
+          #  pass
+        #except requests.exceptions.ConnectionError as e:
+           # self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
+           # self.logger.error(f"Error details: {e}")
 
     @staticmethod
     def getInstance(behavior):
@@ -376,7 +408,8 @@ class DriveController:
     def run(self):
         LOOP_DELAY = 0.01 
         display_update_time = time.time()
-        
+        self.logger.info("Start encoder behavior")
+        self.show_text("Start enc")
         try:
             self.reset(self.move_app.forward_speed)
             self.target_heading = self.get_calibrated_heading()
@@ -402,6 +435,11 @@ class DriveController:
                         distance=dist,
                         status=status_str
                     )
+
+                    # Format a combined string of heading and distance
+                    heading_str = f"H:{int(self.current_heading)}"
+                    self.show_text(heading_str)
+
                     display_update_time = time.time()
 
                 if not finish:

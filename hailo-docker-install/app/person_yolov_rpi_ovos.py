@@ -18,8 +18,11 @@ from hailo_platform import (HEF, VDevice, HailoStreamInterface, InferVStreams,
 from hailo_platform.pyhailort.control_object import PcieHcpControl
 
 RGB_BLUE = (0, 0, 255)
-RGB_RED = (0, 255, 0)
+RGB_RED = (255, 0, 0)
 RGB_WHITE = (255, 255, 255)
+RGB_GREEN = (0, 255, 0)
+RGB_YELLOW = (255, 255, 0)
+RGB_AQUA = (0, 255, 255)
 
 URL = "http://192.168.4.8:5001"
 
@@ -135,7 +138,8 @@ class PersonTracker:
             output_params = OutputVStreamParams.make_from_network_group(network_group)
             input_info = hef.get_input_vstream_infos()[0]
             h, w = input_info.shape[0], input_info.shape[1]
-           
+            last_exec_indicator = time.time()
+
             with InferVStreams(network_group, input_params, output_params) as pipeline:
                 with network_group.activate():
                     frame_count = 0
@@ -145,9 +149,15 @@ class PersonTracker:
                         frame = hw.picam2.capture_array()
                         if frame is None: break
                         img_h, img_w = frame.shape[:2]
+
+                        curr_time = time.time()
+                        if curr_time - last_exec_indicator > 20:
+                            last_exec_indicator = curr_time
+                            hw.set_led_color(RGB_YELLOW)
+                        else:
+                            hw.set_led_color(RGB_AQUA)
                         
                         # FPS calculation
-                        curr_time = time.time()
                         self.fps = 1 / (curr_time - self.prev_time) if self.prev_time > 0 else 0
                         self.prev_time = curr_time
 
