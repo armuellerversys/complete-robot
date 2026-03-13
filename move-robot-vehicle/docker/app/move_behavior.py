@@ -1,6 +1,7 @@
 import time
 import signal
 import sys
+from matrix_text import Matrix
 from image_app_core import start_server_process, get_control_instruction
 from move_app import Move_app
 from move_encoder import DriveController
@@ -41,6 +42,7 @@ class Move_behavior():
       self.logger.info("move behavior: motor stopped")
       self.drive_controller = DriveController.getInstance(self)
       self.move_app.setDriveController(self.drive_controller)
+      self.matrix = Matrix()
       self.logger.info("move behavior: exit init forward behavior")
 
    def process_control(self):
@@ -66,10 +68,15 @@ class Move_behavior():
          instruction = get_control_instruction()
       return type
 
+   def show_text(self, text):
+      self.logger.info(f"Show text: {text}")
+      self.matrix.show_text(text)
+
    def process(self):
       self.server_process = start_server_process('move.html')
       self.logger.debug("move behavior: process move behavior started")
       self.move_app.sayText(HI_TEXT)
+      self.show_text("HI AL")
    
       time_pan = time.time()
   

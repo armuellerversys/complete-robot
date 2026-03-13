@@ -14,7 +14,7 @@ class ServoController:
         self.HOME_TILT = 307
         
         # --- Limits (Prevent mechanical strain) ---
-        self.MIN_PAN, self.MAX_PAN = 200, 550
+        self.MIN_PAN, self.MAX_PAN = 100, 500
         
         self.current_pan = self.HOME_PAN
         self.current_tilt = self.HOME_TILT
@@ -30,7 +30,7 @@ class ServoController:
         self.reset_position()
 
     def set_servo(self, channel, pulse):
-        pulse = max(150, min(600, int(pulse)))
+        pulse = max(150, min(500, int(pulse)))
         self.pwm.setPWM(channel, 0, pulse)
 
     def reset_position(self):

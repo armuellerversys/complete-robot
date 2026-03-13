@@ -38,10 +38,10 @@ ip -brief addr show wlan0
 sudo iwlist wlan0 scan | grep ESSID
 
 #
-nmcli connection add type wifi ifname wlan0 con-name PiAccessPoint ssid PiAccessPoint
-nmcli connection modify PiAccessPoint wifi-sec.key-mgmt wpa-psk
-nmcli connection modify PiAccessPoint wifi-sec.psk "Robot2025"
-nmcli connection up PiAccessPoint
+nmcli connection add type wifi ifname wlan0 con-name Pi4_AccessPoint ssid Pi4_AccessPoint
+nmcli connection modify Pi4_AccessPoint wifi-sec.key-mgmt wpa-psk
+nmcli connection modify Pi4_AccessPoint wifi-sec.psk "Robot2025"
+nmcli connection up Pi4_AccessPoint
 
 sudo nmcli con delete "Pi4_AccessPoint"
 sudo nmcli con add type wifi con-name "Pi4_AP" ifname wlan0 ssid "Pi4_AccessPoint" -- \

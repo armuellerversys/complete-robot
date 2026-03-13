@@ -5,6 +5,7 @@ from matrix_display import MatrixDisplay
 import socket
 import time
 from core_utils import CoreUtils
+from matrix_text import Matrix
 
 ## import debugpy
 ## debugpy.listen(('0.0.0.0', 5678))
@@ -21,6 +22,8 @@ logger = CoreUtils.getLogger("control_server")
 
 logger.info("Show matrix")
 matrixDisplay = MatrixDisplay()
+
+matrix_text = Matrix()
 
 @app.after_request
 def add_header(response):
@@ -106,10 +109,15 @@ def get_lan_ip():
         ip = s.getsockname()[0]
         return ip
 
+def show_text(text):
+    logger.info(f"Show text: {text}")
+    matrix_text.show_text(text)
+
 logger.info("REGISTERED ROUTES:")
 logger.info(app.url_map)
 
 if __name__ == "__main__":
     matrixDisplay.showTemperature()
+    show_text("Ready")
     logger.info("Start control server: " + get_lan_ip())
     app.run(host='0.0.0.0', port=5000, use_reloader=False)

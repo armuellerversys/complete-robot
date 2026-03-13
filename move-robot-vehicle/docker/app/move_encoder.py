@@ -1,9 +1,6 @@
-import json
-import queue
 import time
 import math
 import requests
-import threading
 from Raspi_MotorHAT import Raspi_MotorHAT
 from matrix_display import MatrixDisplay
 from core_utils import CoreUtils, RobotStopException
@@ -85,11 +82,6 @@ class DriveController:
         self.matrix = Matrix()
         self.matrixDisplay = MatrixDisplay()
 
-        # New: Setup for background display updates
-        self.display_queue = queue.Queue(maxsize=1) # Only keep the latest message
-        self.display_thread = threading.Thread(target=self._display_worker, daemon=True)
-        self.display_thread.start()
-
         self.logger.info(f"Target Heading:  {self.target_heading}")
         self.logger.info("move encoder: exit init forward behavior")
 
@@ -98,6 +90,7 @@ class DriveController:
         cmd_type = self.behavior.process_control()
         if self.move_app.isStop(cmd_type) or self.stop_flag:
             self.stop_flag = True
+            self.show_text("stop")
             self.logger.info("STOP command detected! Raising Exception.")
             raise RobotStopException("User requested stop")
 
@@ -300,7 +293,7 @@ class DriveController:
         # If an obstacle is detected, run_avoidance_check will handle reversing/turning.
         # We MUST re-lock the heading after avoidance finishes.
         if self.sensorRobotCar.isCriticalDistance():
-            self.show_text("Dist Alert!")
+            self.show_text("DistA")
             self.logger.info("Obstacle! Diverting to Avoidance Mode...")
             self.stop_flag = self.sensorRobotCar.run_avoidance_check(speed_target)
             # Re-check after avoidance finishes
@@ -310,6 +303,7 @@ class DriveController:
             self.target_heading = self.get_calibrated_heading()
             self.current_heading = self.target_heading
             self.reset_encoders()
+            self.show_text(self.current_heading)
             self.logger.info(f"Post-Avoidance Heading Re-locked to: {self.target_heading:.1f}")
         return True
     
@@ -388,19 +382,7 @@ class DriveController:
     def show_text(self, text):
         self.logger.info(f"Show text: {text}")
         self.matrix.show_text(text)
-        ## self.matrixDisplay.showString(text)
-        #curl -X POST http://192.168.4.1:5000/showText -H "Content-Type: application/json" \-d '{"message": "This is a test"}'
-        #try:
-         #   self.logger.info(f"Show text: {text}")
-         #   # use block=False so the PID loop NEVER waits for the queue
-         #   self.display_queue.put_nowait(text)
-        #except queue.Full:
-          #  # If the background thread is busy, skip this update to keep loop speed
-          #  pass
-        #except requests.exceptions.ConnectionError as e:
-           # self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
-           # self.logger.error(f"Error details: {e}")
-
+     
     @staticmethod
     def getInstance(behavior):
         return DriveController(behavior)

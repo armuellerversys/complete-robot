@@ -152,13 +152,22 @@ html, body {
     font-size: 1.1em;
 }
 
-/* Color coding */
-#forwardbutton { background: #28a745; }   /* green */
-#backwardbutton { background: #dc3545; }  /* red */
-#stopbutton { background: #6c757d; }      /* gray */
-#leftbutton { background: #007bff; }      /* blue */
-#rightbutton { background: #17a2b8; }     /* teal */
-#exitbutton { background: #ff8800; }      /* orange */
+/* Color coding & Sizing */
+#forwardbutton  { background: #28a745; } 
+#backwardbutton { background: #dc3545; } 
+#leftbutton     { background: #007bff; } 
+#rightbutton    { background: #17a2b8; } 
+
+#stopbutton { 
+    background: #6c757d; 
+    flex: 3; 
+}
+
+#exitbutton { 
+    background: #ff8800; 
+    flex: 1; 
+}
+
 
 #message {
     /* Ensures it acts as a block element, taking up the full width */
