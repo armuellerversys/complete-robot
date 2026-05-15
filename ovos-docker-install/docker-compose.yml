@@ -102,7 +102,7 @@ services:
 
   ovos_skill_vehicle_control:
     build:
-      context: ~/skill/ovos-skill-vehicle-control
+      context: /home/ovos/ovos-docker-install/ovos-skill-vehicle-control
       dockerfile: Dockerfile.vehicle_skill
     container_name: ovos_skill_vehicle_control
     restart: unless-stopped
