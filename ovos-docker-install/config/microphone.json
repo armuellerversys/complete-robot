@@ -1,0 +1,4 @@
+{
+  "module": "ovos_microphone_plugin_alsa",
+  "device": "hw:1,0"
+}

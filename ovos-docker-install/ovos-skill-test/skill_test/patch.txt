@@ -1,0 +1,6 @@
+
+  self.base_url = "http://192.168.4.8:5000" 
+
+beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
+
+

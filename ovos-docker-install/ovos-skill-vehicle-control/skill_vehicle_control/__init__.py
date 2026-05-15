@@ -15,7 +15,7 @@ class VehicleControlSkill(OVOSSkill):
         utterance = message.data.get('utterance', '').lower()
         action = "start" if "start" in utterance else "stop"
         
-        self.log.info(f"Vehicle command: {action}")
+        self.log.info(f"Vehicle command: {utterance} / {action}")
         self.play_beep(message)
 
         try:

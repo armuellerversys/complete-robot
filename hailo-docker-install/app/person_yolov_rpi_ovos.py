@@ -233,7 +233,7 @@ class PersonTracker:
         if self.persistence > 0: 
             self.persistence -= 1
         else:
-            logger.info(f"Handle person lost, say once flag: {self.say_once}")
+            # logger.info(f"Handle person lost, say once flag: {self.say_once}")
             # No person seen and persistence expired: Start Scanning
             self.servos.scan()
             self.smooth_box = None

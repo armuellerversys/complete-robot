@@ -1,0 +1,19 @@
+## create environment
+python3 -m venv .venv
+
+##  Activate a virtual environment
+source .venv/bin/activate
+
+## python version
+which python
+
+.venv/bin/python
+
+## Deactivate a virtual environment
+deactivate
+
+
+ ## https://packaging.python.org/en/latest/guides/installing-using-pip-and-virtual-environments/
+## update pip 
+python3 -m pip install --upgrade pip
+python3 -m pip --version

@@ -1,0 +1,2 @@
+recursive-include skill_test/locale *
+include *.txt
