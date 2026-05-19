@@ -1,0 +1,30 @@
+{
+  "/intents/Greetings.intent": [
+    "hola",
+    "ey",
+    "buenos días",
+    "buenas tardes",
+    "buenas noches",
+    "qué tal",
+    "cómo va",
+    "cómo estás",
+    "encantado de verte",
+    "cuánto tiempo",
+    "hola de nuevo",
+    "hey",
+    "qué hay?",
+    "qué onda?",
+    "saludos",
+    "buen día",
+    "me alegra verte",
+    "mucho tiempo sin verte",
+    "ahoy",
+    "hola de nuevo"
+  ],
+  "/intents/HowAreYou.intent": [
+    "(qué tal|cómo estas)",
+    "cómo ha ido el día",
+    "cómo te ha ido",
+    "cómo va"
+  ]
+}

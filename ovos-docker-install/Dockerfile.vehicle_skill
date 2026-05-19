@@ -12,6 +12,9 @@ RUN pip install --no-cache-dir "setuptools<81" requests
 RUN mkdir -p /home/ovos/skill/ovos-skill-vehicle-control && \
     chown -R ovos:ovos /home/ovos/skill/ovos-skill-vehicle-control
 
+# Explicitly copy the critical setup files first
+COPY --chown=ovos:ovos version.py* README.md* /home/ovos/skill/ovos-skill-vehicle-control/
+    
 # 3. Copy source code
 # We do this as root to ensure permissions are set correctly during the copy
 COPY --chown=ovos:ovos . /home/ovos/skill/ovos-skill-vehicle-control/
@@ -23,8 +26,6 @@ WORKDIR /home/ovos/skill/ovos-skill-vehicle-control
 # This ensures the skill is installed into /home/ovos/.venv 
 USER ovos
 
-
-RUN touch version.py
 # 7. Install the skill
 # We use the venv's pip specifically
 RUN pip install .

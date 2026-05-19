@@ -1,0 +1,14 @@
+{
+  "/intents/Greetings.intent": [
+    "bonjour le monde",
+    "salut le monde",
+    "coucou le monde",
+    "bonsoir le monde"
+  ],
+  "/intents/HowAreYou.intent": [
+    "bonjour le monde, comment vas-tu",
+    "bonjour le monde, comment ça va",
+    "hello world, comment vas-tu",
+    "hello world, comment ça va"
+  ]
+}

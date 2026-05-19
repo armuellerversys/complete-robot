@@ -275,3 +275,6 @@ curl -L -O https://huggingface.co/csukuangfj/vits-piper-en_US-ryan-medium/resolv
 curl -L -O https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/bryce/medium/en_US-bryce-medium.onnx.json?download=true
 
 realpath file.py
+
+docker compose down
+docker compose up -d --build

@@ -154,3 +154,5 @@ apt-get install -y libasound-dev libsndfile1-dev
 source /home/ovos/.venv/bin/activate
 pip install --upgrade --no-cache-dir ovos-tts-plugin-mimic3
 docker restart ovos_audio
+
+docker inspect ovos_skill_hello_world

@@ -14,6 +14,7 @@ class TestSkill(OVOSSkill):
         action = "start" if "start" in utterance else "stop"
         
         self.log.info(f"Test command: {utterance} / {action}")
+        self.speak_dialog("test_started.dialog", wait=True)
         self.play_beep(message)
 
     @intent_handler('test_status.intent')
@@ -25,6 +26,7 @@ class TestSkill(OVOSSkill):
             # Assuming your API returns JSON like {"state": "running"}
             url = f"{self.base_url}state"
             self.log.info(f"Execute status request to {url}")
+            self.speak_dialog("test_status.dialog", wait=True)
             #response = requests.get(url, timeout=5)
             #if response.status_code == 200:
             #   data = response.json()
@@ -39,15 +41,15 @@ class TestSkill(OVOSSkill):
             self.speak("The test system is not responding to status requests.")
 
     def play_beep(self, message):
-        
+        self.log.info("Enter play_beep...")
         if not self.bus:
             self.log.warning("Bus not ready, skipping beep")
             return
 
-        """Helper to send the beep signal to the audio service"""
-        beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
-        self.bus.emit(message.forward(
-            "mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
+        #"""Helper to send the beep signal to the audio service"""
+        # beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
+        # self.bus.emit(message.forward(
+        #    "mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
 
 
 def create_skill():

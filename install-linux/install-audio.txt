@@ -164,3 +164,11 @@ defaults.pcm.card 2
 defaults.ctl.card 2
 
 speaker-test -c 2 -t sine
+
+### microphon settings:
+ amixer -c 0 sget 'PGA'
+ amixer -c 0 sset 'PGA' 60%
+ sudo alsactl store
+
+ python3 -c "import alsaaudio; print(alsaaudio.cards())"
+ arecord -l

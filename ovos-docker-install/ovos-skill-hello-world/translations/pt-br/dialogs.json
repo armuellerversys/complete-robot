@@ -1,0 +1,33 @@
+{
+  "/dialog/hello.dialog": [
+    "Olá!",
+    "Oi!",
+    "E aí!",
+    "Oi pra você também!",
+    "Que bom te ver!",
+    "Olá de novo!",
+    "Oi! Tudo certo por aí?",
+    "Bom falar com você!",
+    "Oi! Como vai?",
+    "E aí, amigo!"
+  ],
+  "/dialog/hello.world.dialog": [
+    "Olá mundo"
+  ],
+  "/dialog/how.are.you.dialog": [
+    "estou indo bem",
+    "Muito bem",
+    "Nada mau",
+    "Eu estou ótimo",
+    "Poderia estar melhor",
+    "Eu estou indo muito bem"
+  ],
+  "/dialog/welcome.dialog": [
+    "A qualquer momento.",
+    "Feliz em poder ajudar",
+    "Feliz em ajudar",
+    "O Prazer é meu",
+    "Não tem problema.",
+    "De nada."
+  ]
+}

@@ -69,10 +69,14 @@ services:
     depends_on:
       ovos_messagebus:
         condition: service_healthy
+    ipc: host
+    privileged: true # Often required on Pi 5 for hardware access control
+    group_add:
+      - audio
     environment:
       - TZ=Europe/Berlin              # Changed to match your other services
       - OVOS_BUS_HOST=127.0.0.1
-      - PULSE_SERVER=unix:/run/user/1000/pulse/native
+      - PULSE_SERVER=unix:/run/user/1000/pulse/native    # If using PulseAudio/Pipewire
   
     devices:
       - /dev/snd:/dev/snd
@@ -81,7 +85,10 @@ services:
       - ~/models/wakewords:/home/ovos/.local/share/mycroft
       - ~/ovos/persistence/listener:/home/ovos/.local
       - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
-      - /run/user/1000/pulse:/run/user/1000/pulse
+      - /run/user/1000/pulse:/run/1000/ovos/pulse
+      - /etc/asound.conf:/etc/asound.conf:ro
+      - /etc/alsa:/etc/alsa:ro
+      - /usr/share/alsa:/usr/share/alsa:ro
 
   ovos_cli:
       image: smartgic/ovos-cli:testing
@@ -137,6 +144,25 @@ services:
       - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft
     devices:
       - /dev/snd:/dev/snd  
+
+  ovos_skill_hello_world:
+    build:
+      context: /home/ovos/ovos-docker-install/ovos-skill-hello-world
+      dockerfile: Dockerfile.hello_world_skill
+    container_name: ovos_skill_hello_world
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      ovos_messagebus:
+        condition: service_healthy
+    environment:
+      - TZ=Europe/Berlin
+      - OVOS_BUS_HOST=127.0.0.1
+    volumes:
+      - ~/ovos/config:/home/ovos/.config/mycroft
+      - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft
+    devices:
+      - /dev/snd:/dev/snd 
 
   ovos_voice_server:
     build:
