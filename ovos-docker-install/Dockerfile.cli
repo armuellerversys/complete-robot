@@ -1,4 +1,4 @@
-FROM smartgic/ovos-listener:testing
+FROM smartgic/ovos-cli:testing
 
 USER root
 RUN apt-get update && \
@@ -9,16 +9,12 @@ RUN apt-get update && \
 RUN mkdir -p /home/ovos/.local/state && chown -R ovos:ovos /home/ovos/
 
 USER ovos
-RUN . ~/.venv/bin/activate && \
-    pip install --no-cache-dir \
-    ovos-ww-plugin-precise-lite[tflite] \
-    ovos-ww-plugin-vosk \
-    ovos-tts-plugin-piper \
-    ovos-stt-plugin-vosk
 
-# --- Critical Patches for Python 3.13 ---
-# 1. Fix NumPy 'fromstring' in Precise
-RUN sed -i 's/np.fromstring/np.frombuffer/g' ~/.venv/lib/python3.13/site-packages/precise_lite_runner/util.py
+RUN . ~/.venv/bin/activate && pip install --no-cache-dir ovos-bus-client
+
+COPY --chown=ovos:ovos ./ovos-skill-debug/bus_monitor.py /home/ovos/bus_monitor.py
+COPY --chown=ovos:ovos ./ovos-skill-debug/bus_monitor_speak.py /home/ovos/bus_monitor_speak.py
+COPY --chown=ovos:ovos ./ovos-skill-debug/bus_speak.py /home/ovos/bus_speak.py
 
 # This version uses regex to find the function and replaces whatever is in the 
 # brackets with (*args, **kwargs) to ensure it never misses an argument again.
