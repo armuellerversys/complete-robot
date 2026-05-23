@@ -30,26 +30,26 @@ class VehicleControlSkill(OVOSSkill):
             self.log.error(f"HTTP Error: {e}")
             self.speak("I am unable to reach the vehicle controller.")
 
-    @intent_handler('vehicle_status.intent')
-    def handle_status_intent(self, message):
-        self.log.info("Enter Checking vehicle status...")
+    @intent_handler('vehicle_state.intent')
+    def handle_vehicle_state_intent(self, message):
+        self.log.info("Enter Checking vehicle state...")
         self.play_beep(message)
 
         try:
             # Assuming your API returns JSON like {"state": "running"}
             url = f"{self.base_url}state"
-            self.log.info(f"Execute status request to {url}")
+            self.log.info(f"Execute state request to {url}")
             response = requests.get(url, timeout=5)
             if response.status_code == 200:
                 data = response.json()
                 current_status = data.get("state", "unknown")
-                # Pass the variable 'status' to the .dialog file
-                self.speak_dialog("vehicle_status.dialog", data={"status": current_status})
+                # Pass the variable 'state' to the .dialog file
+                self.speak_dialog("vehicle_state.dialog", data={"state": current_status})
             else:
-                self.log.info(f"Error execute status request with error: {response.status_code}")
-                self.speak(f"I couldn't get a valid status from the vehicle")
+                self.log.info(f"Error execute state request with error: {response.status_code}")
+                self.speak(f"I couldn't get a valid state from the vehicle")
         except Exception as e:
-            self.log.error(f"Status check failed: {e}")
+            self.log.error(f"State check failed: {e}")
             self.speak("The vehicle system is not responding to status requests.")
 
     def play_beep(self, message):
