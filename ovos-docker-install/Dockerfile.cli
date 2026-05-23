@@ -10,7 +10,8 @@ RUN mkdir -p /home/ovos/.local/state && chown -R ovos:ovos /home/ovos/
 
 USER ovos
 
-RUN . ~/.venv/bin/activate && pip install --no-cache-dir ovos-bus-client
+RUN . ~/.venv/bin/activate && pip install --no-cache-dir ovos-bus-client ovos-cli-client 
+# ovos-skill-debug
 
 COPY --chown=ovos:ovos ./ovos-skill-debug/bus_monitor.py /home/ovos/bus_monitor.py
 COPY --chown=ovos:ovos ./ovos-skill-debug/bus_monitor_speak.py /home/ovos/bus_monitor_speak.py
