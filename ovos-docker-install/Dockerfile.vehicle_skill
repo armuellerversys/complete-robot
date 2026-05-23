@@ -14,6 +14,8 @@ RUN mkdir -p /home/ovos/skill/ovos-skill-vehicle-control && \
 
 # Explicitly copy the critical setup files first
 COPY --chown=ovos:ovos version.py* README.md* /home/ovos/skill/ovos-skill-vehicle-control/
+
+COPY --chown=ovos:ovos boing_x.wav /home/ovos/.local/share/mycroft/sounds/boing_x.wav
     
 # 3. Copy source code
 # We do this as root to ensure permissions are set correctly during the copy

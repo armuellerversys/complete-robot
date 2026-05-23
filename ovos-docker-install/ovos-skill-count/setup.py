@@ -4,9 +4,9 @@ from os import walk, path
 
 from setuptools import setup
 
-URL = "https://github.com/OpenVoiceOS/my-skill-vehicle-control"
-SKILL_CLAZZ = "VehicleControlSkill"  # needs to match __init__.py class name
-PYPI_NAME = "skill_vehicle_control"  # pip install PYPI_NAME
+URL = "https://github.com/OpenVoiceOS/ovos-skill-count"
+SKILL_CLAZZ = "CountSkill"  # needs to match __init__.py class name
+PYPI_NAME = "ovos-skill-count"  # pip install PYPI_NAME
 SKILL_PKG = PYPI_NAME.lower().replace('-', '_')  # import name
 
 SKILL_AUTHOR, SKILL_NAME = URL.split(".com/")[-1].split("/")  # derived from github url to ensure standard skill_id
@@ -59,16 +59,16 @@ def get_version():
 setup(
     name=PYPI_NAME,
     version=get_version(),
-    description='OVOS vehicle-control skill plugin',
+    description='OVOS count to N skill',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=URL,
     author=SKILL_AUTHOR,
-    author_email='a.r.mueller.versys@gmail.de',
+    author_email='jarbasai@mailfence.com',
     license='Apache-2.0',
     packages=[SKILL_PKG],
     package_data={SKILL_PKG: find_resource_files()},
     include_package_data=True,
-    keywords='ovos vehicle control skill plugin',
+    keywords='ovos skill plugin',
     entry_points={'ovos.plugin.skill': PLUGIN_ENTRY_POINT}
 )

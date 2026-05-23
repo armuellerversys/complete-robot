@@ -14,7 +14,7 @@ class VehicleControlSkill(OVOSSkill):
     def handle_vehicle_intent(self, message):
         utterance = message.data.get('utterance', '').lower()
         action = "start" if "start" in utterance else "stop"
-        
+        self.speak_dialog("vehicle.command.dialog", wait=True)
         self.log.info(f"Vehicle command: {utterance} / {action}")
         self.play_beep(message)
 
@@ -22,7 +22,7 @@ class VehicleControlSkill(OVOSSkill):
             # self.log.info(f"Vehicle {action}: {url}")
             response = self.post_cmd(action)
             if response.status_code == 200:
-                self.speak_dialog(f"vehicle.{action}ed")
+                self.speak_dialog(f"vehicle.{action}ed.dialog")
             else:
                 self.log.error(f"HTTP Error: {response.status_code} for action {action}")
                 self.speak("The vehicle controller returned an error.")
@@ -44,7 +44,7 @@ class VehicleControlSkill(OVOSSkill):
                 data = response.json()
                 current_status = data.get("state", "unknown")
                 # Pass the variable 'status' to the .dialog file
-                self.speak_dialog("vehicle_status", data={"status": current_status})
+                self.speak_dialog("vehicle_status.dialog", data={"status": current_status})
             else:
                 self.log.info(f"Error execute status request with error: {response.status_code}")
                 self.speak(f"I couldn't get a valid status from the vehicle")
@@ -59,7 +59,7 @@ class VehicleControlSkill(OVOSSkill):
             return
 
         """Helper to send the beep signal to the audio service"""
-        beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
+        beep_path = "/home/ovos/skill/ovos-skill-vehicle-control/boing_x.wav"
         self.bus.emit(message.forward(
             "mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
 
