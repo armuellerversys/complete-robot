@@ -1,12 +1,15 @@
 # Use the official OVOS skill base image
 FROM smartgic/ovos-skill-base:stable
 
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=DEBUG
 
 USER root
 
 # 1. System-level updates and initial prep
 # Pinning setuptools to avoid deprecation warnings and installing requests
 RUN pip install --no-cache-dir "setuptools<81" requests
+RUN pip install --no-cache-dir debugpy
 
 # 2. Setup skill directory
 # Creating the path and ensuring the 'ovos' user owns it
@@ -38,3 +41,4 @@ ENV PATH="/home/ovos/.venv/bin:$PATH"
 # 9. Launch the skill
 # Using the entry point defined in your original file
 CMD ["ovos-skill-launcher", "my-skill-test.openvoiceos"]
+# CMD ["python", "-m", "debugpy","--listen", "0.0.0.0:5678","--wait-for-client","-m","ovos_utils.skill_launcher","my-skill-test.openvoiceos"]
