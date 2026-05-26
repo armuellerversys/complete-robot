@@ -1,5 +1,6 @@
 # docker-compose.debug.yml
 # docker compose -f docker-compose-test.debug.yml up
+# docker compose -f docker-compose-test.debug.yml restart
 
 services:
   ovos_skill_test:
@@ -20,8 +21,7 @@ services:
       - "-c"
       - |
         pip install debugpy -t /tmp \
-        && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 \
-        -m ovos-skill-launcher my-skill-test.openvoiceos
+        && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 /home/ovos/.venv/bin/ovos-skill-launcher my-skill-test.openvoiceos
     volumes:
       - ~/ovos/config:/home/ovos/.config/mycroft
       - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft

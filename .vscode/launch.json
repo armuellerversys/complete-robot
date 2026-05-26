@@ -13,7 +13,7 @@
       "pathMappings": [
         {
           "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/home/ovos/ovos-docker-install/ovos-skill-test"
+          "remoteRoot": "/home/ovos/skill/ovos-skill-test/skill_test"
         }
       ]
     }

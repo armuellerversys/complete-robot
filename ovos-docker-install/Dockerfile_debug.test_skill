@@ -7,12 +7,10 @@ ENV LOG_LEVEL=DEBUG
 USER root
 
 # 1. System-level updates and initial prep
-# Pinning setuptools to avoid deprecation warnings and installing requests
 RUN pip install --no-cache-dir "setuptools<81" requests
 RUN pip install --no-cache-dir debugpy
 
 # 2. Setup skill directory
-# Creating the path and ensuring the 'ovos' user owns it
 RUN mkdir -p /home/ovos/skill/ovos-skill-test && \
     chown -R ovos:ovos /home/ovos/skill/ovos-skill-test
 
@@ -20,25 +18,19 @@ RUN mkdir -p /home/ovos/skill/ovos-skill-test && \
 COPY --chown=ovos:ovos version.py* README.md* /home/ovos/skill/ovos-skill-test/
     
 # 3. Copy source code
-# We do this as root to ensure permissions are set correctly during the copy
 COPY --chown=ovos:ovos . /home/ovos/skill/ovos-skill-test/
 
 # 4. Set the working directory
 WORKDIR /home/ovos/skill/ovos-skill-test
 
 # 5. Switch to 'ovos' user for Python installation
-# This ensures the skill is installed into /home/ovos/.venv 
 USER ovos
 
-# 7. Install the skill
-# We use the venv's pip specifically
+# 7. Install the skill (This automatically creates the correct launcher script)
 RUN pip install .
 
 # 8. Environment Setup
-# Ensure the venv bin is in the PATH so 'ovos-skill-launcher' is recognized
 ENV PATH="/home/ovos/.venv/bin:$PATH"
 
-# 9. Launch the skill
-# Using the entry point defined in your original file
-CMD ["ovos-skill-launcher", "my-skill-test.openvoiceos"]
-# CMD ["python", "-m", "debugpy","--listen", "0.0.0.0:5678","--wait-for-client","-m","ovos_utils.skill_launcher","my-skill-test.openvoiceos"]
+RUN . ~/.venv/bin/activate && \
+    pip install --no-cache-dir ovos_skill_installer

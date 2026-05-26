@@ -3,7 +3,7 @@ from ovos_workshop.skills.ovos import OVOSSkill
 from ovos_workshop.skill_launcher import load_skill_module
 
 def check_structure():
-    base_path = "/skills/skill-vehicle-control"
+    base_path = "/skills/skill-test"
     locale_path = os.path.join(base_path, "locale", "en-us")
     
     print(f"--- 🔍 Checking Skill Path: {base_path} ---")
