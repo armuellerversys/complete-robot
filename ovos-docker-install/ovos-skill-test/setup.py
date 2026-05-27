@@ -70,5 +70,9 @@ setup(
     package_data={SKILL_PKG: find_resource_files()},
     include_package_data=True,
     keywords='ovos test skill plugin',
-    entry_points={'ovos.plugin.skill': PLUGIN_ENTRY_POINT}
+    entry_points={
+        'ovos.plugin.skill': [
+            PLUGIN_ENTRY_POINT
+        ]
+    }
 )

@@ -12,8 +12,8 @@
       },
       "pathMappings": [
         {
-          "localRoot": "${workspaceFolder}",
-          "remoteRoot": "/home/ovos/skill/ovos-skill-test/skill_test"
+          "localRoot": "C:\\develop\\raspberry\\complete-robot\\ovos-docker-install\\ovos-skill-test",
+          "remoteRoot": "/home/ovos/skill/ovos-skill-test"
         }
       ]
     }

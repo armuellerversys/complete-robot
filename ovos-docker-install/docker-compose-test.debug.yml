@@ -1,4 +1,4 @@
-# docker-compose.debug.yml
+# docker compose -f docker-compose-test.debug.yml build
 # docker compose -f docker-compose-test.debug.yml up
 # docker compose -f docker-compose-test.debug.yml restart
 
@@ -7,21 +7,31 @@ services:
     build:
       context: /home/ovos/ovos-docker-install/ovos-skill-test
       dockerfile: Dockerfile_debug.test_skill
+
     container_name: ovos_skill_test
+
+    network_mode: host
+
     ports:
       - "5678:5678"
-    restart: unless-stopped
-    network_mode: host
+
     environment:
       - TZ=Europe/Berlin
       - OVOS_BUS_HOST=127.0.0.1
-    # CMD ["ovos-skill-launcher", "my-skill-test.openvoiceos"]
+  # python -Xfrozen_modules=off \
     command:
-      - "sh"
-      - "-c"
+      - sh
+      - -c
       - |
-        pip install debugpy -t /tmp \
-        && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 /home/ovos/.venv/bin/ovos-skill-launcher my-skill-test.openvoiceos
+          python \
+          -Xfrozen_modules=off \
+          -m debugpy \
+          --wait-for-client \
+          --listen 0.0.0.0:5678 \
+          /home/ovos/.venv/bin/ovos-skill-launcher \
+          my-skill-test.openvoiceos
+      
     volumes:
+      - /home/ovos/ovos-docker-install/ovos-skill-test:/home/ovos/skill/ovos-skill-test
       - ~/ovos/config:/home/ovos/.config/mycroft
       - ~/ovos/ovos-share:/home/ovos/.local/share/mycroft

@@ -3,9 +3,12 @@ from ovos_workshop.decorators import intent_handler
 
 class TestSkill(OVOSSkill):
     def __init__(self, *args, **kwargs):
+        self.base_url = "http://example/"
         super().__init__(*args, **kwargs)
 
     def initialize(self):
+        import debugpy
+        debugpy.breakpoint()
         self.log.info("TestSkill initialized and ready")    
 
     @intent_handler('test.intent')
