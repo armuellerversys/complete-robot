@@ -1,14 +1,27 @@
+from os.path import join, dirname
+from ovos_utils.process_utils import RuntimeRequirements
 from ovos_workshop.skills import OVOSSkill
 from ovos_workshop.decorators import intent_handler
+from ovos_bus_client.message import Message
 
 class TestSkill(OVOSSkill):
     def __init__(self, *args, **kwargs):
         self.base_url = "http://example/"
         super().__init__(*args, **kwargs)
 
+    @property
+    def runtime_requirements(self):
+        # Good practice for OVOS: Specify if internet is needed
+        return RuntimeRequirements(
+            internet_before_load=False,
+            network_before_load=False,
+            gui_before_load=False,
+            requires_internet=False,
+        )
+
     def initialize(self):
-        import debugpy
-        debugpy.breakpoint()
+        #import debugpy
+        #debugpy.breakpoint()
         self.log.info("TestSkill initialized and ready")    
 
     @intent_handler('test.intent')
@@ -50,9 +63,22 @@ class TestSkill(OVOSSkill):
             return
 
         #"""Helper to send the beep signal to the audio service"""
-        # beep_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
-        # self.bus.emit(message.forward(
-        #    "mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
+        sound_path = "/home/ovos/.config/mycroft/boing_x.wav"
+
+        # 1. Get the absolute path to your WAV file inside the skill's folder
+        # Assumes your file is located at: your_skill_folder/res/snd/alert.wav
+        ## sound_path = join(dirname(__file__), "res", "snd", "boing_x.wav")
+
+        self.log.info(f"Sound path: {sound_path}")
+
+        # 2. Construct the MessageBus payload
+        # The audio subsystem expects 'uri' containing the file path
+        message_data = {"uri": f"file://{sound_path}"}
+
+        # 3. Emit the message to the OVOS MessageBus
+        self.bus.emit(Message("mycroft.audio.play-sound", data=message_data))
+
+        self.play_audio(f"file://{sound_path}")
 
 
 def create_skill():
