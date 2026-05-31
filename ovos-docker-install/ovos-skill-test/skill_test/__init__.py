@@ -62,23 +62,17 @@ class TestSkill(OVOSSkill):
             self.log.warning("Bus not ready, skipping beep")
             return
 
-        #"""Helper to send the beep signal to the audio service"""
         sound_path = "/home/ovos/.config/mycroft/boing_x.wav"
-
-        # 1. Get the absolute path to your WAV file inside the skill's folder
-        # Assumes your file is located at: your_skill_folder/res/snd/alert.wav
-        ## sound_path = join(dirname(__file__), "res", "snd", "boing_x.wav")
-
         self.log.info(f"Sound path: {sound_path}")
+        
+        self.bus.emit(
+            Message(
+                "mycroft.audio.play_sound",
+                {"uri": sound_path}
+            )
+        )
 
-        # 2. Construct the MessageBus payload
-        # The audio subsystem expects 'uri' containing the file path
-        message_data = {"uri": f"file://{sound_path}"}
-
-        # 3. Emit the message to the OVOS MessageBus
-        self.bus.emit(Message("mycroft.audio.play-sound", data=message_data))
-
-        self.play_audio(f"file://{sound_path}")
+        # self.play_audio(f"{sound_path}")
 
 
 def create_skill():
