@@ -1,10 +1,16 @@
 FROM smartgic/ovos-audio:testing
 
 USER root
+
+RUN mkdir -p /home/ovos/sound-server && \
+    chown -R ovos:ovos /home/ovos/sound-server
+
 # Install espeak-ng so Piper can process text
 RUN apt-get update && \
     apt-get install -y  python3-espeak espeak-ng && \
     rm -rf /var/lib/apt/lists/*
+
+COPY --chown=ovos:ovos ./sound-server/ /home/ovos/sound-server/
 
 USER ovos
 # Ensure the Piper plugin is installed in the venv
