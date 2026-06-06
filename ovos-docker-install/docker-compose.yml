@@ -227,7 +227,9 @@ services:
         - /dev/snd:/dev/snd
 
   ovos-skill-fallback-unknown:
-      image: smartgic/ovos-skill-fallback-unknown:testing
+      build:
+        context: /home/ovos/ovos-docker-install/ovos-skill-fallback-unknown
+        dockerfile: Dockerfile.unknown_skill
       container_name: ovos-skill-fallback-unknown
       restart: unless-stopped
       volumes:

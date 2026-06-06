@@ -19,7 +19,7 @@ class SoundServer():
             self.logger.warning("Client not ready, skipping sound")
             return
 
-        sound_path = "/home/ovos/.config/mycroft/boing_x.wav"
+        sound_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
         self.logger.info(f"Sound path: {sound_path}")
         self.client.emit(
             Message(

@@ -1,6 +1,7 @@
 import requests
 from ovos_workshop.skills import OVOSSkill
 from ovos_workshop.decorators import intent_handler
+from ovos_bus_client.message import Message
 
 class VehicleControlSkill(OVOSSkill):
     def __init__(self, *args, **kwargs):
@@ -53,15 +54,20 @@ class VehicleControlSkill(OVOSSkill):
             self.speak("The vehicle system is not responding to status requests.")
 
     def play_beep(self, message):
-        
+        self.log.info("Enter play_beep...")
         if not self.bus:
             self.log.warning("Bus not ready, skipping beep")
             return
 
-        """Helper to send the beep signal to the audio service"""
-        beep_path = "/home/ovos/skill/ovos-skill-vehicle-control/boing_x.wav"
-        self.bus.emit(message.forward(
-            "mycroft.audio.play_sound", {"uri": f"file://{beep_path}"}))
+        sound_path = "/home/ovos/.config/mycroft/boing_x.wav"
+        self.log.info(f"Sound path: {sound_path}")
+        
+        self.bus.emit(
+            Message(
+                "mycroft.audio.play_sound",
+                {"uri": sound_path}
+            )
+        )
 
     def post_cmd(self, action):
         url = self.base_url + action

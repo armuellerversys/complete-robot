@@ -1,0 +1,39 @@
+# Use the official OVOS skill base image
+FROM smartgic/ovos-skill-base:stable
+
+USER root
+
+# 1. System-level updates and initial prep
+# Pinning setuptools to avoid deprecation warnings and installing requests
+RUN pip install --no-cache-dir "setuptools<81" requests
+
+# 2. Setup skill directory
+# Creating the path and ensuring the 'ovos' user owns it
+RUN mkdir -p /home/ovos/skill/ovos-skill-unknown && \
+    chown -R ovos:ovos /home/ovos/skill/ovos-skill-unknown
+
+# Explicitly copy the critical setup files first
+COPY --chown=ovos:ovos version.py* README.md* /home/ovos/skill/ovos-skill-unknown/
+    
+# 3. Copy source code
+# We do this as root to ensure permissions are set correctly during the copy
+COPY --chown=ovos:ovos . /home/ovos/skill/ovos-skill-unknown/
+
+# 4. Set the working directory
+WORKDIR /home/ovos/skill/ovos-skill-unknown
+
+# 5. Switch to 'ovos' user for Python installation
+# This ensures the skill is installed into /home/ovos/.venv 
+USER ovos
+
+# 7. Install the skill
+# We use the venv's pip specifically
+RUN pip install .
+
+# 8. Environment Setup
+# Ensure the venv bin is in the PATH so 'ovos-skill-launcher' is recognized
+ENV PATH="/home/ovos/.venv/bin:$PATH"
+
+# 9. Launch the skill
+# Using the entry point defined in your original file
+CMD ["ovos-skill-launcher", "ovos-skill-fallback-unknown.openvoiceos"]

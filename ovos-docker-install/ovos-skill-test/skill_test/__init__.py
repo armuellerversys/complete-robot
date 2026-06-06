@@ -31,12 +31,12 @@ class TestSkill(OVOSSkill):
         
         self.log.info(f"Test command: {utterance} / {action}")
         self.speak_dialog("test_started.dialog", wait=True)
-        self.play_beep(message)
+        self.play_beep()
 
     @intent_handler('test_status.intent')
     def handle_status_intent(self, message):
         self.log.info("Enter Checking test status...")
-        self.play_beep(message)
+        self.play_beep()
 
         try:
             # Assuming your API returns JSON like {"state": "running"}
@@ -56,13 +56,13 @@ class TestSkill(OVOSSkill):
             self.log.error(f"Status check failed: {e}")
             self.speak("The test system is not responding to status requests.")
 
-    def play_beep(self, message):
+    def play_beep(self):
         self.log.info("Enter play_beep...")
         if not self.bus:
             self.log.warning("Bus not ready, skipping beep")
             return
 
-        sound_path = "/home/ovos/.config/mycroft/boing_x.wav"
+        sound_path = "/home/ovos/.local/share/mycroft/sounds/boing_x.wav"
         self.log.info(f"Sound path: {sound_path}")
         
         self.bus.emit(
