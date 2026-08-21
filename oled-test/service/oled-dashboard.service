@@ -1,0 +1,14 @@
+[Unit]
+Description=Waveshare OLED Dashboard Service
+After=network.target
+
+[Service]
+Type=simple
+User=user
+WorkingDirectory=/home/user/OLED_Module_Code/gemini-test
+ExecStart=/usr/bin/python3 /home/user/OLED_Module_Code/gemini-test/dashboard.py
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target

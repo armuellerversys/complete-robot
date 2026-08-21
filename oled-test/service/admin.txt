@@ -1,0 +1,19 @@
+sudo nano /etc/systemd/system/oled-dashboard.service
+
+
+# Reload systemd manager configuration
+sudo systemctl daemon-reload
+
+# Enable service to run on boot
+sudo systemctl enable oled-dashboard.service
+
+# Start the service right now
+sudo systemctl start oled-dashboard.service
+
+sudo systemctl status oled-dashboard.service
+
+sudo systemctl stop oled-dashboard.service
+
+sudo systemctl restart oled-dashboard.service
+
+journalctl -u oled-dashboard.service -f
