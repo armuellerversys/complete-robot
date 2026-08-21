@@ -6,6 +6,7 @@ ip -brief address show wlan0
 ip -brief address show eth0
 
 sudo nmcli dev wifi connect "Pi4_AccessPoint" --ask
+sudo nmcli dev wifi connect "MueFritz2022" --ask
 
 sudo systemctl unmask wpa_supplicant@wlan0.service
 sudo systemctl enable wpa_supplicant@wlan0.service

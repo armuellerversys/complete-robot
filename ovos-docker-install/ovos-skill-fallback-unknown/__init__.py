@@ -40,6 +40,7 @@ class UnknownSkill(FallbackSkill):
          
     @fallback_handler(priority=100)
     def handle_fallback(self, message):
+        self.play_beep()
         utterance = message.data['utterance'].lower()
         for i in ['question', 'who.is', 'why.is']:
             if self.voc_match(utterance, i):
@@ -49,7 +50,7 @@ class UnknownSkill(FallbackSkill):
         else:
             self.speak_dialog('unknown')
 
-    def play_beep(self, message):
+    def play_beep(self):
         self.log.info("Enter play_beep...")
         if not self.bus:
             self.log.warning("Bus not ready, skipping beep")
