@@ -3,22 +3,23 @@
 
 import sys
 import os
-picdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'pic')
-libdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'lib')
+tempdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'OLED-waveshare')
+picdir = os.path.join(tempdir, 'pic')
+libdir = os.path.join(tempdir, 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
 import logging    
 import time
 import traceback
-from waveshare_OLED import OLED_0in95_rgb
+from waveshare_OLED import OLED_1in27_rgb
 from PIL import Image,ImageDraw,ImageFont
 logging.basicConfig(level=logging.DEBUG)
 
 try:
-    disp = OLED_0in95_rgb.OLED_0in95_rgb()
-
-    logging.info("\r 0.95inch rgb OLED ")
+    disp = OLED_1in27_rgb.OLED_1in27_rgb()
+    logging.info(f"Temp directory: {tempdir}")
+    logging.info("\r 1.27inch rgb OLED ")
     # Initialize library.
     disp.Init()
     # Clear display.
@@ -32,13 +33,14 @@ try:
     font1 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
     font2 = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
     logging.info ("***draw line")
-    draw.line([(0,0),(95,0)], fill = "RED")
-    draw.line([(0,0),(0,63)], fill = "RED")
-    draw.line([(0,63),(95,63)], fill = "RED")
-    draw.line([(95,0),(95,63)], fill = "RED")
+    draw.line([(0,0),(127,0)], fill = "RED")
+    draw.line([(0,0),(0,95)], fill = "RED")
+    draw.line([(0,95),(127,95)], fill = "RED")
+    draw.line([(127,0),(127,95)], fill = "RED")
     logging.info ("***draw text")
-    draw.text((0,0), 'Waveshare ', font = font1, fill = "BLUE")
-    draw.text((0,24), u'微雪电子 ', font = font2, fill = "MAGENTA")
+    draw.text((20,0), 'Waveshare ', font = font1, fill = "BLUE")
+    draw.text((20,28), u'微雪电子 ', font = font2, fill = "MAGENTA")
+    draw.text((20,60), 'Waveshare ', font = font1, fill = "CYAN")
     image1 = image1.rotate(0)
     disp.ShowImage(disp.getbuffer(image1))
     time.sleep(3)
@@ -46,20 +48,18 @@ try:
     logging.info ("***draw rectangle")
     image1 = Image.new("RGB", (disp.width, disp.height), "BLACK")
     draw = ImageDraw.Draw(image1)
-    draw.line([(0,4), (96,4)],  fill = "RED",    width = 8)
-    draw.line([(0,12),(96,12)], fill = "YELLOW", width = 8)
-    draw.line([(0,20),(96,20)], fill = "GREEN",  width = 8)
-    draw.line([(0,28),(96,28)], fill = "CYAN",   width = 8)
-    draw.line([(0,36),(96,36)], fill = "BLUE",   width = 8)
-    draw.line([(0,44),(96,44)], fill = "MAGENTA",width = 8)
-    draw.line([(0,52),(96,52)], fill = "BLACK",  width = 8)
-    draw.line([(0,60),(96,60)], fill = "WHITE",  width = 8)
+    draw.line([(0,8), (127,8)],   fill = "RED",    width = 16)
+    draw.line([(0,24),(127,24)],  fill = "YELLOW", width = 16)
+    draw.line([(0,40),(127,40)],  fill = "GREEN",  width = 16)
+    draw.line([(0,56),(127,56)],  fill = "CYAN",   width = 16)
+    draw.line([(0,72),(127,72)],  fill = "BLUE",   width = 16)
+    draw.line([(0,88),(127,88)],  fill = "MAGENTA",width = 16)
     disp.ShowImage(disp.getbuffer(image1))
     time.sleep(3)
 
     logging.info ("***draw image")
     Himage2 = Image.new('RGB', (disp.width, disp.height), 0)  # 0: clear the frame
-    bmp = Image.open(os.path.join(picdir, '0in95_rgb.bmp'))
+    bmp = Image.open(os.path.join(picdir, '1in5_rgb.bmp'))
     Himage2.paste(bmp, (0,0))
     Himage2=Himage2.rotate(0) 	
     disp.ShowImage(disp.getbuffer(Himage2)) 

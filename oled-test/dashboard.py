@@ -1,58 +1,30 @@
 import time
-import spidev
 import lgpio
 import psutil
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
+import sys
+import os
+import logging
+from waveshare_OLED import OLED_1in27_rgb
 
-# --- Hardware Initialization ---
-DC_PIN = 24
-RST_PIN = 25
+tempdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'OLED-waveshare')
+picdir = os.path.join(tempdir, 'pic')
+libdir = os.path.join(tempdir, 'lib')
+if os.path.exists(libdir):
+    sys.path.append(libdir)
 
-chip = lgpio.gpiochip_open(0)
-lgpio.gpio_claim_output(chip, DC_PIN)
-lgpio.gpio_claim_output(chip, RST_PIN)
-
-spi = spidev.SpiDev()
-spi.open(0, 0)
-spi.max_speed_hz = 10000000
-spi.mode = 0b00
-
-def reset():
-    lgpio.gpio_write(chip, RST_PIN, 1)
-    time.sleep(0.05)
-    lgpio.gpio_write(chip, RST_PIN, 0)
-    time.sleep(0.05)
-    lgpio.gpio_write(chip, RST_PIN, 1)
-    time.sleep(0.05)
-
-def send_cmd(cmd):
-    lgpio.gpio_write(chip, DC_PIN, 0)
-    spi.xfer2([cmd])
-
-def send_data(data):
-    lgpio.gpio_write(chip, DC_PIN, 1)
-    if isinstance(data, int):
-        spi.xfer2([data])
-    else:
-        spi.xfer2(list(data))
+logging.basicConfig(level=logging.DEBUG)
 
 def init_display():
-    reset()
-    send_cmd(0xFD); send_data(0x12)
-    send_cmd(0xFD); send_data(0xB1)
-    send_cmd(0xAE) # Display off
-    send_cmd(0x15); send_data([0x00, 0x7F]) # Columns 0-127
-    send_cmd(0x75); send_data([0x00, 0x5F]) # Rows 0-95
-    send_cmd(0xA0); send_data([0x74])       # Color depth
-    send_cmd(0xA1); send_data(0x00)       # Start line
-    send_cmd(0xA2); send_data(-0x20 & 0xFF) # Display offset
-    send_cmd(0xB5); send_data(0x00)
-    send_cmd(0xAB); send_data(0x01)
-    send_cmd(0xB1); send_data(0x32)
-    send_cmd(0xBE); send_data(0x05)
-    send_cmd(0xA6) # Normal display
-    send_cmd(0xAF) # Display ON
+    logging.info("init display")
+    disp = OLED_1in27_rgb.OLED_1in27_rgb()
+    disp.Init()
+    # Clear display.
+    logging.info("clear display")
+    disp.clear()
+    time.sleep(0.1)
+    return disp
 
 def get_cpu_temp():
     try:
@@ -100,20 +72,27 @@ def update_display(draw_handle, font_title, font_body):
 
 # --- Main Application Loop ---
 try:
-    init_display()
+    disp = init_display()
 
     # Load Fonts
     try:
-        font_title = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 12)
-        font_body = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf", 10)
+        font_body = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 12)
+        font_title = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 18)
+        font_large = ImageFont.truetype(os.path.join(picdir, 'Font.ttc'), 24)
     except IOError:
         font_title = font_body = ImageFont.load_default()
 
     # Create image buffer in memory once
-    image = Image.new("RGB", (128, 96))
+    image = Image.new('RGB', (disp.width, disp.height), 0)
     draw = ImageDraw.Draw(image)
 
     print("Dashboard running. Press Ctrl+C to exit.")
+
+    logging.info ("***draw line")
+    draw.line([(0,0),(127,0)], fill = "RED")
+    draw.line([(0,0),(0,95)], fill = "RED")
+    draw.line([(0,95),(127,95)], fill = "RED")
+    draw.line([(127,0),(127,95)], fill = "RED")
     
     while True:
         # 1. Update image canvas
@@ -121,22 +100,29 @@ try:
 
         # 2. Convert Pillow canvas to RGB565 byte array
         buffer = []
-        for y in range(96):
-            for x in range(128):
+        for y in range(disp.height):
+            for x in range(disp.width):
                 r, g, b = image.getpixel((x, y))
                 rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
                 buffer.append((rgb565 >> 8) & 0xFF)
                 buffer.append(rgb565 & 0xFF)
 
         # 3. Transmit buffer over SPI
-        send_cmd(0x15); send_data([0x00, 0x7F])
-        send_cmd(0x75); send_data([0x00, 0x5F])
-        send_cmd(0x5C)
+        disp.command(0x15); 
+        disp.data(0x00)
+        disp.data(0x7F)
+        disp.command(0x75); 
+        disp.data(0x00)
+        disp.data(0x5F)
+        disp.command(0x5C)
 
         chunk_size = 4096
         for i in range(0, len(buffer), chunk_size):
-            send_data(buffer[i:i + chunk_size])
+            tmp_chunk = buffer[i:i + chunk_size]
+            disp.data(tmp_chunk[0])
+            disp.data(tmp_chunk[1])
 
+        disp.ShowImage(disp.getbuffer(image))
         # Frame rate control (updates every 1.0 second)
         time.sleep(1.0)
 
@@ -145,6 +131,4 @@ except KeyboardInterrupt:
 finally:
     # Clear screen and free hardware resource
     image_black = Image.new("RGB", (128, 96), (0, 0, 0))
-    send_cmd(0xAE) # Turn off screen
-    lgpio.gpiochip_close(chip)
-    spi.close()
+    disp.command(0xAE) # Turn off screen
