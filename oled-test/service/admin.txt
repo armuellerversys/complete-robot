@@ -6,6 +6,7 @@ sudo systemctl daemon-reload
 
 # Enable service to run on boot
 sudo systemctl enable oled-dashboard.service
+sudo systemctl disable oled-dashboard.service
 
 # Start the service right now
 sudo systemctl start oled-dashboard.service

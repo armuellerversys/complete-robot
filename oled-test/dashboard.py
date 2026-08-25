@@ -1,5 +1,4 @@
 import time
-import lgpio
 import psutil
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
