@@ -27,7 +27,7 @@ ROTATE_SPEED = 200
 MAX_SPEED = 200
 MIN_MOTOR_PWM = 60  # Minimum power to overcome gear friction
 
-URL = "http://192.168.4.1:5000/showText"
+URL = "http://192.168.4.1:5000/displayText"
 # The headers specify that you are sending JSON data
 headers = {
     "Content-Type": "application/json"
@@ -363,7 +363,7 @@ class DriveController:
                 # This blocks here until a message is put in the queue
                 text = self.display_queue.get()
                 self.logger.info("Display worker {text}")
-                payload = {"message": text}
+                payload = {"header": "ALERT", "message": text}
                 # Increased timeout to 3 seconds so it doesn't crash easily
                 response = requests.post(URL, json=payload, headers=headers, timeout=3)
                 

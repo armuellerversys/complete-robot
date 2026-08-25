@@ -10,7 +10,7 @@ import threading
 from flask import Flask, request, jsonify
 from waveshare_OLED import OLED_1in27_rgb
 ##
-# curl -X POST http://192.168.178.61192.168.178.61:5000/displayText \
+# curl -X POST http://192.168.178.61:5000/displayText \
 #     -H "Content-Type: application/json" \
 #     -d '{"header": "ALERT", "message": "Server backup complete!"}'
 ##
