@@ -5,7 +5,7 @@ sudo systemctl stop wpa_supplicant@wlan0.service
 sudo systemctl disable wpa_supplicant@wlan0.service
 sudo systemctl mask wpa_supplicant@wlan0.service
 
-cat /var/lib/misc/dnsmasq.leases
+sudo wpa_cli -i wlan0 status
 
 ip addr show wlan0
 

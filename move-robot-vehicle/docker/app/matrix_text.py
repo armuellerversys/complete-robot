@@ -6,7 +6,7 @@ from core_utils import CoreUtils
 
 # The URL of your Flask voice server
 # Make sure to use the correct IP address and port
-URL = "http://192.168.4.1:5000/showText"
+URL = "http://192.168.4.1:5000/displayText"
 
 
 # The headers specify that you are sending JSON data
@@ -34,7 +34,6 @@ class Matrix:
            self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
            self.logger.error(f"Error details: {e}")
 
-
     def _display_worker(self):
         """Background thread that handles slow network requests."""
         while True:
@@ -51,9 +50,8 @@ class Matrix:
             except Exception as e:
                 self.logger.error(f"Display worker error: {e}")
     
-    
     def display_matrix(self, text):
-        payload = {"message": text}
+        payload = {"header":"Info", "message": text}
         try:
             # Send a POST request to the server with the JSON data
             self.logger.info(f"Sending request to {URL}...")

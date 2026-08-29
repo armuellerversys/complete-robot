@@ -4,9 +4,16 @@ from robot_gpio import Robot
 from matrix_display import MatrixDisplay
 import socket
 import time
+import psutil
+from datetime import datetime
 from core_utils import CoreUtils
 from matrix_text import Matrix
 
+##
+#  http://192.168.4.8:5000/
+#  http://192.168.4.8:5000/state
+#
+##
 ## import debugpy
 ## debugpy.listen(('0.0.0.0', 5678))
 
@@ -79,7 +86,8 @@ def state():
     Robot.set_led_white()
     time.sleep(1)
     Robot.set_led_blue()
-    matrixDisplay.showTemperature()
+    #matrixDisplay.showTemperature()
+    show_system_state()
     logger.info("state request response send")
     return jsonify({'state': "Vehicle OK"})
 
@@ -113,11 +121,19 @@ def show_text(text):
     logger.info(f"Show text: {text}")
     matrix_text.show_text(text)
 
-logger.info("REGISTERED ROUTES:")
-logger.info(app.url_map)
+def show_system_state():
+    # Show system info on the matrix display
+    now_str = datetime.now().strftime("%H:%M:%S")
+    cpu_usage = psutil.cpu_percent()
+    # cpu_temp = get_cpu_temp()
+    ram = psutil.virtual_memory()
+    ip = get_lan_ip()
+    #cpu_temp = Robot.get_cpu_temperature()
+    message = f"IP: {ip}\nCPU: {cpu_usage:.1f}°C\nRam: {ram}MB"
+    show_text(message)
 
 if __name__ == "__main__":
     matrixDisplay.showTemperature()
-    show_text("Ready")
+    show_text("Vehicle server ready")
     logger.info("Start control server: " + get_lan_ip())
     app.run(host='0.0.0.0', port=5000, use_reloader=False)
