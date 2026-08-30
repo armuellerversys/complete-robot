@@ -14,13 +14,13 @@ headers = {
     "Content-Type": "application/json"
 }
 
-class Matrix:
+class OledText:
     def __init__(self):
         # New: Setup for background display updates
         self.display_queue = queue.Queue(maxsize=1) # Only keep the latest message
         self.display_thread = threading.Thread(target=self._display_worker, daemon=True)
         self.display_thread.start()
-        self.logger = CoreUtils.getLogger("matrix_display")
+        self.logger = CoreUtils.getLogger("oled_display")
 
     def show_text(self, text):
         self.logger.info(f"Queueing text for display: {text}")
@@ -31,7 +31,7 @@ class Matrix:
            # If the background thread is busy, skip this update to keep loop speed
            pass
         except requests.exceptions.ConnectionError as e:
-           self.logger.error(f"Failed to connect to the Matrix Server at {URL}.")
+           self.logger.error(f"Failed to connect to the Oled Server at {URL}.")
            self.logger.error(f"Error details: {e}")
 
     def _display_worker(self):
@@ -41,16 +41,16 @@ class Matrix:
                 # This blocks here until a message is put in the queue
                 text = self.display_queue.get()
                 self.logger.info(f"Display worker processing: {text}")
-                self.display_matrix(text)
+                self.display_oled(text)
                 # Tell the queue we are done
                 self.display_queue.task_done()
             except requests.exceptions.RequestException:
                 # We don't want the background thread to crash the whole program
-                self.logger.warning("Matrix server unreachable or timed out.")
+                self.logger.warning("OLED server unreachable or timed out.")
             except Exception as e:
                 self.logger.error(f"Display worker error: {e}")
     
-    def display_matrix(self, text):
+    def display_oled(self, text):
         payload = {"header":"Info", "message": text}
         try:
             # Send a POST request to the server with the JSON data

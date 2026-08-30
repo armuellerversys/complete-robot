@@ -7,7 +7,7 @@ import time
 import psutil
 from datetime import datetime
 from core_utils import CoreUtils
-from matrix_text import Matrix
+from oled_text import OledText
 
 ##
 #  http://192.168.4.8:5000/
@@ -27,10 +27,9 @@ mode_manager = RobotModes()
 Robot.set_green_one()
 logger = CoreUtils.getLogger("control_server")
 
-logger.info("Show matrix")
 matrixDisplay = MatrixDisplay()
 
-matrix_text = Matrix()
+oledText = OledText()
 
 @app.after_request
 def add_header(response):
@@ -75,7 +74,7 @@ def stop_action():
     matrixDisplay.showTemperature()
     # Tell our system to stop the mode it's in.
     mode_manager.stop()
-    logger.info(f"Stop executed")
+    logger.info("Stop executed")
     return jsonify({'message': "Stopped"})
 
 @app.route("/state", strict_slashes=False)
@@ -118,19 +117,23 @@ def get_lan_ip():
         return ip
 
 def show_text(text):
-    logger.info(f"Show text: {text}")
-    matrix_text.show_text(text)
+    logger.info(f"Show oled text: {text}")
+    oledText.show_text(text)
 
 def show_system_state():
-    # Show system info on the matrix display
+    # Show system info on the oled display
     now_str = datetime.now().strftime("%H:%M:%S")
     cpu_usage = psutil.cpu_percent()
     # cpu_temp = get_cpu_temp()
     ram = psutil.virtual_memory()
     ip = get_lan_ip()
     #cpu_temp = Robot.get_cpu_temperature()
-    message = f"IP: {ip}\nCPU: {cpu_usage:.1f}°C\nRam: {ram}MB"
-    show_text(message)
+    messageLog = f"{ip}\nCPU: {cpu_usage:.1f}\nRam: {ram}MB"
+    logger.info(f"System state: {messageLog}")
+    ramPercentage = psutil.virtual_memory().percent
+    messageOled= f"{ip}\nCPU: 0%\nRam: {ramPercentage:.1f}%"
+    logger.info(f"System state oled: {messageOled}")
+    show_text(messageOled)
 
 if __name__ == "__main__":
     matrixDisplay.showTemperature()

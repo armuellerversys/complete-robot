@@ -164,7 +164,7 @@ def api_display_text():
 
     header = data.get('header', 'MESSAGE')
     message = data.get('message', '')
-
+    print(f"Received displayText request: header='{header}', message='{message}'")
     if not message:
         return jsonify({"status": "error", "message": "Field 'message' is required"}), 400
 

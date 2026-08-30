@@ -7,7 +7,7 @@ from core_utils import CoreUtils, RobotStopException
 from move_app import Move_app
 from move_sensor import SensorRobotCar
 from robot_imu import RobotImu
-from matrix_text import Matrix
+from oled_text import OledText
 
 # --- Constants (Keep outside the class for easy modification) ---
 FORWARD = Raspi_MotorHAT.FORWARD
@@ -79,7 +79,7 @@ class DriveController:
         self.error_start_time = time.time()
         self.stop_flag= False
 
-        self.matrix = Matrix()
+        self.oledtext = OledText()
         self.matrixDisplay = MatrixDisplay()
 
         self.logger.info(f"Target Heading:  {self.target_heading}")
@@ -90,7 +90,7 @@ class DriveController:
         cmd_type = self.behavior.process_control()
         if self.move_app.isStop(cmd_type) or self.stop_flag:
             self.stop_flag = True
-            self.show_text("stop")
+            self.oledtext.show_text("stop")
             self.logger.info("STOP command detected! Raising Exception.")
             raise RobotStopException("User requested stop")
 

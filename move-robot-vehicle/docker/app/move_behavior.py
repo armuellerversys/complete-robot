@@ -1,7 +1,7 @@
 import time
 import signal
 import sys
-from matrix_text import Matrix
+from oled_text import OledText
 from image_app_core import start_server_process, get_control_instruction
 from move_app import Move_app
 from move_encoder import DriveController
@@ -42,7 +42,7 @@ class Move_behavior():
       self.logger.info("move behavior: motor stopped")
       self.drive_controller = DriveController.getInstance(self)
       self.move_app.setDriveController(self.drive_controller)
-      self.matrix = Matrix()
+      self.oledtext = OledText()
       self.logger.info("move behavior: exit init forward behavior")
 
    def process_control(self):
@@ -56,7 +56,7 @@ class Move_behavior():
             self.found = False
             self.last_time = time.time()
             self.logger.debug(f"move behavior: type {type}")
-            # show type on matrix
+            # show type on oled
             self.move_app.setMatrixString(type)
             self.execute = True
             if type == "F":
@@ -70,7 +70,7 @@ class Move_behavior():
 
    def show_text(self, text):
       self.logger.info(f"Show text: {text}")
-      self.matrix.show_text(text)
+      self.oledtext.show_text(text)
 
    def process(self):
       self.server_process = start_server_process('move.html')
