@@ -39,6 +39,7 @@ RUN python3 -m pip install --no-cache-dir --break-system-packages \
     opencv-python-headless \
     flask \
     debugpy \
+    psutil \
     ovos-bus-client \
     ledshim 
 

@@ -6,10 +6,12 @@ import os
 import ledshim
 import requests
 from datetime import datetime # New import for timestamps
-from flask import Flask, Response, render_template_string
+from flask import Flask, Response, jsonify, render_template_string
 from picamera2 import Picamera2
 from ovos_bus_client import MessageBusClient, Message
 from servo_tracking import ServoController
+from core_utils import CoreUtils
+from oled_text import OledText
 
 # Hailo Platform Imports
 from hailo_platform import (HEF, VDevice, HailoStreamInterface, InferVStreams, 
@@ -30,6 +32,8 @@ URL = "http://192.168.4.8:5001"
 headers = {
     "Content-Type": "application/json"
 }
+
+oledText = OledText()
 
 # Environment setup
 os.environ['HAILO_MONITOR'] = '1'
@@ -273,6 +277,21 @@ def index():
 def video_feed():
     return Response(tracker.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
+@app.route("/state", strict_slashes=False)
+def show_system_state():
+
+    ip = CoreUtils.get_lan_ip()
+    cpu_usage = CoreUtils.get_cpu_percent()
+    ram_percentage = CoreUtils.get_ram_percentage()
+    ram_available = CoreUtils.get_ram_available()
+    cpu_temp = CoreUtils.get_cpu_temp()
+
+    messageLog = f"{ip}\nCPU: {cpu_usage:.1f}%\nRam: {ram_percentage:.1f}%\nFree RAM: {ram_available / (1024**2):.0f}MB\nTemp: {cpu_temp:.1f}°C"
+    logger.info(f"System state: {messageLog}")
+  
+    oledText.show_system_state(ip, cpu_usage, ram_percentage, ram_available, cpu_temp)
+
 if __name__ == '__main__':
+    logger.info("Starting Hailo Flask server on 0.0.0.0:5000")   
     tracker.say_text("Hello Albrecht, K6 welcoms you, let's start")
     app.run(host='0.0.0.0', port=5000, threaded=True)
