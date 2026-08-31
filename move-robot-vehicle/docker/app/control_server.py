@@ -116,24 +116,31 @@ def get_lan_ip():
         ip = s.getsockname()[0]
         return ip
 
+def get_cpu_temp():
+    try:
+        temps = psutil.sensors_temperatures()
+        if 'cpu_thermal' in temps:
+            return temps['cpu_thermal'][0].current
+    except Exception:
+        pass
+    return 0.0
+
 def show_text(text):
     logger.info(f"Show oled text: {text}")
     oledText.show_text(text)
 
 def show_system_state():
-    # Show system info on the oled display
-    now_str = datetime.now().strftime("%H:%M:%S")
-    cpu_usage = psutil.cpu_percent()
-    # cpu_temp = get_cpu_temp()
-    ram = psutil.virtual_memory()
+
     ip = get_lan_ip()
-    #cpu_temp = Robot.get_cpu_temperature()
-    messageLog = f"{ip}\nCPU: {cpu_usage:.1f}\nRam: {ram}MB"
+    cpu_usage = psutil.cpu_percent()
+    ram_percentage = psutil.virtual_memory().percent
+    ram_available = psutil.virtual_memory().available
+    cpu_temp = get_cpu_temp()
+
+    messageLog = f"{ip}\nCPU: {cpu_usage:.1f}%\nRam: {ram_percentage:.1f}%\nFree RAM: {ram_available / (1024**2):.0f}MB\nTemp: {cpu_temp:.1f}°C"
     logger.info(f"System state: {messageLog}")
-    ramPercentage = psutil.virtual_memory().percent
-    messageOled= f"{ip}\nCPU: 0%\nRam: {ramPercentage:.1f}%"
-    logger.info(f"System state oled: {messageOled}")
-    show_text(messageOled)
+  
+    oledText.show_system_state(ip, cpu_usage, ram_percentage, ram_available, cpu_temp)
 
 if __name__ == "__main__":
     matrixDisplay.showTemperature()
