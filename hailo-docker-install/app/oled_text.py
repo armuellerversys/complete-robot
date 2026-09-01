@@ -42,17 +42,19 @@ class OledText:
             "CPU": cpu_usage,
             "MEM_PERCENT": ram_percentage,
             "MEM_AVAILABLE": ram_available,
-            "DATE": datetime.now().strftime("%H:%M:%S"),
+            "DATE": f"OVOS - {datetime.now().strftime('%H:%M:%S')}",
             "TEMP": cpu_temp
         }
         try:
+            self.logger.info(f"Sending system state to {URL_SYSTEM_STATE} with payload: {payload}")
+
             # Send HTTP POST request with JSON data
             response = requests.post(URL_SYSTEM_STATE, json=payload, timeout=5)
     
             # Output response status and details
             self.logger.info(f"Status Code: {response.status_code}")
             self.logger.info(f"Server Response: {response.json()}")
-    
+            return response.json()  # Return the server's JSON response
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Failed to connect to server: {e}")
 

@@ -277,7 +277,7 @@ def index():
 def video_feed():
     return Response(tracker.generate_frames(), mimetype='multipart/x-mixed-replace; boundary=frame')
 
-@app.route("/state", strict_slashes=False)
+@app.route("/state", strict_slashes=False, methods=['POST', 'GET'])
 def show_system_state():
 
     ip = CoreUtils.get_lan_ip()
@@ -289,7 +289,12 @@ def show_system_state():
     messageLog = f"{ip}\nCPU: {cpu_usage:.1f}%\nRam: {ram_percentage:.1f}%\nFree RAM: {ram_available / (1024**2):.0f}MB\nTemp: {cpu_temp:.1f}°C"
     logger.info(f"System state: {messageLog}")
   
-    oledText.show_system_state(ip, cpu_usage, ram_percentage, ram_available, cpu_temp)
+    jsonTxt = oledText.show_system_state(ip, cpu_usage, ram_percentage, ram_available, cpu_temp)
+
+    return (
+        jsonify({"status": "success", "message": "Hailo/Ovos-System parameters received successfully", "data": jsonTxt}),
+        200,
+    )
 
 if __name__ == '__main__':
     logger.info("Starting Hailo Flask server on 0.0.0.0:5000")   

@@ -1,4 +1,6 @@
 import logging
+import psutil
+import socket
 
 class CoreUtils:
     def __init__(self):
@@ -23,7 +25,39 @@ class CoreUtils:
             logger.addHandler(ch)
             
         return logger
-    
+
+    @staticmethod
+    def get_lan_ip():
+        # Try to find LAN IP dynamically
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            # This IP is never actually contacted; it's just to determine the local IP
+            s.connect(("8.8.8.8", 80))
+            ip = s.getsockname()[0]
+            return ip
+
+    @staticmethod
+    def get_cpu_temp():
+        try:
+            temps = psutil.sensors_temperatures()
+            if 'cpu_thermal' in temps:
+                return temps['cpu_thermal'][0].current
+        except Exception:
+            pass
+        return 0.0
+
+    @staticmethod
+    def get_cpu_percent():
+        return psutil.cpu_percent()
+
+    @staticmethod
+    def get_ram_available():
+        return psutil.virtual_memory().available
+
+    @staticmethod
+    def get_ram_percentage():
+        return psutil.virtual_memory().percent
+
+
 class RobotStopException(Exception):
     """Custom exception to break out of all control loops immediately."""
     pass  

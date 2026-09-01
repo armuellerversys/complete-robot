@@ -42,7 +42,7 @@ class OledText:
             "CPU": cpu_usage,
             "MEM_PERCENT": ram_percentage,
             "MEM_AVAILABLE": ram_available,
-            "DATE": datetime.now().strftime("%H:%M:%S"),
+            "DATE": f"VEHI - {datetime.now().strftime('%H:%M:%S')}",
             "TEMP": cpu_temp
         }
         try:
@@ -52,7 +52,7 @@ class OledText:
             # Output response status and details
             self.logger.info(f"Status Code: {response.status_code}")
             self.logger.info(f"Server Response: {response.json()}")
-    
+            return response.json()  # Return the server's JSON response
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Failed to connect to server: {e}")
 

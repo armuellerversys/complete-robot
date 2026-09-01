@@ -2,9 +2,7 @@ from flask import Flask, render_template, render_template_string, jsonify, reque
 from robot_modes import RobotModes
 from robot_gpio import Robot
 from matrix_display import MatrixDisplay
-import socket
 import time
-import psutil
 from datetime import datetime
 from core_utils import CoreUtils
 from oled_text import OledText
@@ -85,10 +83,12 @@ def state():
     Robot.set_led_white()
     time.sleep(1)
     Robot.set_led_blue()
-    #matrixDisplay.showTemperature()
-    show_system_state()
+    jsonTxt = show_system_state()
     logger.info("state request response send")
-    return jsonify({'state': "Vehicle OK"})
+    return (
+        jsonify({"status": "success", "message": "VEHI-SSystem parameters received successfully", "data": jsonTxt}),
+        200,
+    )
 
 @app.route('/dead_page')
 def dead_page():
@@ -108,42 +108,21 @@ def dead_page():
         </html>
     """, port=port)
 
-def get_lan_ip():
-    # Try to find LAN IP dynamically
-    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-        # This IP is never actually contacted; it's just to determine the local IP
-        s.connect(("8.8.8.8", 80))
-        ip = s.getsockname()[0]
-        return ip
-
-def get_cpu_temp():
-    try:
-        temps = psutil.sensors_temperatures()
-        if 'cpu_thermal' in temps:
-            return temps['cpu_thermal'][0].current
-    except Exception:
-        pass
-    return 0.0
-
-def show_text(text):
-    logger.info(f"Show oled text: {text}")
-    oledText.show_text(text)
-
 def show_system_state():
 
-    ip = get_lan_ip()
-    cpu_usage = psutil.cpu_percent()
-    ram_percentage = psutil.virtual_memory().percent
-    ram_available = psutil.virtual_memory().available
-    cpu_temp = get_cpu_temp()
+    ip = CoreUtils.get_lan_ip()
+    cpu_usage = CoreUtils.get_cpu_percent()
+    ram_percentage = CoreUtils.get_ram_percentage()
+    ram_available = CoreUtils.get_ram_available()
+    cpu_temp = CoreUtils.get_cpu_temp()
 
     messageLog = f"{ip}\nCPU: {cpu_usage:.1f}%\nRam: {ram_percentage:.1f}%\nFree RAM: {ram_available / (1024**2):.0f}MB\nTemp: {cpu_temp:.1f}°C"
     logger.info(f"System state: {messageLog}")
   
-    oledText.show_system_state(ip, cpu_usage, ram_percentage, ram_available, cpu_temp)
+    return oledText.show_system_state(ip, cpu_usage, ram_percentage, ram_available, cpu_temp)
 
 if __name__ == "__main__":
     matrixDisplay.showTemperature()
-    show_text("Vehicle server ready")
-    logger.info("Start control server: " + get_lan_ip())
+    oledText.show_text("Vehicle server ready")
+    logger.info("Start control server: " + CoreUtils.get_lan_ip())
     app.run(host='0.0.0.0', port=5000, use_reloader=False)

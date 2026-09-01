@@ -58,7 +58,6 @@ class CoreUtils:
         return psutil.virtual_memory().percent
 
 
-    
 class RobotStopException(Exception):
     """Custom exception to break out of all control loops immediately."""
     pass  

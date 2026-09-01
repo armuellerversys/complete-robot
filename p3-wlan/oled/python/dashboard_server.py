@@ -17,6 +17,19 @@ from waveshare_OLED import OLED_1in27_rgb
 ##
 # curl -X POST http://192.168.178.61:5000/displayDashboard
 ##
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
+handler = logging.StreamHandler()
+formatter = logging.Formatter(
+    "%(levelname)s: %(message)s"
+)
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+logger.info("OLED monitoring started")
+
 # --- Path Setup ---
 tempdir = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), 'OLED-waveshare')
 picdir = os.path.join(tempdir, 'pic')
@@ -24,7 +37,6 @@ libdir = os.path.join(tempdir, 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
-logging.basicConfig(level=logging.INFO)
 
 # --- App State & Flask Setup ---
 app = Flask(__name__)
@@ -46,7 +58,7 @@ font_large = None
 
 def init_display():
     global disp, image, draw, font_title, font_body, font_small, font_large
-    logging.info("Initializing OLED display...")
+    logger.info("Initializing OLED display...")
     disp = OLED_1in27_rgb.OLED_1in27_rgb()
     disp.Init()
     disp.clear()
@@ -96,6 +108,8 @@ def display_dashboard():
 def render_dashboard(now_str, cpu_usage, cpu_temp, ram_percentage, ram_available, ip_addr):
     # Clear Canvas
     draw.rectangle([0, 0, 128, 96], fill=(10, 10, 15))
+    # Clear Canvas
+    draw.rectangle([0, 0, 128, 96], fill=(0, 0, 0))
 
     # Header Bar: Time
     draw.rectangle([0, 0, 128, 16], fill=(30, 40, 60))
@@ -167,7 +181,7 @@ def api_display_text():
 
     header = data.get('header', 'MESSAGE')
     message = data.get('message', '')
-    logging.info(f"Received displayText request: header='{header}', message='{message}'")
+    logger.info(f"Received displayText request: header='{header}', message='{message}'")
     if not message:
         return jsonify({"status": "error", "message": "Field 'message' is required"}), 400
 
@@ -193,16 +207,19 @@ def api_display_sys_parms():
     cpu = data.get("CPU")
     mem_percentage = data.get("MEM_PERCENT")
     mem_available = data.get("MEM_AVAILABLE")
-    date = data.get("DATE")
+    # date = data.get("DATE")
+    date = "data"
     temp = data.get("TEMP")
 
     # Process or log the received parameters
-    logging.info(
+    logger.info(
         f"Received Metrics -> IP: {ip} | CPU: {cpu}% | MEM: {mem_percentage}% | Free RAM: {mem_available / (1024**2):.0f}MB | DATE: {date} | TEMP: {temp}°C"
     )
+    
+    disp.clear()
     render_dashboard(date, cpu, temp, mem_percentage, mem_available, ip)
     return (
-        jsonify({"status": "success", "message": "System parameters received successfully"}),
+        jsonify({"status": "success", "message": "OLED-System parameters received successfully"}),
         200,
     )
 
