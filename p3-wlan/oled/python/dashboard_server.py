@@ -1,6 +1,8 @@
 import time
 import psutil
 import socket
+from matrix11x7 import Matrix11x7
+from matrix11x7.fonts import font5x7 as font5x7
 from datetime import datetime
 from PIL import Image, ImageDraw, ImageFont
 import sys
@@ -37,6 +39,9 @@ libdir = os.path.join(tempdir, 'lib')
 if os.path.exists(libdir):
     sys.path.append(libdir)
 
+matrix11x7 = Matrix11x7(None, 0x77)
+matrix11x7.set_brightness(0.5)
+logger.info("Matrix11x7 display initialized.")
 
 # --- App State & Flask Setup ---
 app = Flask(__name__)
@@ -103,7 +108,6 @@ def display_dashboard():
     ram = psutil.virtual_memory()
     ip_addr = get_ip_address()
     render_dashboard(now_str, cpu_usage, cpu_temp, ram.percent, ram.available, ip_addr)
-
 
 def render_dashboard(now_str, cpu_usage, cpu_temp, ram_percentage, ram_available, ip_addr):
     # Clear Canvas
@@ -231,6 +235,25 @@ def api_display_dashboard():
         disp.clear()
 
     return jsonify({"status": "success", "mode": "dashboard"})
+
+@app.route('/showChar', methods=['POST'])
+def show_char():
+    new_msg = request.json.get('message', 'No Message')
+    matrix11x7.clear()  
+    matrix11x7.write_string(new_msg)
+    # Show the buffer
+    matrix11x7.show()
+    logger.info(f"Updated message to: {new_msg}")
+    return {"status": "success", "updated_to": new_msg}, 200
+
+@app.route('/testChar', methods=['GET'])
+def test_char():
+    matrix11x7.clear()  
+    matrix11x7.write_string("Test")
+    # Show the buffer
+    matrix11x7.show()
+    logger.info("testChar endpoint called, displaying 'Test'")
+    return {"status": "success", "updated_to": "Test"}, 200
 
 if __name__ == '__main__':
     # 1. Initialize hardware
