@@ -81,6 +81,8 @@ def init_display():
     image = Image.new('RGB', (disp.width, disp.height), 0)
     draw = ImageDraw.Draw(image)
 
+    test_char()
+
 def get_cpu_temp():
     try:
         temps = psutil.sensors_temperatures()
@@ -102,7 +104,7 @@ def get_ip_address():
     return ip
 
 def display_dashboard():
-    now_str = datetime.now().strftime("%H:%M:%S")
+    now_str = f"WLAN - {datetime.now().strftime('%H:%M:%S')}"
     cpu_usage = psutil.cpu_percent()
     cpu_temp = get_cpu_temp()
     ram = psutil.virtual_memory()
@@ -171,6 +173,8 @@ def display_worker():
                 display_dashboard()
             elif display_mode == "text":
                 render_custom_text(current_header, current_message)
+            elif display_mode == "state":
+                logger.info("State mode")
             
             # Send current canvas to hardware
             disp.ShowImage(disp.getbuffer(image))
@@ -199,6 +203,7 @@ def api_display_text():
 
 @app.route('/displaySysParms', methods=['POST'])
 def api_display_sys_parms():
+    global display_mode
 
     # Parse incoming JSON payload
     data = request.get_json()
@@ -211,17 +216,17 @@ def api_display_sys_parms():
     cpu = data.get("CPU")
     mem_percentage = data.get("MEM_PERCENT")
     mem_available = data.get("MEM_AVAILABLE")
-    # date = data.get("DATE")
-    date = "data"
+    date = data.get("DATE")
     temp = data.get("TEMP")
 
     # Process or log the received parameters
     logger.info(
         f"Received Metrics -> IP: {ip} | CPU: {cpu}% | MEM: {mem_percentage}% | Free RAM: {mem_available / (1024**2):.0f}MB | DATE: {date} | TEMP: {temp}°C"
     )
-    
+    display_mode = "state"
     disp.clear()
     render_dashboard(date, cpu, temp, mem_percentage, mem_available, ip)
+
     return (
         jsonify({"status": "success", "message": "OLED-System parameters received successfully"}),
         200,
@@ -249,11 +254,11 @@ def show_char():
 @app.route('/testChar', methods=['GET'])
 def test_char():
     matrix11x7.clear()  
-    matrix11x7.write_string("Test")
+    matrix11x7.write_string("OK")
     # Show the buffer
     matrix11x7.show()
-    logger.info("testChar endpoint called, displaying 'Test'")
-    return {"status": "success", "updated_to": "Test"}, 200
+    logger.info("testChar endpoint called, displaying 'OK'")
+    return {"status": "success", "updated_to": "OK"}, 200
 
 if __name__ == '__main__':
     # 1. Initialize hardware
