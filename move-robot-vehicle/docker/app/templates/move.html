@@ -52,7 +52,7 @@
         }
 
         function set_motor(name) {
-           
+            console.log("set_motor called with name:", name);
             const speedInput = document.getElementById("speed_input");
             const distanceInput = document.getElementById("distance_input");
             let speed = parseInt(speedInput.value,10);
@@ -66,6 +66,44 @@
             
             $.post('/control',
                 {'command':'set_' + name, 'speed': speed, 'distance': distance });}
+
+
+        // --- Replace old slider initialization in move.html ---
+        function handleSliderChange(side, rawSpeed) {
+            // rawSpeed range is approx -100 to +100
+            // Positive = Forward, Negative = Backward
+            let speed = Math.round(rawSpeed * 2.55); // Scale -100..100 to -255..255
+
+            if (Math.abs(speed) === 0) {
+                // Stop command when slider reaches center
+                set_motor('stop');
+                return;
+            }
+
+            // Determine direction and format parameter name
+            const dir = speed > 0 ? 'forward' : 'backward';
+            const commandName = dir + '_' + side; // e.g., 'forward_left' or 'backward_left'
+            
+            // Pass magnitude as speed parameter
+            set_motor_custom(commandName, Math.abs(speed));
+        }
+
+        // Updated helper for dynamic commands
+        function set_motor_custom(name, speed) {
+            const distanceInput = document.getElementById("distance_input");
+            let distance = parseInt(distanceInput.value, 10);
+            distance = Math.min(10000, Math.max(1, distance));
+
+            document.getElementById("message").innerHTML = 'set_' + name + '->speed:' + speed + '->distance:' + distance;
+
+            console.log("set_motor:",name, speed, distance);
+
+            $.post('/control', {
+                'command': 'set_' + name,
+                'speed': speed,
+                'distance': distance
+            });
+        }
 
         function checkServerStatus() {
             console.debug("checkServerStatus" + Date.now())
@@ -125,8 +163,12 @@
             // -----------------------------------------------------------------
             // These calls assume the `makeSlider` function is correctly defined
             // in /static/touch-slider.js
-            makeSlider('left_slider', speed => set_motor('forward_left', adjustSpeed(speed)));
-            makeSlider('right_slider', speed => set_motor('forward_right', adjustSpeed(speed)));
+            // makeSlider('left_slider', speed => set_motor('forward_left', adjustSpeed(speed)));
+            // makeSlider('right_slider', speed => set_motor('forward_right', adjustSpeed(speed)));
+
+            // Initialize sliders
+            makeSlider('left_slider', speed => handleSliderChange('left', speed));
+            makeSlider('right_slider', speed => handleSliderChange('right', speed));
         });
     </script>
 </body>

@@ -29,7 +29,7 @@ device.contrast(40) # Keep it dim for 24/7 use
 virtual = viewport(device, width=200, height=8) # Large virtual width for scrolling
 matrix11x7 = Matrix11x7(None, 0x77)
 matrix11x7.set_brightness(0.5)
-logger.info("Matrix display initialized.")
+logger.info("Matrix11x7 display initialized.")
 
 app = Flask(__name__)
 

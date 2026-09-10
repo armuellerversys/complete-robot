@@ -362,7 +362,7 @@ class DriveController:
             try:
                 # This blocks here until a message is put in the queue
                 text = self.display_queue.get()
-                self.logger.info("Display worker {text}")
+                self.logger.info(f"Display worker {text}")
                 payload = {"header": "ALERT", "message": text}
                 # Increased timeout to 3 seconds so it doesn't crash easily
                 response = requests.post(URL, json=payload, headers=headers, timeout=3)
@@ -378,10 +378,9 @@ class DriveController:
             except Exception as e:
                 self.logger.error(f"Display worker error: {e}")
     
-    
     def show_text(self, text):
         self.logger.info(f"Show text: {text}")
-        self.matrix.show_text(text)
+        self.matrixDisplay.show_text(text)
      
     @staticmethod
     def getInstance(behavior):

@@ -1,15 +1,25 @@
 function makeSlider(id, when_changed) {
     let touched = false;
     let changed = false;
-    let position = 0;
+    let position = 0; // -100 (top) to +100 (bottom)
+    let lastSentPosition = null;
+
     const slider = $('#' + id);
     const slider_tick = slider.find('.slider_tick')[0];
 
     const set_position = function(new_position) {
-        // Clamp position between -200 and 200 based on your viewBox
-        position = Math.round(Math.max(-100, Math.min(100, new_position)));
-        slider_tick.setAttribute('cy', position);
-        changed = true;
+        let clamped = Math.round(Math.max(-100, Math.min(100, new_position)));
+        
+        // Deadzone check: Snap near-zero positions directly to 0
+        if (Math.abs(clamped) < 3) {
+            clamped = 0;
+        }
+
+        if (position !== clamped) {
+            position = clamped;
+            slider_tick.setAttribute('cy', position);
+            changed = true;
+        }
     };
 
     // --- Touch Events ---
@@ -21,52 +31,58 @@ function makeSlider(id, when_changed) {
         touched = true;
         event.preventDefault();
     });
-    slider.on('touchend', () => touched = false);
 
-    // --- Mouse Events Fix ---
+    slider.on('touchend touchcancel', () => {
+        touched = false;
+    });
+
+    // --- Mouse Events ---
     slider.on('mousedown', event => {
-        event.preventDefault(); // Prevent text selection
-        touched = true; 
+        event.preventDefault();
+        touched = true;
 
-        // Define handlers inside mousedown to capture this slider's context
-        const handleMouseMove = function(event) {
+        const handleMouseMove = function(e) {
             if (touched) {
-                let from_top = event.pageY - slider.offset().top;
+                let from_top = e.pageY - slider.offset().top;
                 let relative_mouse = (from_top / slider.height()) * 200;
                 set_position(relative_mouse - 100);
-                event.preventDefault();
             }
         };
 
         const handleMouseUp = function() {
             touched = false;
-            // Unbind the handlers when dragging stops
             $(document).off('mousemove', handleMouseMove);
             $(document).off('mouseup', handleMouseUp);
         };
 
-        // Bind the document listeners specific to this drag operation
         $(document).on('mousemove', handleMouseMove);
         $(document).on('mouseup', handleMouseUp);
     });
-    
-    // --- Update Loops ---
-    const update = function() {
-        if(!touched && Math.abs(position) > 0) {
-            // drift back to the middle
-            let error = 0 - position;
-            let change = (0.3 * error) + (Math.sign(error) * 0.5);
-            set_position(position + change);
-        }
-    };
-    setInterval(update, 50);
 
-    const update_if_changed = function() {
-        if(changed) {
+    // --- Auto-center / Decay Loop ---
+    setInterval(() => {
+        if (!touched && position !== 0) {
+            // Decay position toward zero gradually
+            let step = position * 0.25;
+            if (Math.abs(step) < 1) {
+                step = Math.sign(position) * 1;
+            }
+            
+            let newPos = position - step;
+            if ((position > 0 && newPos < 0) || (position < 0 && newPos > 0)) {
+                newPos = 0;
+            }
+            set_position(newPos);
+        }
+    }, 40);
+
+    // --- Command Dispatch Loop ---
+    setInterval(() => {
+        if (changed || (position === 0 && lastSentPosition !== 0)) {
             changed = false;
-            // Invert the track so 'up' is positive
+            lastSentPosition = position;
+            // Invert track so moving up produces positive values
             when_changed(-position);
         }
-    };
-    setInterval(update_if_changed, 200);
+    }, 100);
 }

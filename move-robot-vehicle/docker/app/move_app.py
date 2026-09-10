@@ -123,6 +123,18 @@ class Move_app:
          self.move_motor.right_forward(right_forward_speed)
          self.robot.set_led_red()
          self.logger.info(f"Move_app:forward_right-speed: {right_forward_speed:.2f}")
+      elif command == "set_backward_left":
+         type = "M"
+         left_backward_speed = int(instruction['speed'])
+         self.move_motor.left_backward(left_backward_speed)
+         self.robot.set_led_red()
+         self.logger.info(f"Move_app:backward_left-speed: {left_backward_speed:.2f}")
+      elif command == "set_backward_right":
+         type = "R"
+         right_backward_speed = int(instruction['speed'])
+         self.move_motor.right_backward(right_backward_speed)
+         self.robot.set_led_red()
+         self.logger.info(f"Move_app:backward_right-speed: {right_backward_speed:.2f}")
       elif command == "set_stop":
          print("stopping")
          type = "X"

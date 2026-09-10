@@ -61,10 +61,6 @@ class Move_motor:
                 logger.debug(f"left_forward: {speed}")
                 self.lm.setSpeed(speed)
                 self.lm.run(Raspi_MotorHAT.FORWARD)
-            else:
-                logger.debug(f"left_backward: {speed}")
-                self.lm.setSpeed(speed * -1)
-                self.lm.run(Raspi_MotorHAT.BACKWARD)
         except Exception:
             logger.error(traceback.format_exc())
 
@@ -74,12 +70,26 @@ class Move_motor:
                 logger.debug(f"right_forward: {speed}")
                 self.rm.setSpeed(speed)
                 self.rm.run(Raspi_MotorHAT.FORWARD)
-            else:
-                logger.debug(f"right_backward: {speed}")
-                self.rm.setSpeed(speed * -1)
-                self.rm.run(Raspi_MotorHAT.BACKWARD)
         except Exception:
             logger.error(traceback.format_exc())
+
+    def left_backward(self, speed):
+            try:
+                if speed >= 0:
+                    logger.debug(f"left_backward: {speed}")
+                    self.lm.setSpeed(speed)
+                    self.lm.run(Raspi_MotorHAT.BACKWARD)
+            except Exception:
+                logger.error(traceback.format_exc())
+    
+    def right_backward(self, speed):
+            try:
+                if speed >= 0:
+                    logger.debug(f"right_backward: {speed}")
+                    self.rm.setSpeed(speed)
+                    self.rm.run(Raspi_MotorHAT.BACKWARD)
+            except Exception:
+                logger.error(traceback.format_exc())
 
     def run_left(self, speed):
         try:
