@@ -29,6 +29,9 @@ html, body {
     height: 90vh;
     border: 1px solid blue;
     background-color: lightblue;
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
 }
 .slider_tick {
     fill: mistyrose;

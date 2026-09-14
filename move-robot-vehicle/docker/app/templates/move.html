@@ -46,130 +46,129 @@
         </svg>
     </div>
 
-    <script type="text/javascript">
-        function adjustSpeed(speed) {
-            return  speed = Math.round(speed * 2.5)
-        }
+<script type="text/javascript">
+    function adjustSpeed(speed) {
+        return Math.round(speed * 2.5);
+    }
 
-        function set_motor(name) {
-            console.log("set_motor called with name:", name);
-            const speedInput = document.getElementById("speed_input");
-            const distanceInput = document.getElementById("distance_input");
-            let speed = parseInt(speedInput.value,10);
-            let distance = parseInt(distanceInput.value,10);
-            speed = Math.min(255, Math.max(1, speed)); 
-            distance = Math.min(10000, Math.max(1, distance));
-            
-            console.log("set_motor:",name, speed, distance);
+    function set_motor(name) {
+        console.log("set_motor called:", name);
 
-            document.getElementById("message").innerHTML = 'set_' + name + '->speed:' + speed + '->distance:' + distance;
-            
-            $.post('/control',
-                {'command':'set_' + name, 'speed': speed, 'distance': distance });}
+        const speedInput = document.getElementById("speed_input");
+        const distanceInput = document.getElementById("distance_input");
 
+        let speed = parseInt(speedInput.value, 10);
+        let distance = parseInt(distanceInput.value, 10);
 
-        // --- Replace old slider initialization in move.html ---
-        function handleSliderChange(side, rawSpeed) {
-            // rawSpeed range is approx -100 to +100
-            // Positive = Forward, Negative = Backward
-            let speed = Math.round(rawSpeed * 2.55); // Scale -100..100 to -255..255
+        speed = Math.min(255, Math.max(1, speed));
+        distance = Math.min(10000, Math.max(1, distance));
 
-            if (Math.abs(speed) === 0) {
-                // Stop command when slider reaches center
-                set_motor('stop');
-                return;
-            }
+        document.getElementById("message").innerHTML =
+            'set_' + name + ' -> speed:' + speed + ' -> distance:' + distance;
 
-            // Determine direction and format parameter name
-            const dir = speed > 0 ? 'forward' : 'backward';
-            const commandName = dir + '_' + side; // e.g., 'forward_left' or 'backward_left'
-            
-            // Pass magnitude as speed parameter
-            set_motor_custom(commandName, Math.abs(speed));
-        }
-
-        // Updated helper for dynamic commands
-        function set_motor_custom(name, speed) {
-            const distanceInput = document.getElementById("distance_input");
-            let distance = parseInt(distanceInput.value, 10);
-            distance = Math.min(10000, Math.max(1, distance));
-
-            document.getElementById("message").innerHTML = 'set_' + name + '->speed:' + speed + '->distance:' + distance;
-
-            console.log("set_motor:",name, speed, distance);
-
-            $.post('/control', {
-                'command': 'set_' + name,
-                'speed': speed,
-                'distance': distance
-            });
-        }
-
-        function checkServerStatus() {
-            console.debug("checkServerStatus" + Date.now())
-            fetch("/ping")
-                .then(response => {
-                    if (!response.ok) throw new Error('Server not OK');
-                    setTimeout(checkServerStatus, 5000);
-                })
-                .catch(error => {
-                    console.error("Server down, redirecting:", error);
-                    // NOTE: '{{ port }}' is a server-side template placeholder
-                    window.location.href = "http://" + window.location.hostname + ":5000/dead_page?port={{ port }}";
-                });
-        }
-
-        document.addEventListener("DOMContentLoaded", function() {
-            setTimeout(checkServerStatus, 5000);
-
-            // Button handlers
-            $('#exitbutton').click(function() {
-                console.log("exit clicked");
-                $.post('/control', { 'command': 'exit' }, () => {
-                    setTimeout(() => {
-                        // NOTE: '{{ port }}' is a server-side template placeholder
-                        window.location.href = "http://" + window.location.hostname + ":5000/dead_page?port={{ port }}";
-                    }, 500);
-                });
-            });
-
-            $('#stopbutton').click(() => set_motor('stop'));
-            $('#forwardbutton').click(() => set_motor('forward'));
-            $('#backwardbutton').click(() => set_motor('backward'));
-            $('#rightbutton').click(() => set_motor('right'));
-            $('#leftbutton').click(() => set_motor('left'));
-
-            // Keyboard controls
-            document.addEventListener('keydown', (e) => {
-                switch (e.key) {
-                    case "ArrowUp": set_motor('forward'); break;
-                    case "ArrowDown": set_motor('backward'); break;
-                    case "ArrowRight": set_motor('right'); break;
-                    case "ArrowLeft": set_motor('left'); break;
-                    case " ": set_motor('stop', 0); break; // spacebar
-                }
-            });
-
-            // Optional: auto-refresh video if it's static snapshots
-            setInterval(() => {
-                const video = document.getElementById("video-feed");
-                // NOTE: '{{ url_for('display') }}' is a server-side template placeholder
-                // video.src = "{{ url_for('display') }}" + "?t=" + new Date().getTime();
-                video.src = "http://192.168.4.6:5000/video_feed"
-            }, 2000);
-
-            // -----------------------------------------------------------------
-            // !!! SLIDER INITIALIZATION - CRITICAL FOR SLIDERS TO WORK !!!
-            // -----------------------------------------------------------------
-            // These calls assume the `makeSlider` function is correctly defined
-            // in /static/touch-slider.js
-            // makeSlider('left_slider', speed => set_motor('forward_left', adjustSpeed(speed)));
-            // makeSlider('right_slider', speed => set_motor('forward_right', adjustSpeed(speed)));
-
-            // Initialize sliders
-            makeSlider('left_slider', speed => handleSliderChange('left', speed));
-            makeSlider('right_slider', speed => handleSliderChange('right', speed));
+        $.post('/control', {
+            command: 'set_' + name,
+            speed: speed,
+            distance: distance
+        })
+        .done(function(response) {
+            console.log("CONTROL OK:", response);
+        })
+        .fail(function(xhr, status, error) {
+            console.error("CONTROL ERROR:", xhr.status, status, error);
+            document.getElementById("message").innerHTML = "CONTROL ERROR: " + xhr.status + " " + error;
         });
-    </script>
+    }
+
+    function handleSliderChange(side, rawSpeed) {
+        let speed = Math.round(rawSpeed * 2.55);
+
+        if (Math.abs(speed) === 0) {
+            set_motor('stop');
+            return;
+        }
+
+        const dir = speed > 0 ? 'forward' : 'backward';
+        const commandName = dir + '_' + side;
+        
+        set_motor_custom(commandName, Math.abs(speed));
+    }
+
+    function set_motor_custom(name, speed) {
+        const distanceInput = document.getElementById("distance_input");
+        let distance = parseInt(distanceInput.value, 10);
+        distance = Math.min(10000, Math.max(1, distance));
+
+        document.getElementById("message").innerHTML =
+            'set_' + name + ' -> speed:' + speed + ' -> distance:' + distance;
+
+        $.post('/control', {
+            command: 'set_' + name,
+            speed: speed,
+            distance: distance
+        })
+        .done(function(response) {
+            console.log("CONTROL OK:", response);
+        })
+        .fail(function(xhr, status, error) {
+            console.error("CONTROL ERROR:", xhr.status, status, error);
+            document.getElementById("message").innerHTML = "CONTROL ERROR: " + xhr.status + " " + error;
+        });
+    }
+
+    function checkServerStatus() {
+        fetch("/ping")
+            .then(response => {
+                if (!response.ok) throw new Error('Server not OK');
+                setTimeout(checkServerStatus, 5000);
+            })
+            .catch(error => {
+                console.error("Server down, redirecting:", error);
+                window.location.href = "/dead_page";
+            });
+    }
+
+    document.addEventListener("DOMContentLoaded", function() {
+        setTimeout(checkServerStatus, 5000);
+
+        // Helper function for mobile touch-friendly button binding
+        function bindButton(id, callback) {
+            const btn = $(id);
+            btn.on('pointerdown touchstart', function(e) {
+                e.preventDefault(); // Prevents double firing with click
+                callback();
+            });
+        }
+
+        // Touch & Click resilient bindings
+        bindButton('#exitbutton', function() {
+            $.post('/control', { 'command': 'exit' }, () => {
+                setTimeout(() => { window.location.href = "/dead_page"; }, 500);
+            });
+        });
+
+        bindButton('#stopbutton', () => set_motor('stop'));
+        bindButton('#forwardbutton', () => set_motor('forward'));
+        bindButton('#backwardbutton', () => set_motor('backward'));
+        bindButton('#rightbutton', () => set_motor('right'));
+        bindButton('#leftbutton', () => set_motor('left'));
+
+        // Keyboard controls
+        document.addEventListener('keydown', (e) => {
+            switch (e.key) {
+                case "ArrowUp": set_motor('forward'); break;
+                case "ArrowDown": set_motor('backward'); break;
+                case "ArrowRight": set_motor('right'); break;
+                case "ArrowLeft": set_motor('left'); break;
+                case " ": set_motor('stop'); break;
+            }
+        });
+
+        // Initialize sliders
+        makeSlider('left_slider', speed => handleSliderChange('left', speed));
+        makeSlider('right_slider', speed => handleSliderChange('right', speed));
+    });
+</script>
+    
 </body>
 </html>
