@@ -1,0 +1,37 @@
+sudo bluetoothctl
+
+ Agenten zu aktivieren:
+ - agent on
+ - default-agent
+
+Erkennung und die Kopplungsbereitschaft einschalten:
+- power on
+- discoverable on
+- pairable on
+
+ Suche nach Geräten
+ - scan on
+
+- pair E4:17:D8:39:34:17 
+- connect E4:17:D8:39:34:17 
+- trust E4:17:D8:39:34:17 
+
+- exit
+
+
+ sudo systemctl status bluetooth
+
+ sudo usermod -aG input $USER
+
+ls /dev/input/
+
+ *******************************************************************
+Bind Joystick Commands to Python:
+pip install --break-system-package evdev
+
+
+apt-get update && apt-get upgrade -y
+
+#tutorial bluetooth
+https://core-electronics.com.au/guides/using-usb-and-bluetooth-controllers-with-python/
+https://www.youtube.com/watch?v=Ro4wRQGtnBw
