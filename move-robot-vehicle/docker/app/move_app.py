@@ -1,5 +1,7 @@
 import time
 import os, signal
+
+from rich_click import command
 from robot_gpio import Robot
 import requests
 import json
@@ -7,6 +9,7 @@ from matrix_display import MatrixDisplay
 from move_motor import Move_motor
 from core_utils import CoreUtils
 from image_app_core import clear_queue
+from joystick_adapter import JoystickAdapter
 
 # The URL of your Flask voice server
 # Make sure to use the correct IP address and port
@@ -39,6 +42,14 @@ class Move_app:
         self._sensor_mid = self.robot.mid_distance_sensor
         self._sensor_left = self.robot.left_distance_sensor
         self._sensor_right = self.robot.right_distance_sensor
+
+        self.joystick = None
+        self.joystick = JoystickAdapter(
+            self,
+            devicePath="/dev/input/event5",
+        )
+
+        self.joystick.connectJoystick()
 
         self.logger.info("Move_app:Move-app init completed")
 
@@ -86,7 +97,11 @@ class Move_app:
     def handle_instruction(self, instruction, process):
       command = instruction['command']
       self.logger.info(f"Command: {command}")
+      for key, value in instruction.items() :
+        self.logger.info(f"Move_app:{key}: {value}")
+      self.logger.info(f"instruction printed: {instruction}")
       type = "-"
+    
       if command == "set_left":
         type = "L"
         left_speed = int(instruction['speed'])
@@ -100,61 +115,81 @@ class Move_app:
         self.robot.set_led_red()
         self.logger.info(f"Move_app:Right-speed: {right_speed:.2f}")
       elif command == "set_backward":
-         type = "B"
-         backward_speed = int(instruction['speed'])
-         self.move_motor.run_backward(backward_speed)
-         self.robot.set_led_red()
-         self.logger.info(f"Move_app:Backward-speed: {backward_speed:.2f}")
+        type = "B"
+        backward_speed = int(instruction['speed'])
+        self.move_motor.run_backward(backward_speed)
+        self.robot.set_led_red()
+        self.logger.info(f"Move_app:Backward-speed: {backward_speed:.2f}")
       elif command == "set_forward":
-         type = "F"
-         self.forward_speed = int(instruction['speed'])
-         self.forward_distance = int(instruction['distance'])
-         self.robot.set_led_red()
-         self.logger.info(f"Move_app forward: speed: {self.forward_speed:.2f} | distance: {self.forward_distance:.2f}")
+        type = "F"
+        self.forward_speed = int(instruction['speed'])
+        self.forward_distance = int(instruction['distance'])
+        self.robot.set_led_red()
+        self.logger.info(f"Move_app forward: speed: {self.forward_speed:.2f} | distance: {self.forward_distance:.2f}")
       elif command == "set_forward_left":
-         type = "M"
-         left_forward_speed = int(instruction['speed'])
-         self.move_motor.left_forward(left_forward_speed)
-         self.robot.set_led_red()
-         self.logger.info(f"Move_app:forward_left-speed: {left_forward_speed:.2f}")
+        type = "M"
+        left_forward_speed = int(instruction['speed'])
+        self.move_motor.left_forward(left_forward_speed)
+        self.robot.set_led_red()
+        self.logger.info(f"Move_app:forward_left-speed: {left_forward_speed:.2f}")
       elif command == "set_forward_right":
-         type = "R"
-         right_forward_speed = int(instruction['speed'])
-         self.move_motor.right_forward(right_forward_speed)
-         self.robot.set_led_red()
-         self.logger.info(f"Move_app:forward_right-speed: {right_forward_speed:.2f}")
+        type = "R"
+        right_forward_speed = int(instruction['speed'])
+        self.move_motor.right_forward(right_forward_speed)
+        self.robot.set_led_red()
+        self.logger.info(f"Move_app:forward_right-speed: {right_forward_speed:.2f}")
       elif command == "set_backward_left":
-         type = "M"
-         left_backward_speed = int(instruction['speed'])
-         self.move_motor.left_backward(left_backward_speed)
-         self.robot.set_led_red()
-         self.logger.info(f"Move_app:backward_left-speed: {left_backward_speed:.2f}")
+        type = "M"
+        left_backward_speed = int(instruction['speed'])
+        self.move_motor.left_backward(left_backward_speed)
+        self.robot.set_led_red()
+        self.logger.info(f"Move_app:backward_left-speed: {left_backward_speed:.2f}")
       elif command == "set_backward_right":
-         type = "R"
-         right_backward_speed = int(instruction['speed'])
-         self.move_motor.right_backward(right_backward_speed)
-         self.robot.set_led_red()
-         self.logger.info(f"Move_app:backward_right-speed: {right_backward_speed:.2f}")
+        type = "R"
+        right_backward_speed = int(instruction['speed'])
+        self.move_motor.right_backward(right_backward_speed)
+        self.robot.set_led_red()
+        self.logger.info(f"Move_app:backward_right-speed: {right_backward_speed:.2f}")
       elif command == "set_stop":
-         print("stopping")
-         type = "X"
-         self.move_motor.turn_off_motors()
-         clear_queue()
-         self.robot.set_led_blue()
-         self.logger.info("Move_app:Stop-run")
+        type = "X"
+        self.move_motor.turn_off_motors()
+        clear_queue()
+        self.robot.set_led_blue()
+        self.logger.info("Move_app:Stop-run")
+      elif command == "set_joystick":
+        self.logger.info("joystick activated")
+        type = "Y"
+        self.move_motor.turn_off_motors()
+        clear_queue()
+       
+        self.joystick.start()
+        self.logger.info("Move_app:Starting joystick")
       elif command == "exit":
-         print("Move_app:exiting")
+         self.logger.info("Move_app:exiting")
          type = "-"
          self.move_motor.turn_off_motors()
          self.robot.set_led_blue()
          self.logger.info("Move_app:Exit-run")
-         self.exit_server(process)
+         if self.joystick:
+            self.joystick.stop()  # Stop the joystick thread if it's running
+         if process is not None:
+            self.exit_server(process)
          exit()
       else:
         raise ValueError(f"Move_app:Unknown instruction: {instruction}")
       
       return type
-    
+
+    def handle_joystick(self, instruction):
+        self.logger.info(f"Move_app:Joystick {instruction['left_speed']} - {instruction['right_speed']}")
+        type = "J"
+        left_speed = int(instruction['left_speed'])
+        right_speed = int(instruction['right_speed'])
+        self.move_motor.run_joystick(left_speed, right_speed)
+        self.robot.set_led_yellow()
+        self.logger.info(f"Move_app:joystick-speed: {left_speed:.2f} - {right_speed:.2f}")
+        return type
+
     def sayText(self, text):
         # #curl -X POST http://192.168.4.6:6000/say -H "Content-Type: application/json" -d '{"utterance": "Security alert. Intruder detected."}'
         try:
