@@ -159,7 +159,7 @@ class Move_app:
       elif command == "set_joystick":
         self.logger.info("joystick activated")
         type = "Y"
-        self.robot.set_led_yellow()
+        self.robot.set_led_cyan()
         time.sleep(0.8)
         self.logger.info("Move_app:Joystick activated")
         self.move_motor.turn_off_motors()
@@ -191,7 +191,7 @@ class Move_app:
         left_speed = int(instruction['left_speed'])
         right_speed = int(instruction['right_speed'])
         self.move_motor.run_joystick(left_speed, right_speed)
-        self.robot.set_led_yellow()
+        self.robot.showCoolBlue()
         self.logger.info(f"Move_app:joystick-speed: {left_speed:.2f} - {right_speed:.2f}")
         return type
 

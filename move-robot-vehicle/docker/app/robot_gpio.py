@@ -117,6 +117,18 @@ class Robot:
     def set_led_yellow(self):
         self.leds.showYellow()
 
+    def set_led_orange(self):
+        self.leds.showOrange()
+
+    def set_led_cyan(self):
+        self.leds.showCyan()
+
+    def set_led_blue(self):
+        self.leds.showBlue()
+
+    def showPleasantGreen(self):
+        self.leds.showPleasantGreen()
+
     def clear_led(self):
         self.leds.clear()
 

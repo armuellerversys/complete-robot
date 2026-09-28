@@ -38,16 +38,22 @@ class Move_motor:
     def run_joystick(self, left_speed, right_speed):
         try:
             logger.debug(f"run_joystick: left_speed={left_speed}, right_speed={right_speed}")
-            self.lm.setSpeed(left_speed)
-            self.rm.setSpeed(right_speed)
             if left_speed > 0:
                 self.lm.run(Raspi_MotorHAT.FORWARD)
+                self.lm.setSpeed(left_speed)
+                self.rm.setSpeed(right_speed)
             else:
                 self.lm.run(Raspi_MotorHAT.BACKWARD)
+                self.lm.setSpeed(abs(left_speed))
+                self.rm.setSpeed(abs(right_speed))
             if right_speed > 0:
                 self.rm.run(Raspi_MotorHAT.FORWARD)
+                self.lm.setSpeed(left_speed)
+                self.rm.setSpeed(right_speed)
             else:
                 self.rm.run(Raspi_MotorHAT.BACKWARD)
+                self.lm.setSpeed(abs(left_speed))
+                self.rm.setSpeed(abs(right_speed))
         except Exception:
             logger.error(traceback.format_exc())
 

@@ -23,8 +23,9 @@ services:
     volumes:
       - /sys:/sys:ro
       # Added for modern GPIO/I2C character device support
-      - /run/udev:/run/udev:ro 
-    
+      - /run/udev:/run/udev:ro
+      - /dev/input:/dev/input # Mount host's dev input directory directly
+
     environment:
       - OVOS_BUS_HOST=127.0.0.1
       - OVOS_BUS_PORT=8181

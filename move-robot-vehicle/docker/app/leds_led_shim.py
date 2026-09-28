@@ -8,8 +8,11 @@ class Leds:
     blue = (0, 0, 255)
     pink = (255, 182, 193)
     purple = (157, 0, 255)
+    cyan = (0, 255, 255)
     yellow = (255, 128, 0)
     white = (255, 255, 255)
+    pleasant_green = (0, 255, 128)
+    cool_blue = (0, 128, 255)
 
     @property
     def count(self):
@@ -62,6 +65,18 @@ class Leds:
 
     def showOrange(self):
         self.set_all(self.orange)
+        self.show()
+
+    def showCyan(self):
+        self.set_all(self.cyan)
+        self.show()
+
+    def showPleasantGreen(self):
+        self.set_all(self.pleasant_green)
+        self.show()
+
+    def showCoolBlue(self):
+        self.set_all(self.cool_blue)
         self.show()
 
     @staticmethod
