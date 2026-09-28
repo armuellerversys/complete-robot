@@ -159,10 +159,15 @@ class Move_app:
       elif command == "set_joystick":
         self.logger.info("joystick activated")
         type = "Y"
+        self.robot.set_led_yellow()
+        time.sleep(0.8)
+        self.logger.info("Move_app:Joystick activated")
         self.move_motor.turn_off_motors()
         clear_queue()
        
         self.joystick.start()
+
+        self.robot.set_led_green()
         self.logger.info("Move_app:Starting joystick")
       elif command == "exit":
          self.logger.info("Move_app:exiting")
