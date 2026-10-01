@@ -156,21 +156,34 @@ class Move_app:
         clear_queue()
         self.robot.set_led_blue()
         self.logger.info("Move_app:Stop-run")
-      elif command == "set_joystick":
-        self.logger.info("joystick activated")
+      elif command == "set_start_gpad":
+        self.logger.info("Move_app:enter gpad activate")
         type = "Y"
         self.robot.set_led_cyan()
         time.sleep(0.8)
-        self.logger.info("Move_app:Joystick activated")
+        self.logger.info("Move_app:Start gpad activation")
         self.move_motor.turn_off_motors()
         clear_queue()
        
         self.joystick.start()
 
         self.robot.set_led_green()
-        self.logger.info("Move_app:Starting joystick")
+        self.logger.info("Move_app:gpad activation completed")
+      elif command == "set_stop_gpad":
+        self.logger.info("Move_app:stop gpad activation")
+        type = "-"
+        self.robot.set_led_purple()
+        time.sleep(0.8)
+        self.logger.info("Move_app:deactivate gpad")
+        self.move_motor.turn_off_motors()
+        clear_queue()
+        
+        self.joystick.stop()
+
+        self.robot.set_led_green()
+        self.logger.info("Move_app:gpad deactivated")
       elif command == "exit":
-         self.logger.info("Move_app:exiting")
+         self.logger.info("Move_app:Move_app:exiting")
          type = "-"
          self.move_motor.turn_off_motors()
          self.robot.set_led_blue()
@@ -194,6 +207,10 @@ class Move_app:
         self.robot.set_led_coolblue()
         self.logger.info(f"Move_app:joystick-speed: {left_speed:.2f} - {right_speed:.2f}")
         return type
+
+    def handle_joystick_key(self, key_event):
+         self.robot.set_led_white()
+         self.logger.info(f"Move_app:Joystick key event: {key_event}")
 
     def sayText(self, text):
         # #curl -X POST http://192.168.4.6:6000/say -H "Content-Type: application/json" -d '{"utterance": "Security alert. Intruder detected."}'

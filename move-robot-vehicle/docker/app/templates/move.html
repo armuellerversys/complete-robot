@@ -35,7 +35,8 @@
             <div class="button-row">
                 <a class="button" id="stopbutton">Stop</a>
                 <a class="button" id="exitbutton">Exit</a>
-                <a class="button" id="joystick">Joystick</a>
+                <a class="button" id="start_gpad">Start gpad</a>
+                <a class="button" id="stop_gpad">Stop gpad</a>
             </div>
             <div id="video">
                 <img id="video-feed" src="http://192.168.4.6:5000/video_feed"/>
@@ -154,7 +155,8 @@
         });
 
         bindButton('#stopbutton', () => set_motor('stop'));
-        bindButton('#joystick', () => set_motor('joystick'));
+        bindButton('#start_gpad', () => set_motor('start_gpad'));
+        bindButton('#stop_gpad', () => set_motor('stop_gpad'));
         bindButton('#forwardbutton', () => set_motor('forward'));
         bindButton('#backwardbutton', () => set_motor('backward'));
         bindButton('#rightbutton', () => set_motor('right'));

@@ -138,6 +138,8 @@ class JoystickAdapter:
                 if not self.is_running:
                     break
 
+                self.logger.info(f"Event Type: {event.type}, Code: {event.code}, Value: {event.value}")
+
                 # Analog stick movements
                 if event.type == ecodes.EV_ABS:
                     if event.code == ecodes.ABS_Y:
@@ -149,11 +151,22 @@ class JoystickAdapter:
 
                 # Button events
                 elif event.type == ecodes.EV_KEY:
+                    self.vehi_app.handle_joystick_key(event)
                     key_event = categorize(event)
+                    self.logger.info(f"Button event: {key_event.keycode} - State: {key_event.keystate}")
                     if key_event.keystate == key_event.key_down:
-                        # E-Stop Button (B / East)
+                        instruction = {'command': 'set_joystick'}
+                        if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X):
+                            self.logger.info("BTN_NORTH triggered via GPAD button")
+                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
+                        if event.code in (ecodes.BTN_SOUTH, ecodes.BTN_A):
+                            self.logger.info("BTN_SOUTH triggered via GPAD button")
+                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
                         if event.code in (ecodes.BTN_EAST, ecodes.BTN_B):
-                            self.logger.info("E-Stop triggered via Joystick")
+                            self.logger.info("BTN_EASTtriggered via GPAD button")
+                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
+                        if event.code in (ecodes.BTN_WEST, ecodes.BTN_Y):
+                            self.logger.info("BTN_WEST triggered via GPAD button")
                             self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
 
                         # Exit Script Button (Select / Mode)
