@@ -89,7 +89,7 @@ class JoystickAdapter:
         triggerLevel = 0.3
         speed_y = self.scale_speed(self.axis_y)
         speed_x = self.scale_speed(self.axis_x)
-        self.logger.debug(f"Dispatching movement: axis_x={self.axis_x}, axis_y={self.axis_y}, speed_x={speed_x}, speed_y={speed_y}")
+        self.logger.debug(f"Receive movement: axis_x={self.axis_x}, axis_y={self.axis_y}, speed_x={speed_x}, speed_y={speed_y}")
 
         self.instruction = None # Default to stop
 
@@ -99,22 +99,51 @@ class JoystickAdapter:
             self.vehi_app.handle_instruction(self.instruction, process=None)
             self.last_instruction = 'set_stop'
 
-        elif self.axis_y != 0.0 and self.axis_x != 0.0:
+        elif self.axis_y != 0.0 or self.axis_x != 0.0:
             self.last_instruction = 'set_joystick'
             self.logger.debug(f"Dispatching movement: axis_x={self.axis_x}, axis_y={self.axis_y}")
-            
-            if self.axis_y < 0:
+            rule = "x"
+            if self.axis_y < -triggerLevel:
                 if self.axis_x < -triggerLevel or self.axis_x > triggerLevel:
+                    rule = "1"
                     self.instruction = {'command': 'set_joystick', 'left_speed': speed_x, 'right_speed': speed_y}
+                else:
+                    rule = "2"
+                    self.instruction = {'command': 'set_joystick', 'left_speed': speed_y, 'right_speed': speed_y}
             
-            elif self.axis_y > 0:
+            elif self.axis_y > triggerLevel:
                 if self.axis_x < -triggerLevel or self.axis_x > triggerLevel:
+                    rule = "3"
                     self.instruction = {'command': 'set_joystick', 'left_speed': -speed_x, 'right_speed': -speed_y}
-            
+                else:
+                    rule = "4"
+                    self.instruction = {'command': 'set_joystick', 'left_speed': -speed_y, 'right_speed': -speed_y}
+
+            if self.axis_y > -triggerLevel and self.axis_y < triggerLevel:
+                if self.axis_x < -triggerLevel:
+                    rule = "5"
+                    self.instruction = {'command': 'set_joystick', 'left_speed': 0, 'right_speed': speed_x}
+                    
+                if self.axis_x > triggerLevel:
+                    rule = "6"
+                    self.instruction = {'command': 'set_joystick', 'left_speed': speed_x, 'right_speed': 0}
+
             if self.instruction is not None:
                 if self.instruction.get('left_speed') is not None and self.instruction.get('right_speed') is not None:   
                     self.logger.debug(f"Dispatching instruction: {self.instruction}")
-                    self.vehi_app.handle_joystick(self.instruction)
+                    if self.axis_x < -triggerLevel or self.axis_x > triggerLevel:
+                        self.logger.debug(f"Turning: left_speed={self.instruction['left_speed']}, right_speed={self.instruction['right_speed']}")
+                        self.vehi_app.handle_joystick(self.instruction)
+                    else:
+                        self.logger.debug(f"Moving straight: left_speed={self.instruction['left_speed']}, right_speed={self.instruction['right_speed']}")
+                        if self.axis_y < 0:
+                            rule = "7"
+                            self.vehi_app.run_forward(speed_y)
+                        else:
+                            rule = "8"
+                            self.vehi_app.run_backward(speed_y)
+
+                    self.logger.debug(f"Joystick movement dispatched with rule {rule}: {self.instruction}")
                     self.last_instruction = self.instruction['command']
                     self.instruction = None  # Reset instruction after dispatch
                 else:

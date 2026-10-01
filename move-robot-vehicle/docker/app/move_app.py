@@ -191,7 +191,7 @@ class Move_app:
         left_speed = int(instruction['left_speed'])
         right_speed = int(instruction['right_speed'])
         self.move_motor.run_joystick(left_speed, right_speed)
-        self.robot.showCoolBlue()
+        self.robot.set_led_coolblue()
         self.logger.info(f"Move_app:joystick-speed: {left_speed:.2f} - {right_speed:.2f}")
         return type
 
@@ -223,6 +223,9 @@ class Move_app:
 
     def run_forward(self, speed):
         self.move_motor.run_forward(speed)
+
+    def run_backward(self, speed):
+        self.move_motor.run_backward(speed)
 
     def isCriticalDistance(self):
         # Get the sensor readings in meters

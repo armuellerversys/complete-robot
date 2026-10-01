@@ -15,18 +15,30 @@ class MatrixDisplay:
 
     def __init__(self):
       self.logger = CoreUtils.getLogger("matrix_display")
-      self.imu = RobotImu()
-
+      self.imu = None
+      try:
+          self.logger.info("Initializing MatrixDisplay...")
+          self.imu = RobotImu()
+          self.logger.info("MatrixDisplay initialized successfully.")
+      except Exception as e:
+          self.logger.error(f"Error initializing MatrixDisplay: {e}")
+   
       # Track the current display thread to prevent overlapping
       self.display_thread = None
       self._stop_event = threading.Event()
 
     def showTemperature(self):
+        if not self.imu:
+            self.logger.error("IMU not initialized. Cannot read temperature.")
+            return
         temperature = self.imu.read_temperature()
         #self.logger.debug("Temperature {}".format(round(temperature)))
         self.showString(str(round(temperature)))
 
     def showMagnetometerAngle(self):
+        if not self.imu:
+            self.logger.error("IMU not initialized. Cannot read magnetometer data.")
+            return
         magnetometer = Magnetometer()
         self.showString(str(magnetometer.showData()))
 

@@ -8,6 +8,8 @@ from core_utils import CoreUtils
 if 'GPIOZERO_PIN_FACTORY' not in os.environ:
     os.environ['GPIOZERO_PIN_FACTORY'] = 'lgpio'
 
+from gpiozero import DistanceSensor, RotaryEncoder, devices
+
 shutdown_done = False
 
 class Robot:
@@ -35,7 +37,7 @@ class Robot:
             self.logger = CoreUtils.getLogger("Robot")
             
             # Clean shutdown of any previous GPIO sessions
-            devices._shutdown()
+            #devices._shutdown()
 
             # 2. Setup Sensors (gpiozero uses lgpio automatically now)
             self._left_distance_sensor = DistanceSensor(echo=17, trigger=27, queue_len=2, max_distance=1.0)
@@ -54,14 +56,29 @@ class Robot:
             self._initialized = True
             self.logger.info('Robot created and initialized with lgpio backend')
         except Exception as e:
-            self.logger.error(f"Error initializing sensors: {e}", exc_info=True)
-            # Optional: force a close if they exist
-            if hasattr(self, '_left_distance_sensor'):
-                self.left_distance_sensor.close()
-            raise RuntimeError("Front distance sensor not initialized!")
-        
-    
+            self.logger.error(
+                f"Error initializing sensors: {e}",
+                exc_info=True
+            )
 
+            for name in (
+                '_left_distance_sensor',
+                '_right_distance_sensor',
+                '_mid_distance_sensor',
+                'left_encoder',
+                'right_encoder',
+            ):
+                device = getattr(self, name, None)
+                if device is not None:
+                    try:
+                        device.close()
+                    except Exception:
+                        pass
+
+            raise RuntimeError(
+                "Robot sensors not initialized!"
+            ) from e
+        
     @property
     def left_distance_sensor(self):
         return self._left_distance_sensor
@@ -123,8 +140,8 @@ class Robot:
     def set_led_cyan(self):
         self.leds.showCyan()
 
-    def set_led_blue(self):
-        self.leds.showBlue()
+    def set_led_coolblue(self):
+        self.leds.showCoolBlue()
 
     def showPleasantGreen(self):
         self.leds.showPleasantGreen()

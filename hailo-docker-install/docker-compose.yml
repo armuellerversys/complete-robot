@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile.hailo
     image: hailo-camera2
+    environment:
+      - TZ=Europe/Berlin
     container_name: picamera_hailo_ovos
     privileged: true
     # network mode used by ovos
