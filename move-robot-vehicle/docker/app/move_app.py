@@ -46,10 +46,10 @@ class Move_app:
         self.joystick = None
         self.joystick = JoystickAdapter(
             self,
-            devicePath="/dev/input/event5",
+            device_path="/dev/input/event5",
         )
 
-        self.joystick.connectJoystick()
+        self.joystick.connect_joystick()
 
         self.logger.info("Move_app:Move-app init completed")
 
