@@ -190,14 +190,14 @@ class JoystickAdapter:
                         self.logger.info(f"ABS_RY Analog stick value: {event.value}")
                     elif event.code == ecodes.ABS_HAT0X:  # Left Trigger
                         self.logger.info(f"ABS_HAT0X Trigger  value: {event.value}")
-                        if event.value < 0:  # Up
+                        if event.value <= 0:  # Up
                             instruction.update({'left_speed': 150, 'right_speed': -150})
                         else:
                             instruction.update({'left_speed': -150, 'right_speed': 150})
                         self.vehi_app.handle_joystick(instruction)
-                    elif event.code == ecodes.ABS_HAT0Y: 
+                    elif event.code == ecodes.ABS_HAT0Y:  # Right Trigger
                         self.logger.info(f"ABS_HAT0Y Trigger value: {event.value}")
-                        if event.value < 0:  # Up
+                        if event.value <= 0:  # Up
                             instruction.update({'left_speed': 150, 'right_speed': 150})
                         else:
                             instruction.update({'left_speed': -150, 'right_speed': -150})
