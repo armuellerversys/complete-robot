@@ -129,6 +129,40 @@ class JoystickAdapter:
 
         self.last_instruction = 'set_joystick'
 
+    def dispatch_button_action(self, event):
+        """Handles button press events and maps them to vehicle commands."""
+        key_event = categorize(event)
+        self.logger.info(f"Button event: {key_event.keycode} - State: {key_event.keystate}")
+
+        if key_event.keystate == key_event.key_down:
+            instruction = {'command': 'set_joystick'}
+            if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X):
+                self.logger.info("BTN_NORTH triggered via GPAD button")
+                self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
+            elif event.code in (ecodes.BTN_SOUTH, ecodes.BTN_A):
+                self.logger.info("BTN_SOUTH triggered via GPAD button")
+                self.vehi_app.handle_instruction({'command': 'exit'}, process=None)
+            elif event.code in (ecodes.BTN_EAST, ecodes.BTN_B):
+                self.logger.info("BTN_EAST triggered via GPAD button 305")
+                instruction.update({'left_speed': 150, 'right_speed': -150})
+                self.vehi_app.handle_joystick(instruction)
+            elif event.code in (ecodes.BTN_WEST, ecodes.BTN_Y):
+                self.logger.info("BTN_WEST triggered via GPAD button")
+                instruction.update({'left_speed': -150, 'right_speed': 150})
+                self.vehi_app.handle_joystick(instruction)
+            elif event.code == (ecodes.BTN_Z):
+                self.logger.info("BTN_Z triggered via GPAD button")
+                self.vehi_app.handle_instruction({'command': 'exit'}, process=None)
+            elif event.code == (ecodes.BTN_MODE):
+                self.logger.info("BTN_MODE triggered via GPAD button")
+                self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
+            elif event.code == (ecodes.BTN_SELECT):
+                self.logger.info("BTN_SELECT triggered via GPAD button")
+            else:
+                self.logger.info("BTN_SELECT Exit instruction sent via Joystick")
+                
+        return None
+
     def run_event_loop(self, device_path: str, device_name: str):
         """Processes incoming events from the connected gamepad."""
         self.logger.info(f"Connected event loop started: {device_name} ({device_path})")
@@ -139,43 +173,50 @@ class JoystickAdapter:
                     break
 
                 self.logger.info(f"Event Type: {event.type}, Code: {event.code}, Value: {event.value}")
-
+                instruction = {'command': 'set_joystick'}
                 # Analog stick movements
-                if event.type == ecodes.EV_ABS:
+                if event.type == ecodes.EV_ABS: # Analog stick movements value 3
                     if event.code == ecodes.ABS_Y:
                         self.axis_y = self.normalize_axis(event.value)
                         self.dispatch_movement()
                     elif event.code == ecodes.ABS_X:
                         self.axis_x = self.normalize_axis(event.value)
                         self.dispatch_movement()
+                    if event.code == ecodes.ABS_RX:
+                        self.axis_y = self.normalize_axis(event.value)
+                        self.logger.info(f"ABS_RX Analog stick value: {event.value}")
+                    elif event.code == ecodes.ABS_RY:
+                        self.axis_x = self.normalize_axis(event.value)
+                        self.logger.info(f"ABS_RY Analog stick value: {event.value}")
+                    elif event.code == ecodes.ABS_HAT0X:  # Left Trigger
+                        self.logger.info(f"ABS_HAT0X Trigger  value: {event.value}")
+                        if event.value < 0:  # Up
+                            instruction.update({'left_speed': 150, 'right_speed': -150})
+                        else:
+                            instruction.update({'left_speed': -150, 'right_speed': 150})
+                        self.vehi_app.handle_joystick(instruction)
+                    elif event.code == ecodes.ABS_HAT0Y: 
+                        self.logger.info(f"ABS_HAT0Y Trigger value: {event.value}")
+                        if event.value < 0:  # Up
+                            instruction.update({'left_speed': 150, 'right_speed': 150})
+                        else:
+                            instruction.update({'left_speed': -150, 'right_speed': -150})
+                        self.vehi_app.handle_joystick(instruction)
+                    elif event.code == ecodes.BTN_TL:  # 310
+                        self.logger.info(f"BTN_TL Button value: {event.value}")
+                        instruction.update({'left_speed': 150, 'right_speed': -150})
+                        self.vehi_app.handle_joystick(instruction)
+                    elif event.code == ecodes.BTN_TR:  # 311
+                        self.logger.info(f"BTN_TR Button value: {event.value}")
+                        instruction.update({'left_speed': -150, 'right_speed': 150})
+                        self.vehi_app.handle_joystick(instruction)
+                    else:
+                        self.logger.debug(f"Unhandled ABS event {event}: Code {event.code}, Value {event.value}")
 
                 # Button events
-                elif event.type == ecodes.EV_KEY:
-                    self.vehi_app.handle_joystick_key(event)
-                    key_event = categorize(event)
-                    self.logger.info(f"Button event: {key_event.keycode} - State: {key_event.keystate}")
-                    if key_event.keystate == key_event.key_down:
-                        instruction = {'command': 'set_joystick'}
-                        if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X):
-                            self.logger.info("BTN_NORTH triggered via GPAD button")
-                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
-                        if event.code in (ecodes.BTN_SOUTH, ecodes.BTN_A):
-                            self.logger.info("BTN_SOUTH triggered via GPAD button")
-                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
-                        if event.code in (ecodes.BTN_EAST, ecodes.BTN_B):
-                            self.logger.info("BTN_EASTtriggered via GPAD button")
-                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
-                        if event.code in (ecodes.BTN_WEST, ecodes.BTN_Y):
-                            self.logger.info("BTN_WEST triggered via GPAD button")
-                            self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
-
-                        # Exit Script Button (Select / Mode)
-                        elif event.code in (ecodes.BTN_SELECT, ecodes.BTN_MODE):
-                            self.logger.info("Exit instruction sent via Joystick")
-                            self.vehi_app.handle_instruction({'command': 'exit'}, process=None)
-                            self.is_running = False
-                            break
-
+                elif event.type == ecodes.EV_KEY: # Button events value 1
+                    self.dispatch_button_action(event)
+                    
         except (OSError, FileNotFoundError):
             self.logger.warning("Joystick disconnected during active read loop!")
             self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
@@ -240,12 +281,11 @@ class JoystickAdapter:
         if self.device:
             try:
                 self.device.close()
+                if self.thread and self.thread.is_alive():
+                    self.thread.join(timeout=1.0)
             except Exception:
                 pass
             self.device = None
-
-        if self.thread and self.thread.is_alive():
-            self.thread.join(timeout=1.0)
 
         self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
         self.logger.info("JoystickAdapter successfully stopped.")

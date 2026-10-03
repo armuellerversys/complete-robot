@@ -16,6 +16,12 @@ html, body {
     font-family: sans-serif;
 }
 
+/* Active green state for body background */
+body.gpad-active {
+    background-color: #28a745 !important;
+    transition: background-color 0.3s ease;
+}
+
 /* Layout wrapper: sliders on the sides, content in middle */
 .layout {
     display: flex;

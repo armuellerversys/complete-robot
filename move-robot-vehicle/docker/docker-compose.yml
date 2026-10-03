@@ -6,6 +6,7 @@ services:
       context: .
       dockerfile: Dockerfile.vehicle
     network_mode: host
+    init: true
     restart: unless-stopped
     
     # Privileged is often needed for direct /dev/mem and certain gpiochip operations

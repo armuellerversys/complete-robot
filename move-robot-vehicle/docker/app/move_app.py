@@ -208,9 +208,9 @@ class Move_app:
         self.logger.info(f"Move_app:joystick-speed: {left_speed:.2f} - {right_speed:.2f}")
         return type
 
-    def handle_joystick_key(self, key_event):
+    def handle_joystick_key(self, instruction):
          self.robot.set_led_white()
-         self.logger.info(f"Move_app:Joystick key event: {key_event}")
+         self.logger.info(f"Move_app:Joystick key instruction: {instruction}")
 
     def sayText(self, text):
         # #curl -X POST http://192.168.4.6:6000/say -H "Content-Type: application/json" -d '{"utterance": "Security alert. Intruder detected."}'

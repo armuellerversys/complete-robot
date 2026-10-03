@@ -35,8 +35,8 @@
             <div class="button-row">
                 <a class="button" id="stopbutton">Stop</a>
                 <a class="button" id="exitbutton">Exit</a>
-                <a class="button" id="start_gpad">Start gpad</a>
-                <a class="button" id="stop_gpad">Stop gpad</a>
+                <a class="button" id="start_gpad">gpStart</a>
+                <a class="button" id="stop_gpad">gpStop</a>
             </div>
             <div id="video">
                 <img id="video-feed" src="http://192.168.4.6:5000/video_feed"/>
@@ -155,12 +155,20 @@
         });
 
         bindButton('#stopbutton', () => set_motor('stop'));
-        bindButton('#start_gpad', () => set_motor('start_gpad'));
-        bindButton('#stop_gpad', () => set_motor('stop_gpad'));
         bindButton('#forwardbutton', () => set_motor('forward'));
         bindButton('#backwardbutton', () => set_motor('backward'));
         bindButton('#rightbutton', () => set_motor('right'));
         bindButton('#leftbutton', () => set_motor('left'));
+        
+        bindButton('#start_gpad', function() {
+            set_motor('start_gpad');
+                document.body.classList.add('gpad-active'); // Turns background green
+        });
+
+        bindButton('#stop_gpad', function() {
+            set_motor('stop_gpad');
+            document.body.classList.remove('gpad-active'); // Resets background color
+        });
 
         // Keyboard controls
         document.addEventListener('keydown', (e) => {
