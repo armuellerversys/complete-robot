@@ -271,7 +271,7 @@ class JoystickAdapter:
                         args=(device_path, device_name)
                     )
                     self.thread.start()
-                    self.thread.join()  # Wait until thread exits (e.g. disconnect or exit button)
+                 #   self.thread.join()  # Wait until thread exits (e.g. disconnect or exit button)
                 except Exception as e:
                     self.logger.warning(f"Error in joystick thread: {e}")
                     self.vehi_app.handle_instruction({'command': 'set_stop'}, process=None)
