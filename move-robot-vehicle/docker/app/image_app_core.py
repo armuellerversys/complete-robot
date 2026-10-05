@@ -1,91 +1,116 @@
-import time
 from multiprocessing import Process, Queue
-from robot_gpio import Robot
-from flask import Flask, render_template, Response, request
+import time
+import debugpy
+from flask import Flask, Response, render_template, request
+
 from core_utils import CoreUtils
-# import debugpy
-# debugpy.listen(('0.0.0.0', 5678))
+from robot_gpio import Robot
+
+try:
+    debugpy.listen(("0.0.0.0", 5678))
+except Exception:
+    pass
 
 app = Flask(__name__)
-logger = CoreUtils.getLogger('image_app_core')
+logger = CoreUtils.getLogger("image_app_core")
+
 control_queue = Queue()
 display_queue = Queue(maxsize=2)
-display_template = 'image_server.html'
-logger.info("Image_app_core: Start image app core")
+display_template = "image_server.html"
+
+logger.info("image_app_core: Initialization complete")
 
 
 @app.after_request
 def add_header(response):
-    response.headers['Cache-Control'] = "no-cache, no-store, must-revalidate"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    logger.info("image_app_core: index")
+    logger.info("image_app_core: Route GET /")
     return render_template(display_template)
 
-@app.route('/start')
+
+@app.route("/start")
 def start():
-    logger.info("image_app_core: start")
-    return start_server_process('move.html')
+    logger.info("image_app_core: Route GET /start")
+    return start_server_process("move.html")
+
 
 def frame_generator():
     while True:
         time.sleep(0.05)
-        encoded_bytes = display_queue.get()
-        yield (b'--frame\r\n' b'Content-Type: image/jpeg\r\n\r\n' + encoded_bytes + b'\r\n')
+        if not display_queue.empty():
+            encoded_bytes = display_queue.get()
+            yield (
+                b"--frame\r\n"
+                b"Content-Type: image/jpeg\r\n\r\n" + encoded_bytes + b"\r\n"
+            )
 
-@app.route('/display')
+
+@app.route("/display")
 def display():
-    logger.info("image_app_core: display")
-    return Response(frame_generator(),
-        mimetype='multipart/x-mixed-replace; boundary=frame')
+    logger.info("image_app_core: Route GET /display")
+    return Response(
+        frame_generator(), mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
 
-@app.route('/control', methods=['POST'])
+
+@app.route("/control", methods=["POST"])
 def control():
-    logger.info(f"image_app_core: route /control with data {request.form}")
+    logger.info(f"image_app_core: Route POST /control data={request.form}")
     Robot.set_led_orange()
-    control_queue.put(request.form)
-    return Response('queued')
+    control_queue.put(request.form.to_dict())
+    return Response("queued", status=200)
 
-@app.route('/ping')  # New route for health checks
+
+@app.route("/ping")
 def ping():
-    ##print("ping")
-    return "pong"
+    return "pong", 200
 
-@app.route('/telemetry', methods=['GET'])
+
+@app.route("/telemetry", methods=["GET"])
 def get_telemetry():
-    # Accessing the global drive_controller instance
-    # drive_ctrl = DriveController.getInstance()
-    drive_ctrl = "get telemetry"
+    # Placeholder telemetry response (integrate drive_controller instance when ready)
     return {
-        "heading": drive_ctrl.current_heading,
-        "target": drive_ctrl.target_heading,
-        "error": drive_ctrl.prev_gyro_error,
-        "distance": (drive_ctrl.abs_left_encoder() + drive_ctrl.abs_right_encoder()) / 2
+        "heading": 0.0,
+        "target": 0.0,
+        "error": 0.0,
+        "distance": 0.0,
     }
 
-def start_server_process(template_name):
+
+def start_server_process(template_name: str) -> Process:
     global display_template
-    logger.info("image_app_core: start_server_process")
+    logger.info("image_app_core: Launching server sub-process")
     display_template = template_name
-    server = Process(target=app.run, kwargs={"host": "0.0.0.0", "port": 5001})
+
+    server = Process(
+        target=app.run, kwargs={"host": "0.0.0.0", "port": 5001, "threaded": True}
+    )
     server.start()
-    logger.info(f"Process-PID: {server.pid}")
-    
+    logger.info(f"Server sub-process running (PID: {server.pid})")
     return server
 
-def put_output_image(encoded_bytes):
-    """Queue an output image"""
+
+def put_output_image(encoded_bytes: bytes):
+    """Queues an output frame without blocking when full."""
     if display_queue.empty():
         display_queue.put(encoded_bytes)
 
+
 def get_control_instruction():
+    """Retrieves an instruction from the queue or returns None."""
     if control_queue.empty():
         return None
-    else:
-        return control_queue.get()
-    
+    return control_queue.get()
+
+
 def clear_queue():
     while not control_queue.empty():
-        control_queue.get()
+        try:
+            control_queue.get_nowait()
+        except Exception:
+            break
