@@ -160,7 +160,7 @@ class Move_app:
         self.logger.info("Move_app:enter gpad activate")
         type = "Y"
         self.robot.set_led_cyan()
-        time.sleep(0.8)
+   
         self.logger.info("Move_app:Start gpad activation")
         self.move_motor.turn_off_motors()
         clear_queue()
@@ -173,7 +173,7 @@ class Move_app:
         self.logger.info("Move_app:stop gpad activation")
         type = "-"
         self.robot.set_led_purple()
-        time.sleep(0.8)
+      
         self.logger.info("Move_app:deactivate gpad")
         self.move_motor.turn_off_motors()
         clear_queue()

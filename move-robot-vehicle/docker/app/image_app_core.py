@@ -43,7 +43,7 @@ def display():
 
 @app.route('/control', methods=['POST'])
 def control():
-    logger.info("image_app_core: route")
+    logger.info(f"image_app_core: route /control with data {request.form}")
     Robot.set_led_orange()
     control_queue.put(request.form)
     return Response('queued')

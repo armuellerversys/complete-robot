@@ -74,7 +74,7 @@ class Move_behavior():
 
    def process(self):
       self.server_process = start_server_process('move.html')
-      self.logger.debug("move behavior: process move behavior started")
+      self.logger.info("move behavior: process move behavior started")
       self.move_app.sayText(HI_TEXT)
       self.show_text("HI AL")
    
@@ -83,6 +83,7 @@ class Move_behavior():
       # Main loop
       while True:
          try:
+            self.logger.debug("move behavior: work loop")
             type = self.process_control()
             if (not type):
                #self.logger.debug(f"work loop: {type} -timeout: {time.time() - time_say} -found: {self.found} - forward: {self.forwardRun}")
