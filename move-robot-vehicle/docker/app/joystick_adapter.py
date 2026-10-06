@@ -136,19 +136,19 @@ class JoystickAdapter:
         if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X, ecodes.BTN_SOUTH, ecodes.BTN_A, ecodes.BTN_SELECT):
             self.vehi_app.handle_instruction({"command": "set_stop"}, process=None)
 
-        elif event.code in (ecodes.BTN_EAST, ecodes.BTN_B):
+        elif event.code in (ecodes.BTN_EAST, ecodes.BTN_B):  # 305, 305
             instruction.update({"left_speed": 150, "right_speed": -150})
             self.vehi_app.handle_joystick(instruction)
 
-        elif event.code in (ecodes.BTN_WEST, ecodes.BTN_Y, ecodes.BTN_TL, ecodes.BTN_TL2):
+        elif event.code in (ecodes.BTN_WEST, ecodes.BTN_Y, ecodes.BTN_TL, ecodes.BTN_TL2): # 308, 308, 310, 312
             instruction.update({"left_speed": -150, "right_speed": 150})
             self.vehi_app.handle_joystick(instruction)
 
-        elif event.code in (ecodes.BTN_TR, ecodes.BTN_TR2):
+        elif event.code in (ecodes.BTN_TR, ecodes.BTN_TR2): # 311 , 313
             instruction.update({"left_speed": 150, "right_speed": 150})
             self.vehi_app.handle_joystick(instruction)
 
-        elif event.code == ecodes.BTN_MODE:
+        elif event.code == ecodes.BTN_MODE:  # 316
             self.vehi_app.handle_instruction({"command": "exit"}, process=None)
 
         return None
@@ -196,9 +196,9 @@ class JoystickAdapter:
                             self.vehi_app.handle_instruction({"command": "set_stop"}, process=None) # 0 = release button
                     elif event.code == ecodes.ABS_HAT0Y:
                         self.logger.info(f"ABS_HAT0Y Trigger value: {event.value}")
-                        if event.value == -1:
+                        if event.value == -1: # up button
                             self.vehi_app.handle_joystick({"command": "set_joystick", "left_speed": 150, "right_speed": 150})
-                        elif event.value == 1:
+                        elif event.value == 1: # down button
                             self.vehi_app.handle_joystick({"command": "set_joystick", "left_speed": -150, "right_speed": -150})
                         else:
                             self.vehi_app.handle_instruction({"command": "set_stop"}, process=None)
@@ -251,6 +251,7 @@ class JoystickAdapter:
                 self._stop_event.wait(2.0)
 
     def start(self):
+        self.logger.info("Enter start JoystickAdapter service")
         if self.is_running:
             return
 

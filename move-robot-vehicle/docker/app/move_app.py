@@ -1,5 +1,6 @@
 import time
 import os, signal
+from unittest import case
 
 from rich_click import command
 from robot_gpio import Robot
@@ -50,6 +51,8 @@ class Move_app:
         )
 
         self.joystick.connect_joystick()
+
+        self.joystick.start()
 
         self.logger.info("Move_app:Move-app init completed")
 
@@ -171,7 +174,7 @@ class Move_app:
         self.logger.info("Move_app:gpad activation completed")
       elif command == "set_stop_gpad":
         self.logger.info("Move_app:stop gpad activation")
-        type = "-"
+        type = "Z"
         self.robot.set_led_purple()
       
         self.logger.info("Move_app:deactivate gpad")
@@ -293,6 +296,15 @@ class Move_app:
     def isStop(self, type):
         match type:
             case "X":
+                return True
+            case _:
+                return False
+
+    def isGPad(self, type):
+        match type:
+            case "Y":
+                return True
+            case "Z":
                 return True
             case _:
                 return False

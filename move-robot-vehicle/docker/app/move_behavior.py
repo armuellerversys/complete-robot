@@ -50,7 +50,7 @@ class MoveBehavior:
     def process_control(self) -> str:
         instruction = get_control_instruction()
         cmd_type = "_"
-
+        
         while instruction:
             cmd_type = self.move_app.handle_instruction(
                 instruction, self.server_process
@@ -65,9 +65,10 @@ class MoveBehavior:
                 if cmd_type == "F":
                     self.forwardRun = True
 
-            if self.move_app.isStop(cmd_type):
+            if self.move_app.isStop(cmd_type) or self.move_app.isGPad(cmd_type):
                 self.forwardRun = False
                 self.execute = False
+
 
             instruction = get_control_instruction()
 
@@ -89,6 +90,7 @@ class MoveBehavior:
         while True:
             try:
                 cmd_type = self.process_control()
+                # self.logger.info("MoveBehavior: command type = " + cmd_type)
 
                 if not cmd_type or cmd_type == "_":
                     self.execute = True
