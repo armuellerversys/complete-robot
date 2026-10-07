@@ -133,8 +133,14 @@ class JoystickAdapter:
 
         instruction = {"command": "set_joystick"}
 
-        if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X, ecodes.BTN_SOUTH, ecodes.BTN_A, ecodes.BTN_SELECT):
+        if event.code in (ecodes.BTN_SELECT, ecodes.BTN_Z): #309
             self.vehi_app.handle_instruction({"command": "set_stop"}, process=None)
+
+        if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X):  # 307 - drive managed
+            self.vehi_app.handle_joystick_queue({"command": "set_forward", "speed": 150, "distance": 3000})
+
+        if event.code in (ecodes.BTN_SOUTH, ecodes.BTN_A):  # 304 - drive backward
+            self.vehi_app.handle_joystick_queue({"command": "set_backward", "speed": 150})
 
         elif event.code in (ecodes.BTN_EAST, ecodes.BTN_B):  # 305, 305
             instruction.update({"left_speed": 150, "right_speed": -150})

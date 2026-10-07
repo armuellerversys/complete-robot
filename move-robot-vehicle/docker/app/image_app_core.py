@@ -107,6 +107,10 @@ def get_control_instruction():
         return None
     return control_queue.get()
 
+def put_control_instruction(instruction: dict):
+    """Queues a control instruction without blocking when full."""
+    if control_queue.empty():
+        control_queue.put(instruction)
 
 def clear_queue():
     while not control_queue.empty():

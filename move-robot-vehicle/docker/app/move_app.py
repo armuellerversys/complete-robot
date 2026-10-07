@@ -9,7 +9,7 @@ import json
 from matrix_display import MatrixDisplay
 from move_motor import Move_motor
 from core_utils import CoreUtils
-from image_app_core import clear_queue
+from image_app_core import clear_queue, put_control_instruction
 from joystick_adapter import JoystickAdapter
 
 # The URL of your Flask voice server
@@ -203,17 +203,18 @@ class Move_app:
 
     def handle_joystick(self, instruction):
         self.logger.info(f"Move_app:Joystick {instruction['left_speed']} - {instruction['right_speed']}")
-        type = "J"
         left_speed = int(instruction['left_speed'])
         right_speed = int(instruction['right_speed'])
         self.move_motor.run_joystick(left_speed, right_speed)
         self.robot.set_led_coolblue()
         self.logger.info(f"Move_app:joystick-speed: {left_speed:.2f} - {right_speed:.2f}")
-        return type
+      
 
-    def handle_joystick_key(self, instruction):
-         self.robot.set_led_white()
-         self.logger.info(f"Move_app:Joystick key instruction: {instruction}")
+    def handle_joystick_queue(self, instruction):
+        self.robot.set_led_white()
+        self.logger.info(f"Move_app:Joystick queue -> {instruction['command']} - {instruction['speed']}")
+        put_control_instruction(instruction)
+        self.logger.info(f"Move_app:Joystick handle_joystick_queue {instruction}")
 
     def sayText(self, text):
         # #curl -X POST http://192.168.4.6:6000/say -H "Content-Type: application/json" -d '{"utterance": "Security alert. Intruder detected."}'
@@ -305,6 +306,8 @@ class Move_app:
             case "Y":
                 return True
             case "Z":
+                return True
+            case "J":
                 return True
             case _:
                 return False
