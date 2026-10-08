@@ -142,13 +142,13 @@ class JoystickAdapter:
         if event.code in (ecodes.BTN_SOUTH, ecodes.BTN_A):  # 304 - drive backward
             self.vehi_app.handle_joystick_queue({"command": "set_backward", "speed": 150})
 
-        elif event.code in (ecodes.BTN_EAST, ecodes.BTN_B):  # 305, 305
-            instruction.update({"left_speed": 150, "right_speed": -150})
-            self.vehi_app.handle_joystick(instruction)
+        elif event.code in (ecodes.BTN_WEST, ecodes.BTN_B):  # 305, 305
+            instruction.update({"command": "set_forward_right", "speed": 150})
+            self.vehi_app.handle_joystick_queue(instruction)
 
-        elif event.code in (ecodes.BTN_WEST, ecodes.BTN_Y, ecodes.BTN_TL, ecodes.BTN_TL2): # 308, 308, 310, 312
-            instruction.update({"left_speed": -150, "right_speed": 150})
-            self.vehi_app.handle_joystick(instruction)
+        elif event.code in (ecodes.BTN_EAST, ecodes.BTN_Y): # 308, 308
+            instruction.update({"command": "set_forward_left", "speed": 150})
+            self.vehi_app.handle_joystick_queue(instruction)
 
         elif event.code in (ecodes.BTN_TR, ecodes.BTN_TR2): # 311 , 313
             instruction.update({"left_speed": 150, "right_speed": 150})

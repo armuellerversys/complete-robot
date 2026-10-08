@@ -56,6 +56,7 @@ class MoveBehavior:
                 instruction, self.server_process
             )
             self.logger.debug(f"MoveBehavior: Instruction type = {cmd_type}")
+            self.execute = False
 
             if self.move_app.isCommand(cmd_type):
                 self.found = False
@@ -89,14 +90,7 @@ class MoveBehavior:
 
         while True:
             try:
-                cmd_type = self.process_control()
-                # self.logger.info("MoveBehavior: command type = " + cmd_type)
-
-                if not cmd_type or cmd_type == "_":
-                    self.execute = True
-                else:
-                    self.execute = False
-
+                
                 self.move_app.set_led_blue()
 
                 if self.forwardRun:
@@ -109,6 +103,7 @@ class MoveBehavior:
                     self.logger.info("MoveBehavior: Move timeout reached")
                     self.move_app.stopMotors()
                     self.execute = False
+                    self.last_time = time.time()
 
                 if not self.found and (time.time() > (time_pan + 2)):
                     time_pan = time.time()
