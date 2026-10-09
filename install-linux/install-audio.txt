@@ -130,6 +130,9 @@ arecord -D plughw:0,0 -f S16_LE  -r 16000 | aplay -f S16_LE  -r 16000
 arecord -D plughw:0,0 -f S16_LE  -r 16000 test.wav
 
 aplay -f S16_LE  -r 16000  test.wav
+aplay -f S16_LE  -r 16000  hello-male.wav
+
+#########################################################################
 
 amixer -c seeed2micvoicec sset 'Master Playback Switch' on
 amixer -c seeed2micvoicec sset 'Master Playback Volume' 80%
@@ -143,11 +146,13 @@ amixer -c seeed2micvoicec sset 'Left Line Mixer DACL1' on
 amixer -c seeed2micvoicec sset 'Right Line Mixer DACR1' on
 amixer -c seeed2micvoicec sset Line on
 
-amixer -c seeed2micvoicec sset 'Line DAC' 80%
-amixer -c seeed2micvoicec sset 'PCM' 80%
-amixer -c seeed2micvoicec sset Line 80%
+amixer -c seeed2micvoicec sset 'Line DAC' 75%
+amixer -c seeed2micvoicec sset 'PCM' 75%
+amixer -c seeed2micvoicec sset Line 75%
 sudo alsactl store
 sudo systemctl restart alsa-restore
+
+###########################################################################
 
 sudo nano /etc/systemd/system/respeaker-mixer.service
 sudo chmod +x /usr/local/bin/respeaker-mixer.sh
