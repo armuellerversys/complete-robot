@@ -131,32 +131,79 @@ class JoystickAdapter:
             f"State: {key_event.keystate}"
         )
 
-        if event.code in (ecodes.BTN_SELECT, ecodes.BTN_Z): # 309
-            self.logger.info("JoystickAdapter: BTN_SELECT pressed - stopping vehicle")
-            self.vehi_app.handle_instruction({"command": "set_stop"}, process=None)
+        match event.code:
 
-        if event.code in (ecodes.BTN_NORTH, ecodes.BTN_X):  # 307 - drive managed
-            self.logger.info("JoystickAdapter: BTN_NORTH pressed - initiating forward drive")
-            self.vehi_app.handle_joystick_queue({"command": "set_forward", "speed": 150, "distance": 3000})
+            case ecodes.BTN_SELECT | ecodes.BTN_Z:  # 314, 309
+                self.logger.info(
+                    "JoystickAdapter: BTN_SELECT pressed - stopping vehicle"
+                )
+                self.vehi_app.handle_instruction(
+                    {"command": "set_stop"},
+                    process=None
+                )
 
-        if event.code in (ecodes.BTN_SOUTH, ecodes.BTN_A):  # 304 - drive backward
-            self.logger.info("JoystickAdapter: BTN_SOUTH pressed - initiating backward drive")
-            self.vehi_app.handle_joystick_queue({"command": "set_backward", "speed": 150})
+            case ecodes.BTN_NORTH | ecodes.BTN_X:  # 307 - drive forward
+                self.logger.info(
+                    "JoystickAdapter: BTN_NORTH pressed - initiating forward drive"
+                )
+                self.vehi_app.handle_joystick_queue({
+                    "command": "set_forward",
+                    "speed": 150,
+                    "distance": 3000
+                })
 
-        elif event.code in (ecodes.BTN_EAST, ecodes.BTN_B):  # 305
-            self.logger.info("JoystickAdapter: BTN_EAST pressed - initiating forward right drive")
-            self.vehi_app.handle_joystick_queue({"command": "set_forward_right", "speed": 150})
+            case ecodes.BTN_SOUTH | ecodes.BTN_A:  # 304 - drive backward
+                self.logger.info(
+                    "JoystickAdapter: BTN_SOUTH pressed - initiating backward drive"
+                )
+                self.vehi_app.handle_joystick_queue({
+                    "command": "set_backward",
+                    "speed": 150
+                })
 
-        elif event.code in (ecodes.BTN_WEST, ecodes.BTN_Y): # 308
-            self.logger.info("JoystickAdapter: BTN_WEST pressed - initiating forward left drive")
-            self.vehi_app.handle_joystick_queue({"command": "set_forward_left", "speed": 150})
+            case ecodes.BTN_EAST | ecodes.BTN_B:  # 305
+                self.logger.info(
+                    "JoystickAdapter: BTN_EAST pressed - initiating forward right drive"
+                )
+                self.vehi_app.handle_joystick_queue({
+                    "command": "set_forward_right",
+                    "speed": 150
+                })
 
-        elif event.code in (ecodes.BTN_TR, ecodes.BTN_TR2): # 311 , 313
-            self.logger.info("JoystickAdapter: BTN_TR pressed - initiating joystick control")
-            self.vehi_app.handle_joystick({"command": "set_joystick", "left_speed": 150, "right_speed": 150})
+            case ecodes.BTN_WEST | ecodes.BTN_Y:  # 308
+                self.logger.info(
+                    "JoystickAdapter: BTN_WEST pressed - initiating forward left drive"
+                )
+                self.vehi_app.handle_joystick_queue({
+                    "command": "set_forward_left",
+                    "speed": 150
+                })
 
-        elif event.code == ecodes.BTN_MODE:  # 316
-            self.vehi_app.handle_instruction({"command": "exit"}, process=None)
+            case ecodes.BTN_TR | ecodes.BTN_TR2:  # 312, 313
+                self.logger.info(
+                    "JoystickAdapter: BTN_TR pressed - initiating joystick control"
+                )
+                self.vehi_app.handle_joystick({
+                    "command": "set_joystick",
+                    "left_speed": 150,
+                    "right_speed": -150
+                })
+
+            case ecodes.BTN_TL | ecodes.BTN_TL2:  # 310, 311
+                self.logger.info(
+                    "JoystickAdapter: BTN_TL pressed - initiating joystick control"
+                )
+                self.vehi_app.handle_joystick({
+                    "command": "set_joystick",
+                    "left_speed": -150,
+                    "right_speed": 150
+                })
+
+            case ecodes.BTN_MODE:  # 316
+                self.vehi_app.handle_instruction(
+                    {"command": "exit"},
+                    process=None
+                )
 
         return None
 
