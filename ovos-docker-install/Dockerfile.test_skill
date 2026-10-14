@@ -1,5 +1,5 @@
 # Use the official OVOS skill base image
-FROM smartgic/ovos-skill-base:stable
+FROM smartgic/ovos-skill-base:testing
 
 
 USER root

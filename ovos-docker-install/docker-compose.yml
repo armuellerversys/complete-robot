@@ -1,75 +1,70 @@
+
 services:
   ovos_messagebus:
     image: smartgic/ovos-messagebus:testing
     container_name: ovos_messagebus
     restart: unless-stopped
-    network_mode: host                # Required for your current setup
+    network_mode: host
     environment:
-      - TZ=Europe/Berlin
-      - OVOS_BUS_HOST=127.0.0.1       # Listen on local loopback
+      TZ: Europe/Berlin
+      OVOS_BUS_HOST: 127.0.0.1
     volumes:
-      - ~/ovos/config:/home/ovos/.config/mycroft
-    
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import socket; s=socket.socket(); s.connect(('127.0.0.1', 8181))"]
-      interval: 5s
-      timeout: 2s
-      retries: 5
+      - ${HOME}/ovos/config:/home/ovos/.config/mycroft
 
   ovos_core:
     image: smartgic/ovos-core:testing
     container_name: ovos_core
     restart: unless-stopped
-    network_mode: host                # Must match the bus
+    network_mode: host
     environment:
-      - TZ=Europe/Berlin
-      - OVOS_BUS_HOST=127.0.0.1       # Look for bus on the host's localhost
+      TZ: Europe/Berlin
+      OVOS_BUS_HOST: 127.0.0.1
     depends_on:
       ovos_messagebus:
         condition: service_healthy
     volumes:
-      - ~/ovos/config:/home/ovos/.config/mycroft
-      - ~/ovos/persistence/core:/home/ovos/.local/share/mycroft
+      - ${HOME}/ovos/config:/home/ovos/.config/mycroft
+      - ${HOME}/ovos/persistence/core:/home/ovos/.local/share/mycroft
 
-  ## TTS section
   ovos_audio:
-    image: smartgic/ovos-audio:testing
-    container_name: ovos_audio
+    image: ovos-audio:testing
     build:
       context: .
       dockerfile: Dockerfile.audio
+    container_name: ovos_audio
     restart: unless-stopped
     network_mode: host
-    # 1. Add group permissions
     group_add:
       - audio
     depends_on:
       ovos_messagebus:
         condition: service_healthy
     environment:
-      - TZ=Europe/Berlin
-      - OVOS_BUS_HOST=127.0.0.1
-      # 2. Tell the container to use the host's PulseAudio/PipeWire server
+      TZ: Europe/Berlin
+      OVOS_BUS_HOST: 127.0.0.1
     devices:
       - /dev/snd:/dev/snd
     volumes:
       - /etc/asound.conf:/etc/asound.conf:ro
       - /etc/alsa:/etc/alsa:ro
       - /usr/share/alsa:/usr/share/alsa:ro
-      - ~/ovos/config:/home/ovos/.config/mycroft
-      - ~/models/piper:/home/ovos/models/piper:ro
-      - ~/ovos/persistence/audio:/home/ovos/.local
-      - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
-      
-  ## stt section
+      - ${HOME}/ovos/config:/home/ovos/.config/mycroft
+      - ${HOME}/models/phoonnx:/home/ovos/.local/share/phoonnx
+      - ${HOME}/ovos/persistence/audio:/home/ovos/.local
+      - ${HOME}/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
+
   ovos_listener:
     image: ovos-listener:testing
-    container_name: ovos_listener
-    build: 
+    build:
       context: .
       dockerfile: Dockerfile.listener
+    container_name: ovos_listener
     restart: unless-stopped
-    network_mode: host                # ADD THIS LINE
+    network_mode: host
+    ipc: host
+    privileged: true
+    group_add:
+      - audio
     depends_on:
       ovos_messagebus:
         condition: service_healthy
@@ -77,45 +72,37 @@ services:
         condition: service_healthy
       ovos_audio:
         condition: service_healthy
-    ipc: host
-    privileged: true # Often required on Pi 5 for hardware access control
-    group_add:
-      - audio
     environment:
-      - TZ=Europe/Berlin              # Changed to match your other services
-      - OVOS_BUS_HOST=127.0.0.1
-      - PULSE_SERVER=unix:/run/user/1000/pulse/native    # If using PulseAudio/Pipewire
+      TZ: Europe/Berlin
+      OVOS_BUS_HOST: 127.0.0.1
+      PULSE_SERVER: unix:/run/user/1000/pulse/native
     devices:
       - /dev/snd:/dev/snd
     volumes:
-      - ~/ovos/config:/home/ovos/.config/mycroft
-      - ~/models/wakewords:/home/ovos/.local/share/mycroft
-      - ~/ovos/persistence/listener:/home/ovos/.local
-      - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
+      - ${HOME}/ovos/config:/home/ovos/.config/mycroft
+      - ${HOME}/models/wakewords:/home/ovos/.local/share/mycroft
+      - ${HOME}/models/phoonnx:/home/ovos/.local/share/phoonnx
+      - ${HOME}/ovos/persistence/listener:/home/ovos/.local
+      - ${HOME}/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
       - /run/user/1000/pulse:/run/1000/ovos/pulse
       - /etc/asound.conf:/etc/asound.conf:ro
       - /etc/alsa:/etc/alsa:ro
       - /usr/share/alsa:/usr/share/alsa:ro
 
   ovos_cli:
-      image: smartgic/ovos-cli:testing
-      container_name: ovos_cli
-      build: 
-        context: .
-        dockerfile: Dockerfile.cli
-      restart: unless-stopped
-      network_mode: host                # ADD THIS LINE
-      depends_on:
-        ovos_messagebus:
-          condition: service_healthy
-      environment:
-        - TZ=Europe/Berlin              # Changed to match your other services
-        - OVOS_BUS_HOST=127.0.0.1
-      devices:
-        - /dev/snd:/dev/snd
-      volumes:
-        - ~/ovos/config:/home/ovos/.config/mycroft
-        - ~/ovos/persistence/listener:/home/ovos/.local
+    image: smartgic/ovos-cli:testing
+    container_name: ovos_cli
+    restart: unless-stopped
+    network_mode: host
+    depends_on:
+      ovos_messagebus:
+        condition: service_healthy
+    environment:
+      TZ: Europe/Berlin
+      OVOS_BUS_HOST: 127.0.0.1
+    volumes:
+      - ${HOME}/ovos/config:/home/ovos/.config/mycroft
+      - ${HOME}/ovos/persistence/listener:/home/ovos/.local
 
   ovos_skill_vehicle_control:
     build:

@@ -8,18 +8,27 @@ RUN apt-get update && \
 # Ensure the state directory exists and the ovos user owns it
 RUN mkdir -p /home/ovos/.local/state && chown -R ovos:ovos /home/ovos/
 
+# https://huggingface.co/rhasspy/piper-voices/blob/main/en/en_US/mike/medium/en_US-mike-medium.onnx
+# https://huggingface.co/rhasspy/piper-voices/tree/main/en/en_US/mike/medium
+# https://github.com/OpenVoiceOS/ovos-ww-plugin-vosk
+# https://blog.openvoiceos.org/posts/2025-10-06-phoonnx
+# https://github.com/OpenVoiceOS/ovos-ww-plugin-openWakeWord
 USER ovos
 RUN . ~/.venv/bin/activate && \
     pip install --no-cache-dir \
-    ovos-ww-plugin-precise-lite[tflite] \
     ovos-ww-plugin-vosk \
-    ovos-tts-plugin-piper \
+    ovos-vad-plugin-silero \
+    ovos-plugin-manager \
+    openwakeword>=0.5.0,<1 \
+    ovos-ww-plugin-openwakeword[onnx] \
     ovos-stt-plugin-vosk
 
-# --- Critical Patches for Python 3.13 ---
-# 1. Fix NumPy 'fromstring' in Precise
-RUN sed -i 's/np.fromstring/np.frombuffer/g' ~/.venv/lib/python3.13/site-packages/precise_lite_runner/util.py
+RUN . ~/.venv/bin/activate && \
+    pip install --no-cache-dir \
+    ovos-ww-plugin-vosk \
+    ovos-vad-plugin-silero \
+    ovos-plugin-manager \
+    openwakeword>=0.5.0,<1 \
+    ovos-ww-plugin-openwakeword[onnx] \
+    ovos-stt-plugin-vosk
 
-# This version uses regex to find the function and replaces whatever is in the 
-# brackets with (*args, **kwargs) to ensure it never misses an argument again.
-RUN find ~/.venv/lib/python3.13/site-packages/ -name "*.py" -exec sed -i 's/def found_wake_word(self.*):/def found_wake_word(self, *args, **kwargs):/g' {} +

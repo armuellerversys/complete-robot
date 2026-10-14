@@ -1,4 +1,4 @@
-FROM smartgic/ovos-base:testing
+FROM smartgic/ovos-base:base
 
 USER ovos
 RUN . ~/.venv/bin/activate && pip install flask ovos_bus_client

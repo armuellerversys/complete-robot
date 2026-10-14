@@ -1,0 +1,31 @@
+cd ~/ovos/ovos-docker-install
+
+docker compose run --rm --no-deps --entrypoint /bin/bash ovos_audio -c '
+source /home/ovos/.venv/bin/activate
+python - <<'"'"'PY'"'"'
+import ovos_audio
+import ovos_utils
+import importlib.util
+from importlib.metadata import version
+
+print("ovos-audio:", version("ovos-audio"))
+print("ovos-utils:", version("ovos-utils"))
+print("ovos_audio path:", ovos_audio.__file__)
+print("ovos_utils path:", ovos_utils.__file__)
+print("ovos_utils.signal:", importlib.util.find_spec("ovos_utils.signal"))
+PY
+'
+
+docker compose run --rm --no-deps --entrypoint /bin/bash ovos_audio -c '
+source /home/ovos/.venv/bin/activate
+python -m pip show ovos-audio ovos-utils
+python -c "import ovos_utils, pkgutil; print(sorted(m.name for m in pkgutil.iter_modules(ovos_utils.__path__)))"
+'
+
+docker compose run --rm --no-deps \
+  --entrypoint /bin/bash ovos_audio -c '
+sed -n "1,100p" /home/ovos/.venv/lib/python3.13/site-packages/ovos_audio/utils.py
+python -m pip freeze | grep -E "^(ovos-audio|ovos-utils|ovos-bus-client|ovos-config|ovos-plugin-manager)=="
+'
+
+/home/ovos/.venv/bin/python -m pip show ovos-ww-plugin-precise-lite tflite-runtime
