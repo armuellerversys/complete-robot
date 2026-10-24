@@ -1,0 +1,1 @@
+https://huggingface.co/csukuangfj/vits-piper-en_US-lessac-medium/blob/main/en_US-lessac-medium.onnx.json

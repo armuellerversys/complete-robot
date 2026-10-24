@@ -1,0 +1,71 @@
+FROM debian:trixie-slim
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+USER root
+
+# Create the ovos user and group first so ownership flags work properly
+RUN groupadd -g 1000 ovos && \
+    useradd -m -u 1000 -g ovos -G audio -s /bin/bash ovos && \
+    mkdir -p /home/ovos && \
+    chown -R ovos:ovos /home/ovos
+
+# Install system dependencies including python3-venv
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        python3 \
+        python3-pip \
+        python3-dev \
+        python3-venv \
+        python3-espeak \
+        python3-setuptools \
+        build-essential \
+        espeak-ng \
+        libportaudio2 \
+        alsa-utils  \
+        iputils-ping \
+        nano && \
+    rm -rf /var/lib/apt/lists/*
+
+# Create the virtual environment and assign ownership to the ovos user
+RUN python3 -m venv /home/ovos/venv && \
+    chown -R ovos:ovos /home/ovos/venv
+
+# Activate the virtual environment by updating PATH
+ENV VIRTUAL_ENV="/home/ovos/venv"
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# Copy local model files with correct ownership
+COPY --chown=ovos:ovos phoonnx_test_manager.py /home/ovos/phoonnx_test_manager.py
+COPY --chown=ovos:ovos phoonnx_test_localmodel.py /home/ovos/phoonnx_test_localmodel.py
+## OpenVoiceOS/pipertts_en-GB_miro
+# COPY --chown=ovos:ovos miro_en-GB.onnx /home/ovos/miro_en-GB.onnx
+# COPY --chown=ovos:ovos miro_en-GB.onnx.json /home/ovos/miro_en-GB.onnx.json
+## OpenVoiceOS/stt_de_quartznet15x5_onnx
+# COPY --chown=ovos:ovos miro_de-DE.onnx /home/ovos/miro_de-DE.onnx
+# COPY --chown=ovos:ovos miro_de-DE.onnx.json /home/ovos/miro_de-DE.onnx.json
+# COPY --chown=ovos:ovos de_DE-thorsten-medium.onnx /home/ovos/de_DE-thorsten-medium.onnx
+# COPY --chown=ovos:ovos de_DE-thorsten-medium.onnx.json /home/ovos/de_DE-thorsten-medium.onnx.json
+COPY --chown=ovos:ovos model.onnx /home/ovos/model.onnx
+COPY --chown=ovos:ovos model.onnx.json /home/ovos/model.onnx.json
+
+# Install Python dependencies inside the virtual environment
+# (--break-system-packages is no longer needed since we are using a venv)
+RUN pip install --no-cache-dir \
+    phoonnx \
+    onnxruntime \
+    ovos-plugin-manager \
+    sounddevice \
+    soundfile 
+
+# Pre-fill the voice index cache using the venv binaries
+RUN phoonnx-voices update-cache || true
+RUN phoonnx-voices list || true
+
+WORKDIR /home/ovos
+
+# Drop down to non-root user for execution security
+USER ovos
+
+# Run your test script using the virtual environment python
+CMD ["python", "/home/ovos/phoonnx_test_localmodel.py"]

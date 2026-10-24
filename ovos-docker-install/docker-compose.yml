@@ -42,16 +42,17 @@ services:
     environment:
       TZ: Europe/Berlin
       OVOS_BUS_HOST: 127.0.0.1
+      PHOONNX_PREFETCH_VOICES: OpenVoiceOS/pipertts_de-DE_miro
     devices:
       - /dev/snd:/dev/snd
     volumes:
+      - ${HOME}/ovos/phoonnx-cache:/home/ovos/.cache
       - /etc/asound.conf:/etc/asound.conf:ro
       - /etc/alsa:/etc/alsa:ro
       - /usr/share/alsa:/usr/share/alsa:ro
       - ${HOME}/ovos/config:/home/ovos/.config/mycroft
-      - ${HOME}/models/phoonnx:/home/ovos/.local/share/phoonnx
-      - ${HOME}/ovos/persistence/audio:/home/ovos/.local
-      - ${HOME}/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
+      - ${HOME}/ovos/model/phoonnx:/home/ovos/model/phoonnx
+      - ${HOME}/ovos/sounds:/home/ovos/sounds:ro
 
   ovos_listener:
     image: ovos-listener:testing
@@ -81,9 +82,8 @@ services:
     volumes:
       - ${HOME}/ovos/config:/home/ovos/.config/mycroft
       - ${HOME}/models/wakewords:/home/ovos/.local/share/mycroft
-      - ${HOME}/models/phoonnx:/home/ovos/.local/share/phoonnx
       - ${HOME}/ovos/persistence/listener:/home/ovos/.local
-      - ${HOME}/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
+      - ${HOME}/ovos/sounds:/home/ovos/sounds:ro
       - /run/user/1000/pulse:/run/1000/ovos/pulse
       - /etc/asound.conf:/etc/asound.conf:ro
       - /etc/alsa:/etc/alsa:ro
@@ -194,6 +194,25 @@ services:
       - ~/ovos/sounds:/home/ovos/sounds:ro
       - ~/ovos/sounds:/home/ovos/.local/share/mycroft/sounds:ro
 
+  phoonnx_server:
+    build:
+      context: ./oonnx-test
+      dockerfile: Dockerfile.phoonnx_server
+    container_name: phoonnx_server
+    restart: none
+    network_mode: host
+    environment:
+      - TZ=Europe/Berlin
+      - VOICE_SERVER_PORT=6000
+      #- PHOONNX_PREFETCH_VOICES=OpenVoiceOS/pipertts_de-DE_miro
+      - PHOONNX_PREFETCH_VOICES=OpenVoiceOS/phoonnx-coqui-vits
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ${HOME}/ovos/phoonnx-cache:/home/ovos/.cache
+      - /etc/asound.conf:/etc/asound.conf:ro
+      - /etc/alsa:/etc/alsa:ro
+      - /usr/share/alsa:/usr/share/alsa:ro
 
   ovos_skill_date_time:
       image: smartgic/ovos-skill-date-time:testing
@@ -232,4 +251,5 @@ services:
         - PIP_INSTALL=ovos-skill-fallback-unknown
       devices:
         - /dev/snd:/dev/snd
+
     

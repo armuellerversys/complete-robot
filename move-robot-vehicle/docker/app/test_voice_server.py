@@ -7,7 +7,7 @@ from core_utils import CoreUtils
 URL = "http://192.168.4.6:6000/say"
 
 # The text you want the voice server to speak
-utterance_text = "Hallo albrecht, my name is K6"
+utterance_text = "Hallo albrecht, mein name ist K6, wie geht es dir heute?"
 
 logger = CoreUtils.getLogger("test voice server")
 # Create the data payload as a dictionary

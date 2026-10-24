@@ -1,0 +1,38 @@
+phoonnx-voices update-cache
+
+# Incremental update — keep existing entries
+phoonnx-voices update-cache --no-clear
+
+Lists all language codes available in the local voice cache.
+phoonnx-voices list-langs
+
+Lists all available voice models, optionally filtered by language.
+phoonnx-voices list-voices [--lang LANG] [--verbose]
+
+# All voices
+phoonnx-voices list-voices
+
+# Portuguese voices only
+phoonnx-voices list-voices --lang pt-PT
+
+# With detailed info
+phoonnx-voices list-voices --verbose
+
+phoonnx-voices list-available
+
+phoonnx-voices download VOICE_ID
+phoonnx-voices download OpenVoiceOS/pipertts_es-ES_dii
+
+
+Examples: Full Workflow
+# 1. Fetch the voice catalog
+phoonnx-voices update-cache
+
+# 2. Browse available languages
+phoonnx-voices list-langs
+
+# 3. Find a voice for Portuguese
+phoonnx-voices list-voices --lang pt-PT
+
+# 4. Download a specific voice
+phoonnx-voices download OpenVoiceOS/phoonnx_eu-ES_dii_espeak

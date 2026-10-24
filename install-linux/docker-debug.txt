@@ -29,3 +29,13 @@ python -m pip freeze | grep -E "^(ovos-audio|ovos-utils|ovos-bus-client|ovos-con
 '
 
 /home/ovos/.venv/bin/python -m pip show ovos-ww-plugin-precise-lite tflite-runtime
+
+
+RUN . ~/.venv/bin/activate && python -c 'from phoonnx.voice import TTSVoice; v = TTSVoice.load("/home/ovos/model/phoonnx/en_US-mike-medium.onnx", "/home/ovos/model/phoonnx/en_US-mike-medium.onnx.json"); print("Voice loaded successfully!")'
+
+docker compose run --rm --no-deps --entrypoint /bin/bash ovos_audio
+docker compose run --rm --no-deps --entrypoint /bin/bash phoonnx_server
+
+## phoonnx cache
+## /home/ovos/.cache/phoonnx/voices.json
+## sudo chmod -R 757 /var/www

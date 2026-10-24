@@ -184,7 +184,7 @@ class PersonTracker:
                                     if len(valid) > 0:
                                         # Snapshot Logic
                                         if self.say_once:
-                                            self.say_text("I have detected a person.")
+                                            self.say_text("Ich sehe eine Person.")
                                             self.say_once = False
                                         if self.send_vehi_stop:
                                             self.stop_vehicle()
@@ -298,5 +298,5 @@ def show_system_state():
 
 if __name__ == '__main__':
     logger.info("Starting Hailo Flask server on 0.0.0.0:5000")   
-    tracker.say_text("Hello Albrecht, K6 welcoms you, let's start")
+    tracker.say_text("Hallo Albrecht, ich bin K6 guten Tag, wir können starten")
     app.run(host='0.0.0.0', port=5000, threaded=True)
