@@ -24,6 +24,7 @@ RUN apt-get update && \
         libportaudio2 \
         alsa-utils  \
         iputils-ping \
+        curl \
         nano && \
     rm -rf /var/lib/apt/lists/*
 
@@ -42,6 +43,7 @@ COPY --chown=ovos:ovos phoonnx_test_localmodel.py /home/ovos/phoonnx_test_localm
 # COPY --chown=ovos:ovos miro_en-GB.onnx /home/ovos/miro_en-GB.onnx
 # COPY --chown=ovos:ovos miro_en-GB.onnx.json /home/ovos/miro_en-GB.onnx.json
 ## OpenVoiceOS/stt_de_quartznet15x5_onnx
+## https://huggingface.co/Thorsten-Voice/Piper/tree/main
 # COPY --chown=ovos:ovos miro_de-DE.onnx /home/ovos/miro_de-DE.onnx
 # COPY --chown=ovos:ovos miro_de-DE.onnx.json /home/ovos/miro_de-DE.onnx.json
 # COPY --chown=ovos:ovos de_DE-thorsten-medium.onnx /home/ovos/de_DE-thorsten-medium.onnx
@@ -53,6 +55,7 @@ COPY --chown=ovos:ovos model.onnx.json /home/ovos/model.onnx.json
 # (--break-system-packages is no longer needed since we are using a venv)
 RUN pip install --no-cache-dir \
     phoonnx \
+    flask \
     onnxruntime \
     ovos-plugin-manager \
     sounddevice \

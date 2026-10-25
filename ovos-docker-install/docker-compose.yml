@@ -204,8 +204,8 @@ services:
     environment:
       - TZ=Europe/Berlin
       - VOICE_SERVER_PORT=6000
-      #- PHOONNX_PREFETCH_VOICES=OpenVoiceOS/pipertts_de-DE_miro
-      - PHOONNX_PREFETCH_VOICES=OpenVoiceOS/phoonnx-coqui-vits
+      - PHOONNX_PREFETCH_VOICES=OpenVoiceOS/pipertts_de-DE_miro
+      - PYTHONUNBUFFERED=1
     devices:
       - /dev/snd:/dev/snd
     volumes:

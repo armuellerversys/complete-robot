@@ -1,56 +1,87 @@
-import subprocess
+import sys
+import io
 import wave
 from phoonnx.voice import SynthesisConfig, TTSVoice
 import sounddevice as sd
 import soundfile as sf
 import logging
+from flask import Flask, Response, request
 
+app = Flask(__name__)
 
 ## https://github.com/TigreGotico/phoonnx/blob/dev/docs/quickstart.md
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    stream=sys.stdout,
+    force=True
+)
 logger = logging.getLogger(__name__)
 # Alternatively, for direct local file loading:
 # from phoonnx.voice import TTSVoice
+# http://192.168.4.6:7000/say?text=hallo
+
+
+@app.route("/say", methods=["GET"])
+def say_text():
+    text = request.args.get("text", "").strip()
+
+    if not text:
+        return Response("Missing text parameter", status=400)
+
+    tts.synthesize_and_play(text)
+    return Response("Playback complete", status=200)
 
 class OonnxTest:
     def __init__(self):
-        logger.info('Phoonnx initialized.')
+        logger.info("Phoonnx initialized.")
 
-    def synthesize_text_to_wav(self):
+        # Load the model once, rather than for every request
+        self.voice = TTSVoice.load("model.onnx", "model.onnx.json")
 
-        logger.info('Phoonnx synthesize_text_to_wav.')
-        # OpenVoiceOS/pipertts_de-DE_miro
-        # Adjust the voice key depending on your index cache or local setup
-        voice = TTSVoice.load("model.onnx", "model.onnx.json")
-    
-        cfg = SynthesisConfig(
-            length_scale=1.1,   # >1 slower, <1 faster
-            noise_scale=0.667,  # generator noise / variation
+        self.cfg = SynthesisConfig(
+            length_scale=1.2,
+            noise_scale=0.667,
             volume=2.0,
         )
 
-        with wave.open("out.wav", "wb") as wav_file:
-            voice.synthesize_wav("Hallo, mein Name ist Albrecht.", wav_file, cfg)
+    def synthesize_and_play(self, text):
+        try:
+            logger.info("Synthesizing: %s", text)
 
-    def play_audio(self, file_path="out.wav"):
-        logger.info('Phoonnx play_audio')
-        data, fs = sf.read(file_path)
-        sd.play(data, fs)
-        sd.wait()
+            # Create WAV data in memory, not on disk
+            with io.BytesIO() as wav_buffer:
+                with wave.open(wav_buffer, "wb") as wav_file:
+                    self.voice.synthesize_wav(
+                        text, wav_file, self.cfg
+                    )
 
-    #def play_audio_aplay(self, file_path="out.wav"):
-        # Calls the native ALSA player
-       # subprocess.run(["aplay", file_path], check=True)
+                wav_buffer.seek(0)
+                data, sample_rate = sf.read(wav_buffer, dtype="float32")
+
+            logger.info("Playing synthesized audio")
+            sd.play(data, sample_rate)
+            sd.wait()
+
+            logger.info("Playback complete")
+        except Exception as e:
+                logger.info('error occurred during synthesize_and_play.')
+                logger.exception(e)
+
+
+tts = OonnxTest()
 
 # ===========================================================
 # Main
 # ===========================================================
 if __name__ == "__main__":
-    test = OonnxTest()
+   
     try:
         logger.info('Started')
-        test.synthesize_text_to_wav()
-        logger.info('Audio synthesis complete. Playing audio...')
-        test.play_audio()
+        app.run(host='0.0.0.0', port=5500, use_reloader=False)
+
+        tts.synthesize_and_play("Hallo, mein Name ist Albrecht.")
+
         logger.info('Audio playing complete.')
     except Exception as e:
         logger.info('error occurred during the test.')
