@@ -2,6 +2,8 @@ import sys
 import io
 import wave
 from phoonnx.voice import SynthesisConfig, TTSVoice
+import numpy as np
+from scipy.signal import resample_poly
 import sounddevice as sd
 import soundfile as sf
 import logging
@@ -19,7 +21,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 # Alternatively, for direct local file loading:
 # from phoonnx.voice import TTSVoice
-# http://192.168.4.6:7000/say?text=hallo
+# http://192.168.4.6:5500/say?text=hallo
 
 
 @app.route("/say", methods=["GET"])
@@ -29,8 +31,13 @@ def say_text():
     if not text:
         return Response("Missing text parameter", status=400)
 
-    tts.synthesize_and_play(text)
-    return Response("Playback complete", status=200)
+    try:
+        tts.synthesize_and_play(text)
+        return Response("Playback complete", status=200)
+
+    except Exception:
+        logger.exception("TTS synthesis or playback failed")
+        return Response("TTS synthesis or playback failed", status=500)
 
 class OonnxTest:
     def __init__(self):
@@ -49,7 +56,6 @@ class OonnxTest:
         try:
             logger.info("Synthesizing: %s", text)
 
-            # Create WAV data in memory, not on disk
             with io.BytesIO() as wav_buffer:
                 with wave.open(wav_buffer, "wb") as wav_file:
                     self.voice.synthesize_wav(
@@ -57,17 +63,36 @@ class OonnxTest:
                     )
 
                 wav_buffer.seek(0)
-                data, sample_rate = sf.read(wav_buffer, dtype="float32")
+                data, model_sample_rate = sf.read(wav_buffer, dtype="float32")
 
-            logger.info("Playing synthesized audio")
-            sd.play(data, sample_rate)
+            logger.info("Generated audio sample rate: %s Hz", model_sample_rate)
+            
+            # Define target sample rate supported by the Seeed 2-Mic hat
+            target_sample_rate = 16000 
+
+            # Resample audio if the model rate doesn't match the hardware rate
+            if model_sample_rate != target_sample_rate:
+                logger.info("Resampling audio from %s Hz to %s Hz", model_sample_rate, target_sample_rate)
+                gcd = np.gcd(target_sample_rate, int(model_sample_rate))
+                up = target_sample_rate // gcd
+                down = int(model_sample_rate) // gcd
+                data = resample_poly(data, up, down)
+                sample_rate = target_sample_rate
+            else:
+                sample_rate = model_sample_rate
+
+            output_device = 0  # Seeed sound card
+            logger.info("Playing synthesized audio through device %s: %s",
+                        output_device, sd.query_devices(output_device)["name"])
+
+            sd.play(data, sample_rate, device=output_device)
             sd.wait()
 
             logger.info("Playback complete")
         except Exception as e:
-                logger.info('error occurred during synthesize_and_play.')
-                logger.exception(e)
-
+            logger.info('error occurred during synthesize_and_play.')
+            logger.exception(e)
+    
 
 tts = OonnxTest()
 
@@ -77,12 +102,14 @@ tts = OonnxTest()
 if __name__ == "__main__":
    
     try:
-        logger.info('Started')
-        app.run(host='0.0.0.0', port=5500, use_reloader=False)
-
+        logger.info('Started and play: Hallo, mein Name ist Albrecht.')
+        
         tts.synthesize_and_play("Hallo, mein Name ist Albrecht.")
 
-        logger.info('Audio playing complete.')
+        logger.info('Audio playing complete now ')
+
+        app.run(host='0.0.0.0', port=5500, use_reloader=False)
+
     except Exception as e:
         logger.info('error occurred during the test.')
         logger.exception(e)

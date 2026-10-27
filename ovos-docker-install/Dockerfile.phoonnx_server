@@ -54,12 +54,14 @@ COPY --chown=ovos:ovos model.onnx.json /home/ovos/model.onnx.json
 # Install Python dependencies inside the virtual environment
 # (--break-system-packages is no longer needed since we are using a venv)
 RUN pip install --no-cache-dir \
-    phoonnx \
+    phoonnx[de] \
     flask \
     onnxruntime \
     ovos-plugin-manager \
     sounddevice \
-    soundfile 
+    soundfile \
+    gruut[de] \
+    scipy
 
 # Pre-fill the voice index cache using the venv binaries
 RUN phoonnx-voices update-cache || true

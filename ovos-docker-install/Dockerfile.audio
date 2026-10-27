@@ -34,8 +34,8 @@ COPY --chown=ovos:ovos ./sound/ /home/ovos/.local/share/mycroft/sounds/
 # default cache ~/.cache/huggingface/hub/ by default
 # Pre-fill the voice index cache
 
-RUN phoonnx-voices update-cache || true
-RUN phoonnx-voices list || true
+#RUN phoonnx-voices update-cache || true
+#RUN phoonnx-voices list || true
 ## OpenVoiceOS/pipertts_de-DE_miro
 ##RUN phoonnx-voices download OpenVoiceOS/pipertts_de-DE_miro
 COPY --chown=ovos:ovos ./models/phoonnx/miro_de-DE.onnx /home/ovos/miro_de-DE.onnx
@@ -48,9 +48,9 @@ USER ovos
 RUN . ~/.venv/bin/activate && \
     pip install --no-cache-dir --break-system-packages \
     ovos-tts-server \
-    phoonnx \
-    onnxruntime \
-    #ovos-tts-plugin-piper \
+    #phoonnx \
+    #onnxruntime \
+    ovos-tts-plugin-piper \
     ovos-plugin-manager
 
 
