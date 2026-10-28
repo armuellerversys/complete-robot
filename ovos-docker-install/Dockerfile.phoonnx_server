@@ -37,10 +37,12 @@ ENV VIRTUAL_ENV="/home/ovos/venv"
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # Copy local model files with correct ownership
+COPY --chown=ovos:ovos voices_config.json /home/ovos/voices_config.json
 COPY --chown=ovos:ovos phoonnx_test_manager.py /home/ovos/phoonnx_test_manager.py
 COPY --chown=ovos:ovos phoonnx_test_localmodel.py /home/ovos/phoonnx_test_localmodel.py
 COPY --chown=ovos:ovos phoonnx_test_localmodel_stream.py /home/ovos/phoonnx_test_localmodel_stream.py
 COPY --chown=ovos:ovos phoonnx_test_localmodel_html.py /home/ovos/phoonnx_test_localmodel_html.py
+COPY --chown=ovos:ovos phoonnx_test_localmodel_voices.py /home/ovos/phoonnx_test_localmodel_voices.py
 
 ## OpenVoiceOS/pipertts_en-GB_miro
 # COPY --chown=ovos:ovos miro_en-GB.onnx /home/ovos/miro_en-GB.onnx

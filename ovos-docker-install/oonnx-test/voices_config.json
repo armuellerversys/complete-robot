@@ -1,0 +1,17 @@
+{
+     "speaker_albrecht": {
+        "name": "Albrecht (miro_de-DE- Default)",
+        "model_path": "/home/ovos/model/miro_de-DE.onnx",
+        "config_path": "/home/ovos/model/miro_de-DE.onnx.json"
+    },
+    "speaker_thorsten": {
+        "name": "thorsten Voice (German)",
+        "model_path": "/home/ovos/model/phoonnx-de-thorsten-model.onnx",
+        "config_path": "/home/ovos/model/phoonnx-de-thorsten-model.onnx.json"
+    },
+    "speaker_thorsten-medium": {
+        "name": "thorsten-medium (German)",
+        "model_path": "/home/ovos/model/de_DE-thorsten-medium.onnx",
+        "config_path": "/home/ovos/model/de_DE-thorsten-medium.onnx.json"
+    }
+}
