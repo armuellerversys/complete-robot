@@ -21,9 +21,14 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 class MultiSpeakerOonnxService:
-    def __init__(self, config_file="/home/ovos/model/voices_config.json"):
-        logger.info("Initializing Multi-Speaker Phoonnx Service...")
+    def __init__(self, config_file="voices_config.json"):
+        logger.info("Initializing Multi-Speaker Phoonnx Service with config file: %s", config_file)
+
+
         self.voices_config = self._load_config(config_file)
+
+        formatted_json = json.dumps(self.voices_config, indent=2)
+        logger.info("Loaded config: %s", formatted_json)
         
         self.loaded_voices = {}
         for key, conf in self.voices_config.items():
@@ -100,7 +105,7 @@ class MultiSpeakerOonnxService:
         out_buffer.seek(0)
         return out_buffer.read()
 
-tts_service = MultiSpeakerOonnxService("voices_config.json")
+tts_service = MultiSpeakerOonnxService("/home/ovos/model/voices_config.json")
 
 # HTML Frontend Template with Parameter Sliders
 HTML_PAGE = """

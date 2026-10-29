@@ -77,4 +77,4 @@ WORKDIR /home/ovos
 USER ovos
 
 # Run your test script using the virtual environment python
-CMD ["python", "/home/ovos/phoonnx_test_localmodel.py"]
+CMD ["python", "/home/ovos/phoonnx_test_localmodel_voices.py"]
