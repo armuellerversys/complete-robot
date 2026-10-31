@@ -196,7 +196,7 @@ services:
 
   phoonnx_server:
     build:
-      context: ./oonnx-test
+      context: ./oonnx-voice-server
       dockerfile: Dockerfile.phoonnx_server
     container_name: phoonnx_server
     restart: unless-stopped

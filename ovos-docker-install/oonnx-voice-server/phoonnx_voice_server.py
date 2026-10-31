@@ -11,7 +11,8 @@ from kokoro_onnx import Kokoro
 from german_normalizer import normalize_german_text
 
 
-##
+## 
+## https://huggingface.co/Godelaune/Kokoro-82M-ONNX-German-Martin
 ## curl "http://192.168.4.6:5500/speak_local?text=Hallo%20Albrecht,%20Bewegung%20im%20Garten%20erkannt&volume=3.0"
 ## curl -X POST "http://<YOUR_PI_IP>:5500/speak_local" \
 ##     -H "Content-Type: application/json" \
