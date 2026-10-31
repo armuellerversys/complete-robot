@@ -8,7 +8,7 @@
         "volume": 2.0
     },
     "thorsten-high": {
-        "name": "thorsten-high (German)",
+        "name": "thorsten-high",
         "model_path": "/home/ovos/model/phoonnx-de-thorsten-model.onnx",
         "config_path": "/home/ovos/model/phoonnx-de-thorsten-model.onnx.json",
         "length_scale": 1.0,
@@ -16,14 +16,30 @@
         "volume": 2.0
     },
     "thorsten-medium": {
-        "name": "thorsten-medium (German)",
+        "name": "thorsten-medium",
         "model_path": "/home/ovos/model/de_DE-thorsten-medium.onnx",
         "config_path": "/home/ovos/model/de_DE-thorsten-medium.onnx.json",
         "length_scale": 1.0,
         "noise_scale": 0.6,
         "volume": 2.0
     },
-     "en_US-lessac-medium": {
+    "system-ofapwne-piper": {
+        "name": "system-ofapwne-piper",
+        "model_path": "/home/ovos/model/systemofapwnepiper-de_DE-glados-high.onnx",
+        "config_path": "/home/ovos/model/systemofapwnepiper-de_DE-glados-high.onnx.json",
+        "length_scale": 1.0,
+        "noise_scale": 0.6,
+        "volume": 2.0
+    },
+    "system-ofapwne-turrent-piper": {
+        "name": "system-ofapwne-turrent-piper",
+        "model_path": "/home/ovos/model/systemofapwnepiper-de_DE-glados_turret-high.onnx",
+        "config_path": "/home/ovos/model/systemofapwnepiper-de_DE-glados_turret-high.onnx.json",
+        "length_scale": 1.0,
+        "noise_scale": 0.6,
+        "volume": 2.0
+    },
+    "en_US-lessac-medium": {
         "name": "en_US-lessac-medium (English)",
         "model_path": "/home/ovos/model/en_US-lessac-medium.onnx",
         "config_path": "/home/ovos/model/en_US-lessac-medium.onnx.json",

@@ -199,7 +199,7 @@ services:
       context: ./oonnx-test
       dockerfile: Dockerfile.phoonnx_server
     container_name: phoonnx_server
-    restart: none
+    restart: unless-stopped
     network_mode: host
     environment:
       - TZ=Europe/Berlin

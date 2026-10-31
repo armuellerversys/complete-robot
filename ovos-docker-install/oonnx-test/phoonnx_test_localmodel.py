@@ -44,7 +44,7 @@ class OonnxTest:
         logger.info("Phoonnx initialized.")
 
         # Load the model once, rather than for every request
-        self.voice = TTSVoice.load("model.onnx", "model.onnx.json")
+        self.voice = TTSVoice.load("/home/ovos/model/model.onnx", "/home/ovos/model/model.onnx.json")
 
         self.cfg = SynthesisConfig(
             length_scale=1.2,

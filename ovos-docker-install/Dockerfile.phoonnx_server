@@ -42,18 +42,11 @@ COPY --chown=ovos:ovos phoonnx_test_localmodel.py /home/ovos/phoonnx_test_localm
 COPY --chown=ovos:ovos phoonnx_test_localmodel_stream.py /home/ovos/phoonnx_test_localmodel_stream.py
 COPY --chown=ovos:ovos phoonnx_test_localmodel_html.py /home/ovos/phoonnx_test_localmodel_html.py
 COPY --chown=ovos:ovos phoonnx_test_localmodel_voices.py /home/ovos/phoonnx_test_localmodel_voices.py
+COPY --chown=ovos:ovos phoonnx_test_localmodel_krokoro.py /home/ovos/phoonnx_test_localmodel_krokoro.py
 
-## OpenVoiceOS/pipertts_en-GB_miro
-# COPY --chown=ovos:ovos miro_en-GB.onnx /home/ovos/miro_en-GB.onnx
-# COPY --chown=ovos:ovos miro_en-GB.onnx.json /home/ovos/miro_en-GB.onnx.json
-## OpenVoiceOS/stt_de_quartznet15x5_onnx
-## https://huggingface.co/Thorsten-Voice/Piper/tree/main
-# COPY --chown=ovos:ovos miro_de-DE.onnx /home/ovos/miro_de-DE.onnx
-# COPY --chown=ovos:ovos miro_de-DE.onnx.json /home/ovos/miro_de-DE.onnx.json
-# COPY --chown=ovos:ovos de_DE-thorsten-medium.onnx /home/ovos/de_DE-thorsten-medium.onnx
-# COPY --chown=ovos:ovos de_DE-thorsten-medium.onnx.json /home/ovos/de_DE-thorsten-medium.onnx.json
-COPY --chown=ovos:ovos model.onnx /home/ovos/model.onnx
-COPY --chown=ovos:ovos model.onnx.json /home/ovos/model.onnx.json
+COPY --chown=ovos:ovos phoonnx_voice_server.py /home/ovos/phoonnx_voice_server.py
+COPY --chown=ovos:ovos german_normalizer.py /home/ovos/german_normalizer.py 
+
 
 # Install Python dependencies inside the virtual environment
 # (--break-system-packages is no longer needed since we are using a venv)
@@ -65,7 +58,9 @@ RUN pip install --no-cache-dir \
     sounddevice \
     soundfile \
     gruut[de] \
-    scipy
+    scipy \
+    num2words \
+    kokoro-onnx
 
 # Pre-fill the voice index cache using the venv binaries
 RUN phoonnx-voices update-cache || true
@@ -77,4 +72,4 @@ WORKDIR /home/ovos
 USER ovos
 
 # Run your test script using the virtual environment python
-CMD ["python", "/home/ovos/phoonnx_test_localmodel_voices.py"]
+CMD ["python", "/home/ovos/phoonnx_voice_server.py"]
